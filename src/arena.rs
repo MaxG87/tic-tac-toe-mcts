@@ -64,8 +64,14 @@ impl<const N: usize> TicTacToeArena<N> {
     pub fn do_next_move(&mut self) -> Option<Result> {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
-        let placements = cur_player.do_move(&self.board);
-        let point_placement = PointPlacement { row: 0, col: 0 };
+        let point_placement = loop {
+            let placements = cur_player.do_move(&self.board);
+            let maybe_point_placement =
+                TicTacToeArena::<N>::sample_point_placement(&self.board, &placements);
+            if let Some(pp) = maybe_point_placement {
+                break pp;
+            }
+        };
         let result =
             self.referee
                 .receive_move(&mut self.board, &point_placement, cur_player.get_id());
@@ -74,5 +80,28 @@ impl<const N: usize> TicTacToeArena<N> {
 
     pub fn get_board(&self) -> Board<N> {
         self.board.clone()
+    }
+
+    fn sample_point_placement(
+        board: &Board<N>,
+        placement: &Placement<N>,
+    ) -> Option<PointPlacement> {
+        for row in 0..N {
+            for column in 0..N {
+                let maybe_id = &board.board[row][column];
+                let probability = &placement[row][column];
+                if *probability == 0.0 {
+                    continue;
+                };
+                if let None = maybe_id {
+                    continue;
+                };
+                return Some(PointPlacement {
+                    row: row,
+                    col: column,
+                });
+            }
+        }
+        None
     }
 }
