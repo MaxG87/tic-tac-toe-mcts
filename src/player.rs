@@ -6,7 +6,7 @@ pub struct GuessingPlayer<const N: usize, const K: usize> {
 }
 
 impl<const N: usize, const K: usize> GuessingPlayer<N, K> {
-    const PLACEMENT: Placement<N> = [[(1.0 / ((N * N) as f32)); N]; N];
+    const PLACEMENT: Placement<N> = [[1.0; N]; N];
 }
 
 impl<const N: usize, const K: usize> Player<N, K> for GuessingPlayer<N, K> {
