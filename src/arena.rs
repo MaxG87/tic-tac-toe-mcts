@@ -85,7 +85,7 @@ pub trait TicTacToeReferee<const N: usize, const K: usize> {
 }
 
 pub trait Player<const N: usize, const K: usize> {
-    fn do_move(&mut self, board: &Board<N>) -> &Placement<N>;
+    fn do_move(&mut self, board: &Board<N>) -> Placement<N>;
     fn get_id(&self) -> PlayerID;
 }
 

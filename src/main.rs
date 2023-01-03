@@ -11,7 +11,7 @@ fn main() {
     const K: usize = 3;
     let players: [Box<dyn Player<N, K>>; 2] = [
         Box::new(GuessingPlayer::<N, K> { id: 0 }),
-        Box::new(GuessingPlayer::<N, K> { id: 1 }),
+        Box::new(CLIPlayer::<N, K> { id: 1 }),
     ];
     let referee = Box::new(NaiveReferee::<N, K> {});
     let board = Board {
