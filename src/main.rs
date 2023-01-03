@@ -10,7 +10,7 @@ fn main() {
     const N: usize = 5;
     const K: usize = 3;
     let mut mcts_base_player0 = GuessingPlayer::<N, K> { id: 0 };
-    let mut mcts_base_player1 = GuessingPlayer::<N, K> { id: 0 };
+    let mut mcts_base_player1 = GuessingPlayer::<N, K> { id: 1 };
     let mut mcts_referee = NaiveReferee::<N, K> {};
 
     let mut player0 = CountBoundMCTSPlayer::<N, K>::new(

@@ -92,7 +92,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
                 &mut *self.referee,
             );
 
-            let (result, player_id, _) = loop {
+            let (result, player_id, maybe_point_placement) = loop {
                 break match my_arena.do_next_move() {
                     (Some(result), player_id, maybe_point_placement) => {
                         (result, player_id, maybe_point_placement)
@@ -101,9 +101,14 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
                 };
             };
 
-            tries[0][0] += 1;
-            if result == Result::Victory && self.id == player_id {
-                wins[0][0] += 1;
+            match maybe_point_placement {
+                Some(pp) => {
+                    tries[pp.row][pp.column] += 1;
+                    if result == Result::Victory && self.id == player_id {
+                        wins[pp.row][pp.column] += 1;
+                    }
+                }
+                None => panic!("No legal move was made!"),
             }
         }
         let mut placements: Placement<N> = [[0f32; N]; N];
@@ -116,6 +121,8 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
                 };
             }
         }
+
+        println!("{:?}", placements);
         return placements;
     }
     fn get_id(&self) -> PlayerID {
