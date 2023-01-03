@@ -35,7 +35,7 @@ pub struct PointPlacement {
 
 pub enum Result {
     Defeat,
-    Draw,
+    // Draw,
     IllegalMove,
     Victory,
 }
@@ -105,14 +105,14 @@ impl<const N: usize> TicTacToeArena<N> {
         board: &Board<N>,
         placement: &Placement<N>,
     ) -> Option<PointPlacement> {
-        for row in 0..N {
-            for column in 0..N {
+        for row in 0..board.rows() {
+            for column in 0..board.columns() {
                 let maybe_id = &board.board[row][column];
                 let probability = &placement[row][column];
                 if *probability == 0.0 {
                     continue;
                 };
-                if let Some(id) = maybe_id {
+                if let Some(_) = maybe_id {
                     continue;
                 };
                 return Some(PointPlacement { row, col: column });

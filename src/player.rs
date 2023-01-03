@@ -9,7 +9,7 @@ impl<const N: usize> GuessingPlayer<N> {
 }
 
 impl<const N: usize> Player<N> for GuessingPlayer<N> {
-    fn do_move(&mut self, board: &Board<N>) -> &Placement<N> {
+    fn do_move(&mut self, _board: &Board<N>) -> &Placement<N> {
         return &GuessingPlayer::<N>::PLACEMENT;
     }
 
