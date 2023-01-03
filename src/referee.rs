@@ -4,44 +4,55 @@ struct NaiveReferee<const N: u32> {
     board_state: BoardState,
 }
 
-impl<const N: u32> NaiveReferee<N> {
-    pub fn was_winning_move(&self, row: usize, col: usize, player: &PlayerID) -> bool {
-        return self.winning_state_in_row(row, player) || self.winning_state_in_col(col, player);
-    }
+fn was_winning_move<const N: u32>(
+    row: usize,
+    col: usize,
+    board_state: &BoardState,
+    player: &PlayerID,
+) -> bool {
+    return winning_state_in_row::<N>(row, board_state, player)
+        || winning_state_in_col::<N>(col, board_state, player);
+}
 
-    pub fn winning_state_in_row(&self, row: usize, player: &PlayerID) -> bool {
-        let row_it = &self.board_state[row];
-        return self.collection_has_winning_state(&mut row_it.iter(), &player);
-    }
+fn winning_state_in_row<const N: u32>(
+    row: usize,
+    board_state: &BoardState,
+    player: &PlayerID,
+) -> bool {
+    let row_it = &board_state[row];
+    return collection_has_winning_state::<N>(&mut row_it.iter(), &player);
+}
 
-    pub fn winning_state_in_col(&self, col: usize, player: &PlayerID) -> bool {
-        let mut column_it = self.board_state.iter().map(|row| &row[col]);
-        return self.collection_has_winning_state(&mut column_it, &player);
-    }
+fn winning_state_in_col<const N: u32>(
+    col: usize,
+    board_state: &BoardState,
+    player: &PlayerID,
+) -> bool {
+    let mut column_it = board_state.iter().map(|row| &row[col]);
+    return collection_has_winning_state::<N>(&mut column_it, &player);
+}
 
-    pub fn collection_has_winning_state(
-        &self,
-        collection: &mut dyn Iterator<Item = &BoardStateEntry>,
-        player: &PlayerID,
-    ) -> bool {
-        let mut counter = 0;
-        for elem in collection {
-            match elem {
-                None => counter = 0,
-                Some(p) => {
-                    if p == player {
-                        counter += 1
-                    } else {
-                        counter = 0
-                    }
+fn collection_has_winning_state<const N: u32>(
+    collection: &mut dyn Iterator<Item = &BoardStateEntry>,
+    player: &PlayerID,
+) -> bool {
+    let mut counter = 0;
+    for elem in collection {
+        match elem {
+            None => counter = 0,
+            Some(p) => {
+                if p == player {
+                    counter += 1
+                } else {
+                    counter = 0
                 }
             }
-            if counter == N {
-                return true;
-            }
         }
-        return false;
+        if counter == N {
+            return true;
+        }
     }
+    return false;
 }
 
 impl<const N: u32> TicTacToeReferee<N> for NaiveReferee<N> {
@@ -54,7 +65,7 @@ impl<const N: u32> TicTacToeReferee<N> for NaiveReferee<N> {
             }
         } else {
             self.board_state[row][col] = Some(player_id.clone());
-            let was_winning_move = self.was_winning_move(row, col, &player_id);
+            let was_winning_move = was_winning_move::<N>(row, col, &self.board_state, &player_id);
             let result: Option<Result> = if was_winning_move {
                 Some(Result::Victory)
             } else {
