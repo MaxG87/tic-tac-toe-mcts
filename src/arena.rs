@@ -75,6 +75,16 @@ pub enum Result {
     IllegalMove,
     Victory,
 }
+impl fmt::Display for Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Result::Defeat => write!(f, "Defeat"),
+            // Draw,
+            Result::IllegalMove => write!(f, "IllegalMove"),
+            Result::Victory => write!(f, "Victory"),
+        }
+    }
+}
 
 pub trait TicTacToeReferee<const N: usize, const K: usize> {
     fn receive_move(
