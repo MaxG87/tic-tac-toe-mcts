@@ -39,6 +39,7 @@ pub enum Result {
     IllegalMove,
     Victory,
 }
+
 pub trait TicTacToeReferee<const N: usize> {
     fn receive_move(
         &mut self,
@@ -56,26 +57,44 @@ pub trait Player<const N: usize> {
 pub struct TicTacToeArena<const N: usize> {
     active_player: usize,
     board: Board<N>,
-    players: [Box<dyn Player<N>>; 2],
+    players: [Box<dyn Player<N> + 'static>; 2],
     referee: Box<dyn TicTacToeReferee<N>>,
 }
 
 impl<const N: usize> TicTacToeArena<N> {
-    pub fn do_next_move(&mut self) -> Option<Result> {
+    pub fn new(
+        board: Board<N>,
+        players: [Box<dyn Player<N> + 'static>; 2],
+        referee: Box<dyn TicTacToeReferee<N>>,
+    ) -> TicTacToeArena<N> {
+        TicTacToeArena {
+            active_player: 0,
+            board,
+            players,
+            referee,
+        }
+    }
+
+    pub fn do_next_move(&mut self) -> (Option<Result>, PlayerID) {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
-        let point_placement = loop {
-            let placements = cur_player.do_move(&self.board);
-            let maybe_point_placement =
-                TicTacToeArena::<N>::sample_point_placement(&self.board, &placements);
-            if let Some(pp) = maybe_point_placement {
-                break pp;
+        let placements = cur_player.do_move(&self.board);
+        let maybe_point_placement =
+            TicTacToeArena::<N>::sample_point_placement(&self.board, &placements);
+
+        match maybe_point_placement {
+            Some(point_placement) => {
+                let maybe_result = self.referee.receive_move(
+                    &mut self.board,
+                    &point_placement,
+                    cur_player.get_id(),
+                );
+                return (maybe_result, cur_player.get_id());
             }
-        };
-        let result =
-            self.referee
-                .receive_move(&mut self.board, &point_placement, cur_player.get_id());
-        return result;
+            None => {
+                return (Some(Result::Defeat), cur_player.get_id());
+            }
+        }
     }
 
     pub fn get_board(&self) -> Board<N> {
@@ -93,13 +112,10 @@ impl<const N: usize> TicTacToeArena<N> {
                 if *probability == 0.0 {
                     continue;
                 };
-                if let None = maybe_id {
+                if let Some(id) = maybe_id {
                     continue;
                 };
-                return Some(PointPlacement {
-                    row: row,
-                    col: column,
-                });
+                return Some(PointPlacement { row, col: column });
             }
         }
         None

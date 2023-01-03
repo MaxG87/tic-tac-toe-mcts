@@ -1,17 +1,16 @@
 use crate::arena::*;
 
-struct GuessingPlayer<const N: usize> {
-    PLACEMENT: Placement<N>,
-    id: PlayerID,
+pub struct GuessingPlayer<const N: usize> {
+    pub id: PlayerID,
 }
 
 impl<const N: usize> GuessingPlayer<N> {
-    const PLACEMENT: Placement<N> = [[(1.0 / (N as f32)); N]; N];
+    const PLACEMENT: Placement<N> = [[(1.0 / ((N * N) as f32)); N]; N];
 }
 
 impl<const N: usize> Player<N> for GuessingPlayer<N> {
     fn do_move(&mut self, board: &Board<N>) -> &Placement<N> {
-        return &self.PLACEMENT;
+        return &GuessingPlayer::<N>::PLACEMENT;
     }
 
     fn get_id(&self) -> PlayerID {

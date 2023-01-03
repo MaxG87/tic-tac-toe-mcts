@@ -1,6 +1,6 @@
 use crate::arena::*;
 
-struct NaiveReferee<const N: usize> {}
+pub struct NaiveReferee<const N: usize> {}
 
 fn was_winning_move<const N: usize>(
     placement: &PointPlacement,
