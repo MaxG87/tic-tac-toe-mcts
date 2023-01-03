@@ -92,16 +92,10 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
                 &mut *self.referee,
             );
 
-            let (result, player_id, maybe_point_placement) = loop {
-                break match my_arena.do_next_move() {
-                    (Some(result), player_id, maybe_point_placement) => {
-                        (result, player_id, maybe_point_placement)
-                    }
-                    (None, _, _) => continue,
-                };
-            };
+            let (result, player_id, first_point_placement) =
+                CountBoundMCTSPlayer::do_one_step_sample(&mut my_arena);
 
-            match maybe_point_placement {
+            match first_point_placement {
                 Some(pp) => {
                     tries[pp.row][pp.column] += 1;
                     if result == Result::Victory && self.id == player_id {
@@ -125,7 +119,25 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
         println!("{:?}", placements);
         return placements;
     }
+
     fn get_id(&self) -> PlayerID {
         return self.id;
+    }
+}
+
+impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K> {
+    fn do_one_step_sample(
+        arena: &mut TicTacToeArena<N, K>,
+    ) -> (Result, PlayerID, Option<PointPlacement>) {
+        let (first_result, first_player_id, first_point_placement) = arena.do_next_move();
+        if let Some(result) = first_result {
+            return (result, first_player_id, first_point_placement);
+        }
+        loop {
+            match arena.do_next_move() {
+                (Some(result), player_id, _) => return (result, player_id, first_point_placement),
+                (None, _, _) => continue,
+            }
+        }
     }
 }
