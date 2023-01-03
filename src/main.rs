@@ -3,7 +3,9 @@ mod player;
 mod referee;
 
 use crate::arena::*;
-use crate::player::*;
+use crate::player::cli::*;
+use crate::player::countboundmcts::*;
+use crate::player::guessing::*;
 use crate::referee::*;
 
 fn main() {
