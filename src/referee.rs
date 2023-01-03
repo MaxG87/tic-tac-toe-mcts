@@ -5,13 +5,12 @@ struct NaiveReferee<const N: u32> {
 }
 
 fn was_winning_move<const N: u32>(
-    row: usize,
-    col: usize,
+    placement: &Placement,
     board_state: &BoardState,
     player: &PlayerID,
 ) -> bool {
-    return winning_state_in_row::<N>(row, board_state, player)
-        || winning_state_in_col::<N>(col, board_state, player);
+    return winning_state_in_row::<N>(placement.row, board_state, player)
+        || winning_state_in_col::<N>(placement.col, board_state, player);
 }
 
 fn winning_state_in_row<const N: u32>(
@@ -65,7 +64,7 @@ impl<const N: u32> TicTacToeReferee<N> for NaiveReferee<N> {
             }
         } else {
             self.board_state[row][col] = Some(player_id.clone());
-            let was_winning_move = was_winning_move::<N>(row, col, &self.board_state, &player_id);
+            let was_winning_move = was_winning_move::<N>(placement, &self.board_state, &player_id);
             let result: Option<Result> = if was_winning_move {
                 Some(Result::Victory)
             } else {
