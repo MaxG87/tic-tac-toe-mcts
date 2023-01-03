@@ -75,7 +75,7 @@ pub enum Result {
     Victory,
 }
 
-pub trait TicTacToeReferee<const N: usize> {
+pub trait TicTacToeReferee<const N: usize, const K: usize> {
     fn receive_move(
         &mut self,
         board: &mut Board<N>,
@@ -84,24 +84,24 @@ pub trait TicTacToeReferee<const N: usize> {
     ) -> Option<Result>;
 }
 
-pub trait Player<const N: usize> {
+pub trait Player<const N: usize, const K: usize> {
     fn do_move(&mut self, board: &Board<N>) -> &Placement<N>;
     fn get_id(&self) -> PlayerID;
 }
 
-pub struct TicTacToeArena<const N: usize> {
+pub struct TicTacToeArena<const N: usize, const K: usize> {
     active_player: usize,
     board: Board<N>,
-    players: [Box<dyn Player<N> + 'static>; 2],
-    referee: Box<dyn TicTacToeReferee<N>>,
+    players: [Box<dyn Player<N, K> + 'static>; 2],
+    referee: Box<dyn TicTacToeReferee<N, K>>,
 }
 
-impl<const N: usize> TicTacToeArena<N> {
+impl<const N: usize, const K: usize> TicTacToeArena<N, K> {
     pub fn new(
         board: Board<N>,
-        players: [Box<dyn Player<N> + 'static>; 2],
-        referee: Box<dyn TicTacToeReferee<N>>,
-    ) -> TicTacToeArena<N> {
+        players: [Box<dyn Player<N, K> + 'static>; 2],
+        referee: Box<dyn TicTacToeReferee<N, K>>,
+    ) -> TicTacToeArena<N, K> {
         TicTacToeArena {
             active_player: 0,
             board,
@@ -115,7 +115,7 @@ impl<const N: usize> TicTacToeArena<N> {
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
         let maybe_point_placement =
-            TicTacToeArena::<N>::sample_point_placement(&self.board, &placements);
+            TicTacToeArena::<N, K>::sample_point_placement(&self.board, &placements);
 
         match maybe_point_placement {
             Some(point_placement) => {

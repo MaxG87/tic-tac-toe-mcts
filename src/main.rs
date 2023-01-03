@@ -8,15 +8,16 @@ use crate::referee::*;
 
 fn main() {
     const N: usize = 5;
-    let players: [Box<dyn Player<N>>; 2] = [
-        Box::new(GuessingPlayer::<N> { id: 0 }),
-        Box::new(GuessingPlayer::<N> { id: 1 }),
+    const K: usize = 3;
+    let players: [Box<dyn Player<N, K>>; 2] = [
+        Box::new(GuessingPlayer::<N, K> { id: 0 }),
+        Box::new(GuessingPlayer::<N, K> { id: 1 }),
     ];
-    let referee = Box::new(NaiveReferee::<N> {});
+    let referee = Box::new(NaiveReferee::<N, K> {});
     let board = Board {
         board: [[None; N]; N],
     };
-    let mut arena = TicTacToeArena::<N>::new(board, players, referee);
+    let mut arena = TicTacToeArena::<N, K>::new(board, players, referee);
     loop {
         let (maybe_result, player_id) = arena.do_next_move();
         let board = arena.get_board();

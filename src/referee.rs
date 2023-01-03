@@ -1,35 +1,35 @@
 use crate::arena::*;
 
-pub struct NaiveReferee<const N: usize> {}
+pub struct NaiveReferee<const N: usize, const K: usize> {}
 
-fn was_winning_move<const N: usize>(
+fn was_winning_move<const N: usize, const K: usize>(
     placement: &PointPlacement,
     board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
-    return winning_state_in_row::<N>(placement.row, board_state, player)
-        || winning_state_in_col::<N>(placement.column, board_state, player);
+    return winning_state_in_row::<N, K>(placement.row, board_state, player)
+        || winning_state_in_col::<N, K>(placement.column, board_state, player);
 }
 
-fn winning_state_in_row<const N: usize>(
+fn winning_state_in_row<const N: usize, const K: usize>(
     row: usize,
     board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
     let row = board_state.get_row(row);
-    return collection_has_winning_state::<N>(&mut row.iter(), &player);
+    return collection_has_winning_state::<N, K>(&mut row.iter(), &player);
 }
 
-fn winning_state_in_col<const N: usize>(
+fn winning_state_in_col<const N: usize, const K: usize>(
     column: usize,
     board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
     let column = board_state.get_column(column);
-    return collection_has_winning_state::<N>(&mut column.into_iter(), player);
+    return collection_has_winning_state::<N, K>(&mut column.into_iter(), player);
 }
 
-fn collection_has_winning_state<const N: usize>(
+fn collection_has_winning_state<const N: usize, const K: usize>(
     collection: &mut dyn Iterator<Item = &BoardStateEntry>,
     player: &PlayerID,
 ) -> bool {
@@ -45,14 +45,14 @@ fn collection_has_winning_state<const N: usize>(
                 }
             }
         }
-        if counter == N {
+        if counter == K {
             return true;
         }
     }
     return false;
 }
 
-impl<const N: usize> TicTacToeReferee<N> for NaiveReferee<N> {
+impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, K> {
     fn receive_move(
         &mut self,
         board: &mut Board<N>,
@@ -63,7 +63,7 @@ impl<const N: usize> TicTacToeReferee<N> for NaiveReferee<N> {
         if let Some(_) = board.board[row][col] {
             Some(Result::IllegalMove)
         } else {
-            let was_winning_move = was_winning_move::<N>(placement, board, &player_id);
+            let was_winning_move = was_winning_move::<N, K>(placement, board, &player_id);
             board.board[row][col] = Some(player_id);
             if was_winning_move {
                 Some(Result::Victory)
