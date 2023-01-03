@@ -1,4 +1,4 @@
-use crate::arena::*;
+use crate::interfaces::*;
 use std::io;
 
 pub struct CLIPlayer<const N: usize, const K: usize> {

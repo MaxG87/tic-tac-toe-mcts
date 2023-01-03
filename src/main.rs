@@ -1,8 +1,10 @@
 mod arena;
+mod interfaces;
 mod player;
 mod referee;
 
-use crate::arena::*;
+use crate::arena::exploring::*;
+use crate::interfaces::*;
 use crate::player::cli::*;
 use crate::player::countboundmcts::*;
 use crate::player::guessing::*;
@@ -27,7 +29,8 @@ fn main() {
     let board = Board {
         board: [[None; N]; N],
     };
-    let mut arena = TicTacToeArena::<N, K>::new(board, [&mut player0, &mut player1], &mut referee);
+    let mut arena =
+        ExploringTicTacToeArena::<N, K>::new(board, [&mut player0, &mut player1], &mut referee);
     loop {
         let (maybe_result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(

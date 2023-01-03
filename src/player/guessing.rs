@@ -1,4 +1,4 @@
-use crate::arena::*;
+use crate::interfaces::*;
 
 pub struct GuessingPlayer<const N: usize, const K: usize> {
     pub id: PlayerID,

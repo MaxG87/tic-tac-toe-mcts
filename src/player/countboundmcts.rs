@@ -1,4 +1,5 @@
-use crate::arena::*;
+use crate::arena::exploring::*;
+use crate::interfaces::*;
 
 pub struct CountBoundMCTSPlayer<'player, const N: usize, const K: usize> {
     id: PlayerID,
@@ -30,7 +31,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
         let mut wins = [[0u32; N]; N];
 
         for _ in 0..self.nsamples {
-            let mut my_arena = TicTacToeArena::<N, K>::new(
+            let mut my_arena = ExploringTicTacToeArena::<N, K>::new(
                 board.clone(),
                 [&mut *self.player0, &mut *self.player1],
                 &mut *self.referee,
@@ -73,7 +74,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
 
 impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K> {
     fn do_one_step_sample(
-        arena: &mut TicTacToeArena<N, K>,
+        arena: &mut ExploringTicTacToeArena<N, K>,
     ) -> (Result, PlayerID, Option<PointPlacement>) {
         let (first_result, first_player_id, first_point_placement) = arena.do_next_move();
         if let Some(result) = first_result {
