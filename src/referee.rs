@@ -6,13 +6,13 @@ fn evaluate_board<const N: usize, const K: usize>(
     board: &Board<N>,
     player: &PlayerID,
 ) -> Option<Result> {
-    let mut nof_free_cells = 0;
+    let mut has_free_cells = false;
     for row in 0..N {
         for column in 0..N {
-            nof_free_cells += if let None = board.board[row][column] {
-                1
+            has_free_cells |= if let None = board.board[row][column] {
+                true
             } else {
-                0
+                false
             };
             if winning_state_in_row::<N, K>(board, row, column, player)
                 || winning_state_in_column::<N, K>(board, row, column, player)
@@ -21,7 +21,7 @@ fn evaluate_board<const N: usize, const K: usize>(
             }
         }
     }
-    if nof_free_cells == 0 {
+    if !has_free_cells {
         return Some(Result::Draw);
     }
     return None;
