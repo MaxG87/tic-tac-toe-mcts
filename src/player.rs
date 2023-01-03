@@ -1,5 +1,3 @@
-use std::iter::Zip;
-
 use crate::arena::*;
 
 struct GuessingPlayer<const N: usize> {
