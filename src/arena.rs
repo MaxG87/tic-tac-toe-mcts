@@ -68,6 +68,7 @@ impl fmt::Display for PointPlacement {
     }
 }
 
+#[derive(PartialEq)]
 pub enum Result {
     Defeat,
     // Draw,
@@ -89,19 +90,19 @@ pub trait Player<const N: usize, const K: usize> {
     fn get_id(&self) -> PlayerID;
 }
 
-pub struct TicTacToeArena<const N: usize, const K: usize> {
+pub struct TicTacToeArena<'arena, const N: usize, const K: usize> {
     active_player: usize,
     board: Board<N>,
-    players: [Box<dyn Player<N, K> + 'static>; 2],
-    referee: Box<dyn TicTacToeReferee<N, K>>,
+    players: [&'arena mut (dyn Player<N, K>); 2],
+    referee: &'arena mut (dyn TicTacToeReferee<N, K>),
 }
 
-impl<const N: usize, const K: usize> TicTacToeArena<N, K> {
+impl<'arena, const N: usize, const K: usize> TicTacToeArena<'arena, N, K> {
     pub fn new(
         board: Board<N>,
-        players: [Box<dyn Player<N, K> + 'static>; 2],
-        referee: Box<dyn TicTacToeReferee<N, K>>,
-    ) -> TicTacToeArena<N, K> {
+        players: [&'arena mut dyn Player<N, K>; 2],
+        referee: &'arena mut dyn TicTacToeReferee<N, K>,
+    ) -> TicTacToeArena<'arena, N, K> {
         TicTacToeArena {
             active_player: 0,
             board,
