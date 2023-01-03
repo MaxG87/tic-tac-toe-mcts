@@ -116,6 +116,8 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
             }
         }
 
+        println!("{:?}", wins);
+        println!("{:?}", tries);
         println!("{:?}", placements);
         return placements;
     }
