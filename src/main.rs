@@ -40,7 +40,7 @@ fn main() {
         let maybe_result_msg: Option<String> = match maybe_result {
             Some(Result::Defeat) => Some(format!("Player {player_id} lost.")),
             Some(Result::Victory) => Some(format!("Player {player_id} won.")),
-            // Some(Result::Draw) => Some("The game ended draw!".to_string()),
+            Some(Result::Draw) => Some("The game ended draw!".to_string()),
             Some(Result::IllegalMove) => Some(format!("Player {player_id} made an illegal move.")),
             None => None,
         };

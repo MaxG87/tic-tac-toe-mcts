@@ -3,53 +3,72 @@ use crate::arena::*;
 pub struct NaiveReferee<const N: usize, const K: usize> {}
 
 fn was_winning_move<const N: usize, const K: usize>(
-    placement: &PointPlacement,
-    board_state: &Board<N>,
+    board: &Board<N>,
     player: &PlayerID,
-) -> bool {
-    return winning_state_in_row::<N, K>(placement.row, board_state, player)
-        || winning_state_in_col::<N, K>(placement.column, board_state, player);
+) -> Option<Result> {
+    let mut nof_free_cells = 0;
+    for row in 0..N {
+        for column in 0..N {
+            nof_free_cells += if let None = board.board[row][column] {
+                1
+            } else {
+                0
+            };
+            if winning_state_in_row::<N, K>(board, row, column, player)
+                || winning_state_in_column::<N, K>(board, row, column, player)
+            {
+                return Some(Result::Victory);
+            }
+        }
+    }
+    if nof_free_cells == 0 {
+        return Some(Result::Draw);
+    }
+    return None;
 }
 
 fn winning_state_in_row<const N: usize, const K: usize>(
+    board: &Board<N>,
     row: usize,
-    board_state: &Board<N>,
-    player: &PlayerID,
-) -> bool {
-    let row = board_state.get_row(row);
-    return collection_has_winning_state::<N, K>(&mut row.iter(), &player);
-}
-
-fn winning_state_in_col<const N: usize, const K: usize>(
     column: usize,
-    board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
-    let column = board_state.get_column(column);
-    return collection_has_winning_state::<N, K>(&mut column.into_iter(), player);
-}
-
-fn collection_has_winning_state<const N: usize, const K: usize>(
-    collection: &mut dyn Iterator<Item = &BoardStateEntry>,
-    player: &PlayerID,
-) -> bool {
-    let mut counter = 0;
-    for elem in collection {
-        match elem {
-            None => counter = 0,
-            Some(p) => {
-                if p == player {
-                    counter += 1
-                } else {
-                    counter = 0
-                }
+    if column + 1 < K {
+        return false;
+    }
+    for c in column + 1 - K..column + 1 {
+        if let None = board.board[row][c] {
+            return false;
+        }
+        if let Some(other) = board.board[row][c] {
+            if other != *player {
+                return false;
             }
         }
-        if counter == K {
-            return true;
+    }
+    return true;
+}
+
+fn winning_state_in_column<const N: usize, const K: usize>(
+    board: &Board<N>,
+    row: usize,
+    column: usize,
+    player: &PlayerID,
+) -> bool {
+    if row + 1 < K {
+        return false;
+    }
+    for r in row + 1 - K..row + 1 {
+        if let None = board.board[r][column] {
+            return false;
+        }
+        if let Some(other) = board.board[r][column] {
+            if other != *player {
+                return false;
+            }
         }
     }
-    return false;
+    return true;
 }
 
 impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, K> {
@@ -64,12 +83,7 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
             Some(Result::IllegalMove)
         } else {
             board.board[row][col] = Some(player_id);
-            let was_winning_move = was_winning_move::<N, K>(placement, board, &player_id);
-            if was_winning_move {
-                Some(Result::Victory)
-            } else {
-                None
-            }
+            return was_winning_move::<N, K>(board, &player_id);
         }
     }
 }

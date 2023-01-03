@@ -18,16 +18,6 @@ impl<const N: usize> Board<N> {
     pub fn columns(&self) -> usize {
         N
     }
-    pub fn get_row(&self, row: usize) -> &[BoardStateEntry; N] {
-        &self.board[row]
-    }
-    pub fn get_column(&self, column: usize) -> Vec<&BoardStateEntry> {
-        // TODO There must be a copy-free way to iterate over columns!
-        self.board
-            .iter()
-            .map(|row| &row[column])
-            .collect::<Vec<&BoardStateEntry>>()
-    }
 }
 
 impl<const N: usize> fmt::Display for Board<N> {
@@ -71,7 +61,7 @@ impl fmt::Display for PointPlacement {
 #[derive(PartialEq)]
 pub enum Result {
     Defeat,
-    // Draw,
+    Draw,
     IllegalMove,
     Victory,
 }
@@ -79,7 +69,7 @@ impl fmt::Display for Result {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Result::Defeat => write!(f, "Defeat"),
-            // Draw,
+            Result::Draw => write!(f, "Draw"),
             Result::IllegalMove => write!(f, "IllegalMove"),
             Result::Victory => write!(f, "Victory"),
         }
