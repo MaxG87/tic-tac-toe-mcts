@@ -63,8 +63,8 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
         if let Some(_) = board.board[row][col] {
             Some(Result::IllegalMove)
         } else {
-            let was_winning_move = was_winning_move::<N, K>(placement, board, &player_id);
             board.board[row][col] = Some(player_id);
+            let was_winning_move = was_winning_move::<N, K>(placement, board, &player_id);
             if was_winning_move {
                 Some(Result::Victory)
             } else {
