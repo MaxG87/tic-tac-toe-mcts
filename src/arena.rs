@@ -36,12 +36,13 @@ pub enum Result {
     IllegalMove,
     Victory,
 }
-pub struct MoveResult<'a, const N: usize> {
-    pub state: &'a Board<N>,
-    pub result: Option<Result>,
-}
 pub trait TicTacToeReferee<const N: usize> {
-    fn receive_move(&mut self, placement: &PointPlacement, player: PlayerID) -> MoveResult<N>;
+    fn receive_move(
+        &mut self,
+        board: &mut Board<N>,
+        placement: &PointPlacement,
+        player: PlayerID,
+    ) -> Option<Result>;
 }
 
 #[derive(PartialEq, Clone, Debug)]

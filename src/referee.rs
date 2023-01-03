@@ -1,8 +1,6 @@
 use crate::arena::*;
 
-struct NaiveReferee<const N: usize> {
-    board_state: Board<N>,
-}
+struct NaiveReferee<const N: usize> {}
 
 fn was_winning_move<const N: usize>(
     placement: &PointPlacement,
@@ -55,24 +53,22 @@ fn collection_has_winning_state<const N: usize>(
 }
 
 impl<const N: usize> TicTacToeReferee<N> for NaiveReferee<N> {
-    fn receive_move(&mut self, placement: &PointPlacement, player_id: PlayerID) -> MoveResult<N> {
+    fn receive_move(
+        &mut self,
+        board: &mut Board<N>,
+        placement: &PointPlacement,
+        player_id: PlayerID,
+    ) -> Option<Result> {
         let (row, col) = (placement.row, placement.col);
-        if let Some(_) = self.board_state.board[row][col] {
-            MoveResult {
-                state: &self.board_state,
-                result: Some(Result::IllegalMove),
-            }
+        if let Some(_) = board.board[row][col] {
+            Some(Result::IllegalMove)
         } else {
-            self.board_state.board[row][col] = Some(player_id.clone());
-            let was_winning_move = was_winning_move::<N>(placement, &self.board_state, &player_id);
-            let result: Option<Result> = if was_winning_move {
+            let was_winning_move = was_winning_move::<N>(placement, board, &player_id);
+            board.board[row][col] = Some(player_id);
+            if was_winning_move {
                 Some(Result::Victory)
             } else {
                 None
-            };
-            MoveResult {
-                state: &self.board_state,
-                result: result,
             }
         }
     }
