@@ -2,7 +2,7 @@ use crate::arena::*;
 
 pub struct NaiveReferee<const N: usize, const K: usize> {}
 
-fn was_winning_move<const N: usize, const K: usize>(
+fn evaluate_board<const N: usize, const K: usize>(
     board: &Board<N>,
     player: &PlayerID,
 ) -> Option<Result> {
@@ -83,7 +83,7 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
             Some(Result::IllegalMove)
         } else {
             board.board[row][col] = Some(player_id);
-            return was_winning_move::<N, K>(board, &player_id);
+            return evaluate_board::<N, K>(board, &player_id);
         }
     }
 }
