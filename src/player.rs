@@ -107,7 +107,11 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
         let mut placements: Placement<N> = [[0f32; N]; N];
         for row in 0..N {
             for column in 0..N {
-                placements[row][column] = (wins[row][column] as f32) / (tries[row][column] as f32);
+                placements[row][column] = if tries[row][column] == 0 {
+                    0.0
+                } else {
+                    (wins[row][column] as f32) / (tries[row][column] as f32)
+                };
             }
         }
         return placements;
