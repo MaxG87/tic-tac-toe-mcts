@@ -19,7 +19,8 @@ fn main() {
     let mut arena = TicTacToeArena::<N>::new(board, players, referee);
     loop {
         let (maybe_result, player_id) = arena.do_next_move();
-        let _board = arena.get_board();
+        let board = arena.get_board();
+        println!("{board}");
         let maybe_result_msg: Option<String> = match maybe_result {
             Some(Result::Defeat) => Some(format!("Player {player_id} lost.")),
             Some(Result::Victory) => Some(format!("Player {player_id} won.")),

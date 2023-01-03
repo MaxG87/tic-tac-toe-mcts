@@ -1,7 +1,10 @@
-pub type Placement<const N: usize> = [[f32; N]; N];
+use rand::distributions::*;
+use rand::prelude::*;
+use std::fmt;
 
-pub type PlayerID = usize;
 pub type BoardStateEntry = Option<PlayerID>;
+pub type Placement<const N: usize> = [[f32; N]; N];
+pub type PlayerID = usize;
 
 #[derive(Clone)]
 pub struct Board<const N: usize> {
@@ -27,10 +30,42 @@ impl<const N: usize> Board<N> {
     }
 }
 
+impl<const N: usize> fmt::Display for Board<N> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for row in 0..self.rows() {
+            for column in 0..(self.columns() - 1) {
+                write!(
+                    f,
+                    "{}",
+                    match self.board[row][column] {
+                        Some(id) => format!("{id}"),
+                        None => ".".to_string(),
+                    }
+                )?
+            }
+            writeln!(
+                f,
+                "{}",
+                match self.board[row][self.columns() - 1] {
+                    Some(id) => format!("{id}"),
+                    None => ".".to_string(),
+                }
+            )?
+        }
+        fmt::Result::Ok(())
+    }
+}
+
 #[derive(PartialEq, Copy, Clone)]
 pub struct PointPlacement {
     pub row: usize,
-    pub col: usize,
+    pub column: usize,
+}
+
+impl fmt::Display for PointPlacement {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "PointPlacement({}, {})", self.row, self.column)
+    }
 }
 
 pub enum Result {
@@ -105,19 +140,36 @@ impl<const N: usize> TicTacToeArena<N> {
         board: &Board<N>,
         placement: &Placement<N>,
     ) -> Option<PointPlacement> {
+        let mut point_placements = Vec::<PointPlacement>::new();
+        let mut weights = Vec::<f32>::new();
+
+        // Get point placement candidates with weights
         for row in 0..board.rows() {
             for column in 0..board.columns() {
                 let maybe_id = &board.board[row][column];
-                let probability = &placement[row][column];
-                if *probability == 0.0 {
-                    continue;
-                };
+                let weight = placement[row][column];
                 if let Some(_) = maybe_id {
                     continue;
-                };
-                return Some(PointPlacement { row, col: column });
+                } else if weight == 0.0 {
+                    continue;
+                } else {
+                    point_placements.push(PointPlacement { row, column });
+                    weights.push(weight);
+                }
             }
         }
-        None
+
+        if weights.len() == 0 {
+            return None;
+        }
+
+        // Sample candidate from eligble options
+        let mut rng = thread_rng();
+        let dist = WeightedIndex::new(weights).unwrap();
+        let sampled_idx = dist.sample(&mut rng);
+
+        let ret_val = point_placements[sampled_idx];
+        println!("{}", ret_val);
+        return Some(ret_val);
     }
 }

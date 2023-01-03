@@ -8,7 +8,7 @@ fn was_winning_move<const N: usize>(
     player: &PlayerID,
 ) -> bool {
     return winning_state_in_row::<N>(placement.row, board_state, player)
-        || winning_state_in_col::<N>(placement.col, board_state, player);
+        || winning_state_in_col::<N>(placement.column, board_state, player);
 }
 
 fn winning_state_in_row<const N: usize>(
@@ -59,7 +59,7 @@ impl<const N: usize> TicTacToeReferee<N> for NaiveReferee<N> {
         placement: &PointPlacement,
         player_id: PlayerID,
     ) -> Option<Result> {
-        let (row, col) = (placement.row, placement.col);
+        let (row, col) = (placement.row, placement.column);
         if let Some(_) = board.board[row][col] {
             Some(Result::IllegalMove)
         } else {
