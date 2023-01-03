@@ -8,22 +8,23 @@ use crate::interfaces::*;
 use crate::player::cli::*;
 use crate::player::countboundmcts::*;
 use crate::player::guessing::*;
+use crate::player::onelookahead::*;
 use crate::referee::*;
 
 fn main() {
     const N: usize = 5;
     const K: usize = 3;
-    let mut mcts_base_player0 = GuessingPlayer::<N, K> { id: 0 };
-    let mut mcts_base_player1 = GuessingPlayer::<N, K> { id: 1 };
-    let mut mcts_referee = NaiveReferee::<N, K> {};
-
-    let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
-        0,
-        100000,
-        &mut mcts_base_player0,
-        &mut mcts_base_player1,
-        &mut mcts_referee,
-    );
+    // let mut mcts_base_player0 = GuessingPlayer::<N, K> { id: 0 };
+    // let mut mcts_base_player1 = GuessingPlayer::<N, K> { id: 1 };
+    // let mut mcts_referee = NaiveReferee::<N, K> {};
+    // let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
+    //     0,
+    //     100000,
+    //     &mut mcts_base_player0,
+    //     &mut mcts_base_player1,
+    //     &mut mcts_referee,
+    // );
+    let mut player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<N, K> {}), 0);
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
     let board = Board {
