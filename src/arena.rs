@@ -167,9 +167,6 @@ impl<const N: usize, const K: usize> TicTacToeArena<N, K> {
         let mut rng = thread_rng();
         let dist = WeightedIndex::new(weights).unwrap();
         let sampled_idx = dist.sample(&mut rng);
-
-        let ret_val = point_placements[sampled_idx];
-        println!("{}", ret_val);
-        return Some(ret_val);
+        return Some(point_placements[sampled_idx]);
     }
 }
