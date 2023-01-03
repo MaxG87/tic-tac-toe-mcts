@@ -1,7 +1,10 @@
+pub type Placement<const N: usize> = [[f32; N]; N];
 pub type BoardStateEntry = Option<PlayerID>;
+
 pub struct Board<const N: usize> {
     pub board: [[BoardStateEntry; N]; N],
 }
+
 impl<const N: usize> Board<N> {
     pub fn rows(&self) -> usize {
         N
@@ -22,7 +25,7 @@ impl<const N: usize> Board<N> {
 }
 
 #[derive(PartialEq, Copy, Clone)]
-pub struct Placement {
+pub struct PointPlacement {
     pub row: usize,
     pub col: usize,
 }
@@ -38,7 +41,7 @@ pub struct MoveResult<'a, const N: usize> {
     pub result: Option<Result>,
 }
 pub trait TicTacToeReferee<const N: usize> {
-    fn receive_move(&mut self, placement: &Placement, player: PlayerID) -> MoveResult<N>;
+    fn receive_move(&mut self, placement: &PointPlacement, player: PlayerID) -> MoveResult<N>;
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -48,7 +51,7 @@ pub struct PlayerID {
 }
 
 pub trait Player<const N: usize> {
-    fn do_move(&mut self, board: &Board<N>) -> Placement;
+    fn do_move(&mut self, board: &Board<N>) -> &Placement<N>;
 }
 
 pub struct TicTacToeArena<const N: usize> {

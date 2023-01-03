@@ -5,7 +5,7 @@ struct NaiveReferee<const N: usize> {
 }
 
 fn was_winning_move<const N: usize>(
-    placement: &Placement,
+    placement: &PointPlacement,
     board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
@@ -55,7 +55,7 @@ fn collection_has_winning_state<const N: usize>(
 }
 
 impl<const N: usize> TicTacToeReferee<N> for NaiveReferee<N> {
-    fn receive_move(&mut self, placement: &Placement, player_id: PlayerID) -> MoveResult<N> {
+    fn receive_move(&mut self, placement: &PointPlacement, player_id: PlayerID) -> MoveResult<N> {
         let (row, col) = (placement.row, placement.col);
         if let Some(_) = self.board_state.board[row][col] {
             MoveResult {

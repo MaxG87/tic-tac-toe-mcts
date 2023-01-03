@@ -1,12 +1,17 @@
 use std::iter::Zip;
 
-use crate::arena;
+use crate::arena::*;
 
-struct GuessingPlayer<const N: usize> {}
+struct GuessingPlayer<const N: usize> {
+    PLACEMENT: Placement<N>,
+}
 
-impl<const N: usize> arena::Player<N> for GuessingPlayer<N> {
-    fn do_move(&mut self, board: &arena::Board<N>) -> arena::Placement {
-        // let free_slots = Zip{0..board.rows(), 0..board.cols()}
-        unimplemented!()
+impl<const N: usize> GuessingPlayer<N> {
+    const PLACEMENT: Placement<N> = [[(1.0 / (N as f32)); N]; N];
+}
+
+impl<const N: usize> Player<N> for GuessingPlayer<N> {
+    fn do_move(&mut self, board: &Board<N>) -> &Placement<N> {
+        return &self.PLACEMENT;
     }
 }
