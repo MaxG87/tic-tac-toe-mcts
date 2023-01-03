@@ -1,3 +1,5 @@
+mod arena;
+mod player;
 mod referee;
 
 fn main() {

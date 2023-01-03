@@ -1,50 +1,10 @@
-type BoardStateEntry = Option<PlayerID>;
-type BoardState = Vec<Vec<BoardStateEntry>>;
+use crate::arena::*;
 
-enum Result {
-    Defeat,
-    Draw,
-    IllegalMove,
-    Victory,
-}
-
-#[derive(PartialEq)]
-struct PlayerID {
-    name: String,
-    id: u32,
-}
-
-struct MoveResult<'a> {
-    state: &'a BoardState,
-    result: Option<Result>,
-}
-
-pub struct TicTacToeJudge<const N: u32> {
+struct NaiveReferee<const N: u32> {
     board_state: BoardState,
 }
 
-impl<const N: u32> TicTacToeJudge<N> {
-    pub fn receive_move(&mut self, row: usize, col: usize, player: PlayerID) -> MoveResult {
-        if let Some(_) = self.board_state[row][col] {
-            MoveResult {
-                state: &self.board_state,
-                result: Some(Result::IllegalMove),
-            }
-        } else {
-            self.board_state[row][col] = Some(player);
-            let was_winning_move = self.was_winning_move(row, col, &player);
-            let result: Option<Result> = if was_winning_move {
-                Some(Result::Victory)
-            } else {
-                None
-            };
-            MoveResult {
-                state: &self.board_state,
-                result: result,
-            }
-        }
-    }
-
+impl<const N: u32> NaiveReferee<N> {
     pub fn was_winning_move(&self, row: usize, col: usize, player: &PlayerID) -> bool {
         return self.winning_state_in_row(row, player) || self.winning_state_in_col(col, player);
     }
@@ -81,5 +41,29 @@ impl<const N: u32> TicTacToeJudge<N> {
             }
         }
         return false;
+    }
+}
+
+impl<const N: u32> TicTacToeReferee<N> for NaiveReferee<N> {
+    fn receive_move(&mut self, placement: &Placement, player_id: PlayerID) -> MoveResult {
+        let (row, col) = (placement.row, placement.col);
+        if let Some(_) = self.board_state[row][col] {
+            MoveResult {
+                state: &self.board_state,
+                result: Some(Result::IllegalMove),
+            }
+        } else {
+            self.board_state[row][col] = Some(player_id.clone());
+            let was_winning_move = self.was_winning_move(row, col, &player_id);
+            let result: Option<Result> = if was_winning_move {
+                Some(Result::Victory)
+            } else {
+                None
+            };
+            MoveResult {
+                state: &self.board_state,
+                result: result,
+            }
+        }
     }
 }
