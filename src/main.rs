@@ -15,7 +15,7 @@ fn main() {
 
     let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
         0,
-        10000,
+        100000,
         &mut mcts_base_player0,
         &mut mcts_base_player1,
         &mut mcts_referee,
