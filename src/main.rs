@@ -9,7 +9,17 @@ use crate::referee::*;
 fn main() {
     const N: usize = 5;
     const K: usize = 3;
-    let mut player0 = GuessingPlayer::<N, K> { id: 0 };
+    let mut mcts_base_player0 = GuessingPlayer::<N, K> { id: 0 };
+    let mut mcts_base_player1 = GuessingPlayer::<N, K> { id: 0 };
+    let mut mcts_referee = NaiveReferee::<N, K> {};
+
+    let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
+        0,
+        10000,
+        &mut mcts_base_player0,
+        &mut mcts_base_player1,
+        &mut mcts_referee,
+    );
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
     let board = Board {
