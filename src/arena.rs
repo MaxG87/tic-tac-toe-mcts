@@ -1,6 +1,9 @@
 pub type Placement<const N: usize> = [[f32; N]; N];
+
+pub type PlayerID = usize;
 pub type BoardStateEntry = Option<PlayerID>;
 
+#[derive(Clone)]
 pub struct Board<const N: usize> {
     pub board: [[BoardStateEntry; N]; N],
 }
@@ -45,18 +48,31 @@ pub trait TicTacToeReferee<const N: usize> {
     ) -> Option<Result>;
 }
 
-#[derive(PartialEq, Clone, Debug)]
-pub struct PlayerID {
-    name: String,
-    id: usize,
-}
-
 pub trait Player<const N: usize> {
     fn do_move(&mut self, board: &Board<N>) -> &Placement<N>;
+    fn get_id(&self) -> PlayerID;
 }
 
 pub struct TicTacToeArena<const N: usize> {
-    player1: Box<dyn Player<N>>,
-    player2: Box<dyn Player<N>>,
+    active_player: usize,
+    board: Board<N>,
+    players: [Box<dyn Player<N>>; 2],
     referee: Box<dyn TicTacToeReferee<N>>,
+}
+
+impl<const N: usize> TicTacToeArena<N> {
+    pub fn do_next_move(&mut self) -> Option<Result> {
+        let cur_player = &mut self.players[self.active_player % 2];
+        self.active_player += 1;
+        let placements = cur_player.do_move(&self.board);
+        let point_placement = PointPlacement { row: 0, col: 0 };
+        let result =
+            self.referee
+                .receive_move(&mut self.board, &point_placement, cur_player.get_id());
+        return result;
+    }
+
+    pub fn get_board(&self) -> Board<N> {
+        self.board.clone()
+    }
 }

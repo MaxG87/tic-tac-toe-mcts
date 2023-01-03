@@ -2,6 +2,7 @@ use crate::arena::*;
 
 struct GuessingPlayer<const N: usize> {
     PLACEMENT: Placement<N>,
+    id: PlayerID,
 }
 
 impl<const N: usize> GuessingPlayer<N> {
@@ -11,5 +12,9 @@ impl<const N: usize> GuessingPlayer<N> {
 impl<const N: usize> Player<N> for GuessingPlayer<N> {
     fn do_move(&mut self, board: &Board<N>) -> &Placement<N> {
         return &self.PLACEMENT;
+    }
+
+    fn get_id(&self) -> PlayerID {
+        return self.id;
     }
 }
