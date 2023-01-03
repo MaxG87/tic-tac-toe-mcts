@@ -92,10 +92,12 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
                 &mut *self.referee,
             );
 
-            let (result, player_id) = loop {
+            let (result, player_id, _) = loop {
                 break match my_arena.do_next_move() {
-                    (Some(result), player_id) => (result, player_id),
-                    (None, _) => continue,
+                    (Some(result), player_id, maybe_point_placement) => {
+                        (result, player_id, maybe_point_placement)
+                    }
+                    (None, _, _) => continue,
                 };
             };
 

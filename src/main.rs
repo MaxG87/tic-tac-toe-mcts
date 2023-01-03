@@ -27,7 +27,14 @@ fn main() {
     };
     let mut arena = TicTacToeArena::<N, K>::new(board, [&mut player0, &mut player1], &mut referee);
     loop {
-        let (maybe_result, player_id) = arena.do_next_move();
+        let (maybe_result, player_id, maybe_point_placement) = arena.do_next_move();
+        println!(
+            "Player {player_id} made {}.",
+            match maybe_point_placement {
+                Some(pp) => format!("move {}", pp),
+                None => "no legal move".to_string(),
+            }
+        );
         let board = arena.get_board();
         println!("{board}");
         let maybe_result_msg: Option<String> = match maybe_result {

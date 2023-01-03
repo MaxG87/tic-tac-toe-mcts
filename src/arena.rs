@@ -111,7 +111,7 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<'arena, N, K> {
         }
     }
 
-    pub fn do_next_move(&mut self) -> (Option<Result>, PlayerID) {
+    pub fn do_next_move(&mut self) -> (Option<Result>, PlayerID, Option<PointPlacement>) {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
@@ -125,10 +125,10 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<'arena, N, K> {
                     &point_placement,
                     cur_player.get_id(),
                 );
-                return (maybe_result, cur_player.get_id());
+                return (maybe_result, cur_player.get_id(), Some(point_placement));
             }
             None => {
-                return (Some(Result::Defeat), cur_player.get_id());
+                return (Some(Result::Defeat), cur_player.get_id(), None);
             }
         }
     }
