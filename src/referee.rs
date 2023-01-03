@@ -1,37 +1,37 @@
 use crate::arena::*;
 
-struct NaiveReferee<const N: u32> {
-    board_state: BoardState,
+struct NaiveReferee<const N: usize> {
+    board_state: Board<N>,
 }
 
-fn was_winning_move<const N: u32>(
+fn was_winning_move<const N: usize>(
     placement: &Placement,
-    board_state: &BoardState,
+    board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
     return winning_state_in_row::<N>(placement.row, board_state, player)
         || winning_state_in_col::<N>(placement.col, board_state, player);
 }
 
-fn winning_state_in_row<const N: u32>(
+fn winning_state_in_row<const N: usize>(
     row: usize,
-    board_state: &BoardState,
+    board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
-    let row_it = &board_state[row];
-    return collection_has_winning_state::<N>(&mut row_it.iter(), &player);
+    let row = board_state.get_row(row);
+    return collection_has_winning_state::<N>(&mut row.iter(), &player);
 }
 
-fn winning_state_in_col<const N: u32>(
-    col: usize,
-    board_state: &BoardState,
+fn winning_state_in_col<const N: usize>(
+    column: usize,
+    board_state: &Board<N>,
     player: &PlayerID,
 ) -> bool {
-    let mut column_it = board_state.iter().map(|row| &row[col]);
-    return collection_has_winning_state::<N>(&mut column_it, &player);
+    let column = board_state.get_column(column);
+    return collection_has_winning_state::<N>(&mut column.into_iter(), player);
 }
 
-fn collection_has_winning_state<const N: u32>(
+fn collection_has_winning_state<const N: usize>(
     collection: &mut dyn Iterator<Item = &BoardStateEntry>,
     player: &PlayerID,
 ) -> bool {
@@ -54,16 +54,16 @@ fn collection_has_winning_state<const N: u32>(
     return false;
 }
 
-impl<const N: u32> TicTacToeReferee<N> for NaiveReferee<N> {
-    fn receive_move(&mut self, placement: &Placement, player_id: PlayerID) -> MoveResult {
+impl<const N: usize> TicTacToeReferee<N> for NaiveReferee<N> {
+    fn receive_move(&mut self, placement: &Placement, player_id: PlayerID) -> MoveResult<N> {
         let (row, col) = (placement.row, placement.col);
-        if let Some(_) = self.board_state[row][col] {
+        if let Some(_) = self.board_state.board[row][col] {
             MoveResult {
                 state: &self.board_state,
                 result: Some(Result::IllegalMove),
             }
         } else {
-            self.board_state[row][col] = Some(player_id.clone());
+            self.board_state.board[row][col] = Some(player_id.clone());
             let was_winning_move = was_winning_move::<N>(placement, &self.board_state, &player_id);
             let result: Option<Result> = if was_winning_move {
                 Some(Result::Victory)
