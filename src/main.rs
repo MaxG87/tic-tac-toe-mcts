@@ -11,7 +11,7 @@ use crate::player::onelookahead::*;
 use crate::referee::*;
 
 fn main() {
-    const N: usize = 5;
+    const N: usize = 3;
     const K: usize = 3;
     let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<N, K> {}), 0);
     let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<N, K> {}), 1);
