@@ -28,7 +28,8 @@ fn main() {
     let board = Board {
         board: [[None; N]; N],
     };
-    let mut arena = ExploitingArena::<N, K>::new(board, [&mut player1, &mut player0], &mut referee);
+    let mut arena =
+        ExploitingArena::<N, K>::new(1, board, [&mut player1, &mut player0], &mut referee);
     loop {
         let (maybe_result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(

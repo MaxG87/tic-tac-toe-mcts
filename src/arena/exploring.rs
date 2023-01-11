@@ -13,12 +13,12 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
     pub fn new(
         board: Board<N>,
         players: [&'arena mut dyn Player<N, K>; 2],
-        active_player: PlayerID,
+        starting_player: PlayerID,
         referee: &'arena mut dyn TicTacToeReferee<N, K>,
     ) -> ExploringTicTacToeArena<'arena, N, K> {
         let mut maybe_startid: Option<usize> = None;
         for n in 0..players.len() {
-            if players[n].get_id() == active_player {
+            if players[n].get_id() == starting_player {
                 maybe_startid = Some(n);
             }
         }
@@ -33,7 +33,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
                 }
             }
             None => {
-                panic!("No matching player found for ID {active_player}");
+                panic!("No matching player found for ID {starting_player}");
             }
         }
     }
