@@ -29,6 +29,8 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut tries = [[0u32; N]; N];
         let mut wins = [[0u32; N]; N];
+        let mut draws = [[0u32; N]; N];
+        let mut has_win_prob = false;
 
         for _ in 0..self.nsamples {
             let mut my_arena = ExploringTicTacToeArena::<N, K>::new(
@@ -44,25 +46,34 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
             match first_point_placement {
                 Some(pp) => {
                     tries[pp.row][pp.column] += 1;
-                    if result == Result::Victory && self.id == player_id {
-                        wins[pp.row][pp.column] += 1;
+                    match result {
+                        Result::Victory => {
+                            wins[pp.row][pp.column] += (player_id == self.id) as u32;
+                            has_win_prob |= true;
+                        }
+                        Result::Draw => {
+                            draws[pp.row][pp.column] += 1;
+                        }
+                        _ => {}
                     }
                 }
                 None => panic!("No legal move was made!"),
             }
         }
         let mut placements: Placement<N> = [[0f32; N]; N];
+        let working_arr = if has_win_prob { &wins } else { &draws };
         for row in 0..N {
             for column in 0..N {
                 placements[row][column] = if tries[row][column] == 0 {
                     0.0
                 } else {
-                    (wins[row][column] as f32) / (tries[row][column] as f32)
+                    (working_arr[row][column] as f32) / (tries[row][column] as f32)
                 };
             }
         }
 
         println!("{:?}", wins);
+        println!("{:?}", draws);
         println!("{:?}", tries);
         println!("{:?}", placements);
         return placements;
