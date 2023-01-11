@@ -7,7 +7,6 @@ use crate::arena::exploiting::*;
 use crate::interfaces::*;
 use crate::player::cli::*;
 use crate::player::countboundmcts::*;
-use crate::player::guessing::*;
 use crate::player::onelookahead::*;
 use crate::referee::*;
 
@@ -18,18 +17,18 @@ fn main() {
     let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<N, K> {}), 1);
     let mut mcts_referee = NaiveReferee::<N, K> {};
     let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
-        0,
+        1,
         10000,
         &mut mcts_base_player0,
         &mut mcts_base_player1,
         &mut mcts_referee,
     );
-    let mut player1 = CLIPlayer::<N, K> { id: 1 };
+    let mut player1 = CLIPlayer::<N, K> { id: 0 };
     let mut referee = NaiveReferee::<N, K> {};
     let board = Board {
         board: [[None; N]; N],
     };
-    let mut arena = ExploitingArena::<N, K>::new(board, [&mut player0, &mut player1], &mut referee);
+    let mut arena = ExploitingArena::<N, K>::new(board, [&mut player1, &mut player0], &mut referee);
     loop {
         let (maybe_result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(

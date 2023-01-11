@@ -34,6 +34,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
             let mut my_arena = ExploringTicTacToeArena::<N, K>::new(
                 board.clone(),
                 [&mut *self.player0, &mut *self.player1],
+                self.id,
                 &mut *self.referee,
             );
 
