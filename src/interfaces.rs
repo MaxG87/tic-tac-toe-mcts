@@ -16,6 +16,9 @@ impl<const N: usize> Board<N> {
     pub fn columns(&self) -> usize {
         N
     }
+    pub fn has_placement_at(&self, pp: &PointPlacement) -> bool {
+        return self.board[pp.row][pp.column].is_some();
+    }
 }
 
 impl<const N: usize> fmt::Display for Board<N> {
