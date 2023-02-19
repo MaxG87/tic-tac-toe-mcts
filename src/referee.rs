@@ -57,7 +57,7 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
     fn receive_move(
         &mut self,
         board: &mut Board<N>,
-        placement: &PointPlacement,
+        placement: PointPlacement,
         player_id: PlayerID,
     ) -> Option<Result> {
         let (row, col) = (placement.row, placement.column);

@@ -38,25 +38,22 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         }
     }
 
-    fn sample_point_placement(
-        board: &Board<N>,
-        placement: &Placement<N>,
-    ) -> Option<PointPlacement> {
-        let mut point_placements = Vec::<PointPlacement>::new();
+    fn sample_point_placement(board: &Board<N>, placement: Placement<N>) -> Option<PointPlacement> {
+        let mut pps = Vec::<PointPlacement>::new();
         let mut weights = Vec::<f32>::new();
 
         // Get point placement candidates with weights
         for row in 0..board.rows() {
             for column in 0..board.columns() {
                 let pp = PointPlacement { row, column };
-                if board.has_placement_at(&pp) {
+                if board.has_placement_at(pp) {
                     continue;
                 }
                 let weight = placement[row][column];
                 if weight == 0.0 {
                     continue;
                 } else {
-                    point_placements.push(pp);
+                    pps.push(pp);
                     weights.push(weight);
                 }
             }
@@ -70,7 +67,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         let mut rng = thread_rng();
         let dist = WeightedIndex::new(weights).unwrap();
         let sampled_idx = dist.sample(&mut rng);
-        return Some(point_placements[sampled_idx]);
+        return Some(pps[sampled_idx]);
     }
 }
 
@@ -81,17 +78,15 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
-        let maybe_point_placement =
-            ExploringTicTacToeArena::<N, K>::sample_point_placement(&self.board, &placements);
+        let maybe_pp =
+            ExploringTicTacToeArena::<N, K>::sample_point_placement(&self.board, placements);
 
-        match maybe_point_placement {
-            Some(point_placement) => {
-                let maybe_result = self.referee.receive_move(
-                    &mut self.board,
-                    &point_placement,
-                    cur_player.get_id(),
-                );
-                return (maybe_result, cur_player.get_id(), Some(point_placement));
+        match maybe_pp {
+            Some(pp) => {
+                let maybe_result =
+                    self.referee
+                        .receive_move(&mut self.board, pp, cur_player.get_id());
+                return (maybe_result, cur_player.get_id(), Some(pp));
             }
             None => {
                 return (Some(Result::Defeat), cur_player.get_id(), None);

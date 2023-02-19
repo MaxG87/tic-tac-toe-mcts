@@ -80,7 +80,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         for row in 0..N {
             for column in 0..N {
                 let pp = PointPlacement { row, column };
-                let move_result = self.referee.receive_move(board, &pp, args.self_id);
+                let move_result = self.referee.receive_move(board, pp, args.self_id);
                 evaluations[row][column] = match move_result {
                     Some(Result::Defeat) | Some(Result::IllegalMove) => DEFEAT,
                     Some(Result::Victory) => VICTORY,
@@ -108,7 +108,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         for row in 0..N {
             for column in 0..N {
                 let pp = PointPlacement { row, column };
-                let move_result = self.referee.receive_move(board, &pp, args.self_id);
+                let move_result = self.referee.receive_move(board, pp, args.self_id);
                 evaluations[row][column] = match move_result {
                     Some(Result::Defeat) | Some(Result::IllegalMove) => DEFEAT,
                     Some(Result::Victory) => VICTORY,
