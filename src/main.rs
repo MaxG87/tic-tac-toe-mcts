@@ -50,8 +50,8 @@ fn main() {
             Some(Result::IllegalMove) => Some(format!("Player {player_id} made an illegal move.")),
             None => None,
         };
-        if let Some(msg) = maybe_result_msg {
-            println!("{}", msg);
+        if maybe_result_msg.is_some() {
+            println!("{}", maybe_result_msg.unwrap());
             break;
         }
     }

@@ -48,14 +48,15 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         // Get point placement candidates with weights
         for row in 0..board.rows() {
             for column in 0..board.columns() {
-                let maybe_id = &board.board[row][column];
-                let weight = placement[row][column];
-                if let Some(_) = maybe_id {
+                let pp = PointPlacement { row, column };
+                if board.has_placement_at(&pp) {
                     continue;
-                } else if weight == 0.0 {
+                }
+                let weight = placement[row][column];
+                if weight == 0.0 {
                     continue;
                 } else {
-                    point_placements.push(PointPlacement { row, column });
+                    point_placements.push(pp);
                     weights.push(weight);
                 }
             }
