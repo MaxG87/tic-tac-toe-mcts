@@ -61,7 +61,7 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
         player_id: PlayerID,
     ) -> Option<Result> {
         let (row, col) = (placement.row, placement.column);
-        if let Some(_) = board.board[row][col] {
+        if board.has_placement_at(placement) {
             Some(Result::IllegalMove)
         } else {
             board.board[row][col] = Some(player_id);

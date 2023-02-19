@@ -1,6 +1,7 @@
 use std::fmt;
 
 pub type BoardStateEntry = Option<PlayerID>;
+pub type Evaluation<const N: usize> = [[f32; N]; N];
 pub type Placement<const N: usize> = [[f32; N]; N];
 pub type PlayerID = usize;
 

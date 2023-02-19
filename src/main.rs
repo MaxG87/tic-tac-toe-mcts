@@ -12,8 +12,8 @@ use crate::player::minmax::*;
 use crate::referee::*;
 
 fn main() {
-    const N: usize = 5;
-    const K: usize = 4;
+    const N: usize = 7;
+    const K: usize = 3;
     let mut mcts_referee = NaiveReferee::<N, K> {};
     // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<N, K> {}), 0);
     // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<N, K> {}), 1);
@@ -24,14 +24,14 @@ fn main() {
     //     &mut mcts_base_player1,
     //     &mut mcts_referee,
     // );
-    let mut player0 = MinMaxPlayer::<N, K, 0>::new(&mut mcts_referee, 0, 1);
+    let mut player0 = MinMaxPlayer::<N, K>::new(4, 1, &mut mcts_referee, 0);
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
     let board = Board {
         board: [[None; N]; N],
     };
     let mut arena =
-        ExploitingArena::<N, K>::new(1, board, [&mut player1, &mut player0], &mut referee);
+        ExploitingArena::<N, K>::new(0, board, [&mut player1, &mut player0], &mut referee);
     loop {
         let (maybe_result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(
