@@ -1,15 +1,15 @@
+// use crate::player::countboundmcts::*;
+// use crate::player::onelookahead::*;
+use arena::exploiting::*;
+use interfaces::*;
+use player::cli::*;
+use player::minmax::*;
+use referee::*;
+
 mod arena;
 mod interfaces;
 mod player;
 mod referee;
-
-use crate::arena::exploiting::*;
-use crate::interfaces::*;
-use crate::player::cli::*;
-// use crate::player::countboundmcts::*;
-use crate::player::minmax::*;
-// use crate::player::onelookahead::*;
-use crate::referee::*;
 
 fn main() {
     const N: usize = 7;
