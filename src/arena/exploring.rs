@@ -24,14 +24,12 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         }
 
         match maybe_startid {
-            Some(n) => {
-                ExploringTicTacToeArena {
-                    board,
-                    players,
-                    active_player: n,
-                    referee,
-                }
-            }
+            Some(n) => ExploringTicTacToeArena {
+                board,
+                players,
+                active_player: n,
+                referee,
+            },
             None => {
                 panic!("No matching player found for ID {starting_player}");
             }
@@ -88,9 +86,7 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
                         .receive_move(&mut self.board, pp, cur_player.get_id());
                 (maybe_result, cur_player.get_id(), Some(pp))
             }
-            None => {
-                (Some(Result::Defeat), cur_player.get_id(), None)
-            }
+            None => (Some(Result::Defeat), cur_player.get_id(), None),
         }
     }
 
