@@ -78,15 +78,14 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         for (row, row_it) in evaluations.iter_mut().enumerate() {
             for (column, elem) in row_it.iter_mut().enumerate() {
                 let pp = PointPlacement { row, column };
+                let old_board_val = board.board[row][column];
                 let move_result = self.referee.receive_move(board, pp, args.self_id);
                 *elem = match move_result {
                     Result::Defeat | Result::IllegalMove => DEFEAT,
                     Result::Victory => VICTORY,
                     Result::Draw | Result::Undecided => DRAW,
                 };
-                if move_result != Result::IllegalMove {
-                    board.board[row][column] = None;
-                }
+                board.board[row][column] = old_board_val;
             }
         }
         evaluations
@@ -106,6 +105,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         for (row, row_it) in evaluations.iter_mut().enumerate() {
             for (column, elem) in row_it.iter_mut().enumerate() {
                 let pp = PointPlacement { row, column };
+                let old_board_val = board.board[row][column];
                 let move_result = self.referee.receive_move(board, pp, args.self_id);
                 *elem = match move_result {
                     Result::Defeat | Result::IllegalMove => DEFEAT,
@@ -116,9 +116,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                         -get_maximum(&pp_evaluations)
                     }
                 };
-                if move_result != Result::IllegalMove {
-                    board.board[row][column] = None;
-                }
+                board.board[row][column] = old_board_val;
             }
         }
         if args.max_depth == self.max_depth {
