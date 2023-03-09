@@ -16,23 +16,27 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         starting_player: PlayerID,
         referee: &'arena mut dyn TicTacToeReferee<N, K>,
     ) -> ExploringTicTacToeArena<'arena, N, K> {
-        let mut maybe_startid: Option<usize> = None;
-        for n in 0..players.len() {
-            if players[n].get_id() == starting_player {
-                maybe_startid = Some(n);
-            }
-        }
+        let matching_players: Vec<PlayerID> = players
+            .iter()
+            .enumerate()
+            .filter_map(|(n, cur)| {
+                if cur.get_id() == starting_player {
+                    Some(n)
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-        match maybe_startid {
-            Some(n) => ExploringTicTacToeArena {
+        match matching_players[..] {
+            [] => panic!("No matching player found for ID {starting_player}"),
+            [n] => ExploringTicTacToeArena {
                 board,
                 players,
                 active_player: n,
                 referee,
             },
-            None => {
-                panic!("No matching player found for ID {starting_player}");
-            }
+            _ => panic!("Multiple matching player found for ID {starting_player}"),
         }
     }
 
