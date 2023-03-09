@@ -11,7 +11,7 @@ impl<const N: usize, const K: usize> CLIPlayer<N, K> {
             let mut buffer = String::new();
             io::stdin().read_line(&mut buffer).unwrap();
             let line = buffer.trim();
-            let parts: Vec<&str> = line.split(",").collect();
+            let parts: Vec<&str> = line.split(',').collect();
             if parts.len() != 2 {
                 continue;
             }
@@ -33,9 +33,9 @@ impl<const N: usize, const K: usize> Player<N, K> for CLIPlayer<N, K> {
         let point_placement = self.get_point_placement();
         let mut placements: Placement<N> = [[0.0; N]; N];
         placements[point_placement.row][point_placement.column] = 1.0;
-        return placements;
+        placements
     }
     fn get_id(&self) -> PlayerID {
-        return self.id;
+        self.id
     }
 }

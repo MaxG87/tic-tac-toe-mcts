@@ -26,7 +26,7 @@ fn evaluate_board<const N: usize, const K: usize>(
     if !has_free_cells {
         return Some(Result::Draw);
     }
-    return None;
+    None
 }
 
 fn has_winning_state_in_direction<const N: usize, const K: usize>(
@@ -50,7 +50,7 @@ fn has_winning_state_in_direction<const N: usize, const K: usize>(
         has_won &= board.board[row as usize][column as usize] == Some(player);
     }
 
-    return has_won;
+    has_won
 }
 
 impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, K> {
@@ -65,7 +65,7 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
             Some(Result::IllegalMove)
         } else {
             board.board[row][col] = Some(player_id);
-            return evaluate_board::<N, K>(board, player_id);
+            evaluate_board::<N, K>(board, player_id)
         }
     }
 }

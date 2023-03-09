@@ -14,11 +14,11 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
         referee: Box<dyn TicTacToeReferee<N, K>>,
         self_id: PlayerID,
     ) -> OneLookaheadPlayer<N, K> {
-        return OneLookaheadPlayer {
+        OneLookaheadPlayer {
             other_id,
             referee,
             self_id,
-        };
+        }
     }
 
     fn get_loosing_moves(&mut self, board: &Board<N>, placements: &mut Placement<N>) -> bool {
@@ -37,7 +37,7 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
             }
         }
 
-        return has_loosing_move;
+        has_loosing_move
     }
 
     fn get_winning_moves(&mut self, board: &Board<N>, placements: &mut Placement<N>) -> bool {
@@ -56,23 +56,23 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
             }
         }
 
-        return has_winning_move;
+        has_winning_move
     }
 }
 
 impl<const N: usize, const K: usize> Player<N, K> for OneLookaheadPlayer<N, K> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut placements: Placement<N> = [[0.0; N]; N];
-        if self.get_winning_moves(&board, &mut placements) {
+        if self.get_winning_moves(board, &mut placements) {
             return placements;
         }
-        if self.get_loosing_moves(&board, &mut placements) {
+        if self.get_loosing_moves(board, &mut placements) {
             return placements;
         }
-        return OneLookaheadPlayer::<N, K>::DEFAULT_PLACEMENT.clone();
+        OneLookaheadPlayer::<N, K>::DEFAULT_PLACEMENT
     }
 
     fn get_id(&self) -> PlayerID {
-        return self.self_id;
+        self.self_id
     }
 }

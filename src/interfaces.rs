@@ -18,7 +18,7 @@ impl<const N: usize> Board<N> {
         N
     }
     pub fn has_placement_at(&self, pp: PointPlacement) -> bool {
-        return self.board[pp.row][pp.column].is_some();
+        self.board[pp.row][pp.column].is_some()
     }
 }
 
@@ -48,7 +48,7 @@ impl<const N: usize> fmt::Display for Board<N> {
     }
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct PointPlacement {
     pub row: usize,
     pub column: usize,
@@ -60,7 +60,7 @@ impl fmt::Display for PointPlacement {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum Result {
     Defeat,
     Draw,

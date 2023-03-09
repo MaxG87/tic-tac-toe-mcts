@@ -20,8 +20,8 @@ pub struct MinMaxPlayer<'player, const N: usize, const K: usize> {
 
 fn get_maximum<const N: usize>(evaluations: &Evaluation<N>) -> &f32 {
     evaluations
-        .into_iter()
-        .flat_map(|row| row.into_iter())
+        .iter()
+        .flat_map(|row| row.iter())
         .reduce(|accum, val| if accum > val { accum } else { val })
         .unwrap()
 }
@@ -35,12 +35,12 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         referee: &'player mut dyn TicTacToeReferee<N, K>,
         self_id: PlayerID,
     ) -> MinMaxPlayer<N, K> {
-        return MinMaxPlayer {
+        MinMaxPlayer {
             other_id,
             self_id,
             max_depth,
             referee,
-        };
+        }
     }
 
     fn get_evaluations(&mut self, board: &mut Board<N>, args: GetEvaluationsArgs) -> Evaluation<N> {
@@ -68,7 +68,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                 }
             }
         }
-        return placements;
+        placements
     }
 
     fn get_evaluations_1(
@@ -91,7 +91,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                 }
             }
         }
-        return evaluations;
+        evaluations
     }
 
     fn get_evaluations_n(
@@ -126,7 +126,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         if args.max_depth == self.max_depth {
             println!("{evaluations:?}");
         }
-        return evaluations;
+        evaluations
     }
 }
 
@@ -143,6 +143,6 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for MinMaxPlayer<'pla
     }
 
     fn get_id(&self) -> PlayerID {
-        return self.self_id;
+        self.self_id
     }
 }

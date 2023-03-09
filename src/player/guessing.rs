@@ -10,11 +10,11 @@ impl<const N: usize, const K: usize> GuessingPlayer<N, K> {
 
 impl<const N: usize, const K: usize> Player<N, K> for GuessingPlayer<N, K> {
     fn do_move(&mut self, _: &Board<N>) -> Placement<N> {
-        return GuessingPlayer::<N, K>::PLACEMENT.clone();
+        GuessingPlayer::<N, K>::PLACEMENT
     }
 
     fn get_id(&self) -> PlayerID {
-        return self.id;
+        self.id
     }
 }
 
@@ -35,7 +35,7 @@ mod tests {
         let values: Vec<Option<f32>> = placement
             .into_iter()
             .flat_map(|row| row.into_iter())
-            .map(|cur| Some(cur))
+            .map(Some)
             .collect();
         let mut old_value = None;
         for val in values {

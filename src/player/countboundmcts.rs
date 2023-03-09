@@ -76,11 +76,11 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
         println!("{:?}", draws);
         println!("{:?}", tries);
         println!("{:?}", placements);
-        return placements;
+        placements
     }
 
     fn get_id(&self) -> PlayerID {
-        return self.id;
+        self.id
     }
 }
 

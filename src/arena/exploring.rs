@@ -25,7 +25,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
 
         match maybe_startid {
             Some(n) => {
-                return ExploringTicTacToeArena {
+                ExploringTicTacToeArena {
                     board,
                     players,
                     active_player: n,
@@ -59,7 +59,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
             }
         }
 
-        if weights.len() == 0 {
+        if weights.is_empty() {
             return None;
         }
 
@@ -67,7 +67,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         let mut rng = thread_rng();
         let dist = WeightedIndex::new(weights).unwrap();
         let sampled_idx = dist.sample(&mut rng);
-        return Some(pps[sampled_idx]);
+        Some(pps[sampled_idx])
     }
 }
 
@@ -86,10 +86,10 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
                 let maybe_result =
                     self.referee
                         .receive_move(&mut self.board, pp, cur_player.get_id());
-                return (maybe_result, cur_player.get_id(), Some(pp));
+                (maybe_result, cur_player.get_id(), Some(pp))
             }
             None => {
-                return (Some(Result::Defeat), cur_player.get_id(), None);
+                (Some(Result::Defeat), cur_player.get_id(), None)
             }
         }
     }
