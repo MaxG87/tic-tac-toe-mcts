@@ -45,13 +45,12 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         let mut weights = Vec::<f32>::new();
 
         // Get point placement candidates with weights
-        for row in 0..board.rows() {
-            for column in 0..board.columns() {
+        for (row, row_it) in placement.into_iter().enumerate() {
+            for (column, weight) in row_it.into_iter().enumerate() {
                 let pp = PointPlacement { row, column };
                 if board.has_placement_at(pp) {
                     continue;
                 }
-                let weight = placement[row][column];
                 if weight == 0.0 {
                     continue;
                 } else {
