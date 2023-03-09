@@ -44,12 +44,10 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
     }
 
     fn get_evaluations(&mut self, board: &mut Board<N>, args: GetEvaluationsArgs) -> Evaluation<N> {
-        if args.max_depth < 1 {
-            panic!("Lookahead must be at least 1!")
-        } else if args.max_depth == 1 {
-            self.get_evaluations_1(board, args)
-        } else {
-            self.get_evaluations_n(board, args)
+        match args.max_depth {
+            0 => panic!("Lookahead must be at least 1!"),
+            1 => self.get_evaluations_1(board, args),
+            _ => self.get_evaluations_n(board, args),
         }
     }
 
