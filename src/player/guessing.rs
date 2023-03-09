@@ -48,4 +48,13 @@ mod tests {
         }
         assert!(true);
     }
+
+    #[test]
+    fn test_get_id() {
+        const N: usize = 10;
+        const K: usize = 3;
+        const ID: usize = 1;
+        let player = GuessingPlayer::<N, K> { id: ID };
+        assert_eq!(player.id, ID);
+    }
 }
