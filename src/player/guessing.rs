@@ -25,7 +25,9 @@ mod tests {
     #[test]
     fn test_constant_placement() {
         const N: usize = 10;
-        let mut player = GuessingPlayer::<N, 3> { id: 1 };
+        const K: usize = 3;
+        const ID: usize = 1;
+        let mut player = GuessingPlayer::<N, K> { id: ID };
         let board = Board {
             board: [[Some(0); N]; N],
         };
