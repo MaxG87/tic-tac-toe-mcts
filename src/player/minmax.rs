@@ -80,11 +80,11 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                 let pp = PointPlacement { row, column };
                 let move_result = self.referee.receive_move(board, pp, args.self_id);
                 *elem = match move_result {
-                    Some(Result::Defeat) | Some(Result::IllegalMove) => DEFEAT,
-                    Some(Result::Victory) => VICTORY,
-                    Some(Result::Draw) | None => DRAW,
+                    Result::Defeat | Result::IllegalMove => DEFEAT,
+                    Result::Victory => VICTORY,
+                    Result::Draw | Result::Undecided => DRAW,
                 };
-                if move_result != Some(Result::IllegalMove) {
+                if move_result != Result::IllegalMove {
                     board.board[row][column] = None;
                 }
             }
@@ -108,15 +108,15 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                 let pp = PointPlacement { row, column };
                 let move_result = self.referee.receive_move(board, pp, args.self_id);
                 *elem = match move_result {
-                    Some(Result::Defeat) | Some(Result::IllegalMove) => DEFEAT,
-                    Some(Result::Victory) => VICTORY,
-                    Some(Result::Draw) => DRAW,
-                    None => {
+                    Result::Defeat | Result::IllegalMove => DEFEAT,
+                    Result::Victory => VICTORY,
+                    Result::Draw => DRAW,
+                    Result::Undecided => {
                         let pp_evaluations = self.get_evaluations(board, pass_down_args.clone());
                         -get_maximum(&pp_evaluations)
                     }
                 };
-                if move_result != Some(Result::IllegalMove) {
+                if move_result != Result::IllegalMove {
                     board.board[row][column] = None;
                 }
             }

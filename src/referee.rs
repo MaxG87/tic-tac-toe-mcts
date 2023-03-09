@@ -2,10 +2,7 @@ use crate::interfaces::*;
 
 pub struct NaiveReferee<const N: usize, const K: usize> {}
 
-fn evaluate_board<const N: usize, const K: usize>(
-    board: &Board<N>,
-    player: PlayerID,
-) -> Option<Result> {
+fn evaluate_board<const N: usize, const K: usize>(board: &Board<N>, player: PlayerID) -> Result {
     let mut has_free_cells = false;
     let deltas = [
         (0, 1),  // horizontal
@@ -18,15 +15,15 @@ fn evaluate_board<const N: usize, const K: usize>(
             has_free_cells |= board.board[row][column].is_none();
             for cur in deltas {
                 if has_winning_state_in_direction::<N, K>(cur, row, column, board, player) {
-                    return Some(Result::Victory);
+                    return Result::Victory;
                 }
             }
         }
     }
     if !has_free_cells {
-        return Some(Result::Draw);
+        return Result::Draw;
     }
-    None
+    Result::Undecided
 }
 
 fn has_winning_state_in_direction<const N: usize, const K: usize>(
@@ -59,10 +56,10 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
         board: &mut Board<N>,
         placement: PointPlacement,
         player_id: PlayerID,
-    ) -> Option<Result> {
+    ) -> Result {
         let (row, col) = (placement.row, placement.column);
         if board.has_placement_at(placement) {
-            Some(Result::IllegalMove)
+            Result::IllegalMove
         } else {
             board.board[row][col] = Some(player_id);
             evaluate_board::<N, K>(board, player_id)

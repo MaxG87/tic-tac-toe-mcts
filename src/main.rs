@@ -33,7 +33,7 @@ fn main() {
     let mut arena =
         ExploitingArena::<N, K>::new(0, board, [&mut player1, &mut player0], &mut referee);
     loop {
-        let (maybe_result, player_id, maybe_point_placement) = arena.do_next_move();
+        let (result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(
             "Player {player_id} made {}.",
             match maybe_point_placement {
@@ -43,12 +43,12 @@ fn main() {
         );
         let board = arena.get_board();
         println!("{board}");
-        let maybe_result_msg: Option<String> = match maybe_result {
-            Some(Result::Defeat) => Some(format!("Player {player_id} lost.")),
-            Some(Result::Victory) => Some(format!("Player {player_id} won.")),
-            Some(Result::Draw) => Some("The game ended draw!".to_string()),
-            Some(Result::IllegalMove) => Some(format!("Player {player_id} made an illegal move.")),
-            None => None,
+        let maybe_result_msg: Option<String> = match result {
+            Result::Defeat => Some(format!("Player {player_id} lost.")),
+            Result::Victory => Some(format!("Player {player_id} won.")),
+            Result::Draw => Some("The game ended draw!".to_string()),
+            Result::IllegalMove => Some(format!("Player {player_id} made an illegal move.")),
+            Result::Undecided => None,
         };
         if maybe_result_msg.is_some() {
             println!("{}", maybe_result_msg.unwrap());

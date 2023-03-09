@@ -88,14 +88,14 @@ impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K
     fn do_one_step_sample(
         arena: &mut ExploringTicTacToeArena<N, K>,
     ) -> (Result, PlayerID, Option<PointPlacement>) {
-        let (first_result, first_player_id, first_point_placement) = arena.do_next_move();
-        if let Some(result) = first_result {
+        let (result, first_player_id, first_point_placement) = arena.do_next_move();
+        if result != Result::Undecided {
             return (result, first_player_id, first_point_placement);
         }
         loop {
             match arena.do_next_move() {
-                (Some(result), player_id, _) => return (result, player_id, first_point_placement),
-                (None, _, _) => continue,
+                (Result::Undecided, _, _) => continue,
+                (result, player_id, _) => return (result, player_id, first_point_placement),
             }
         }
     }

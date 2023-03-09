@@ -66,6 +66,7 @@ pub enum Result {
     Draw,
     IllegalMove,
     Victory,
+    Undecided,
 }
 impl fmt::Display for Result {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -73,6 +74,7 @@ impl fmt::Display for Result {
             Result::Defeat => write!(f, "Defeat"),
             Result::Draw => write!(f, "Draw"),
             Result::IllegalMove => write!(f, "IllegalMove"),
+            Result::Undecided => write!(f, "Undecided"),
             Result::Victory => write!(f, "Victory"),
         }
     }
@@ -84,7 +86,7 @@ pub trait TicTacToeReferee<const N: usize, const K: usize> {
         board: &mut Board<N>,
         placement: PointPlacement,
         player: PlayerID,
-    ) -> Option<Result>;
+    ) -> Result;
 }
 
 pub trait Player<const N: usize, const K: usize> {
@@ -93,6 +95,6 @@ pub trait Player<const N: usize, const K: usize> {
 }
 
 pub trait TicTacToeArena<const N: usize, const K: usize> {
-    fn do_next_move(&mut self) -> (Option<Result>, PlayerID, Option<PointPlacement>);
+    fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>);
     fn get_board(&self) -> Board<N>;
 }

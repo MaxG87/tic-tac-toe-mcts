@@ -27,9 +27,7 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
             for column in 0..board.columns() {
                 let pp = PointPlacement { row, column };
                 let mut mut_board = board.clone();
-                if let Some(Result::Victory) =
-                    self.referee.receive_move(&mut mut_board, pp, self.other_id)
-                {
+                if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.other_id) {
                     placements[row][column] = 1.0;
                     has_loosing_move = true;
                 }
@@ -45,9 +43,7 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
             for column in 0..board.columns() {
                 let pp = PointPlacement { row, column };
                 let mut mut_board = board.clone();
-                if let Some(Result::Victory) =
-                    self.referee.receive_move(&mut mut_board, pp, self.get_id())
-                {
+                if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.get_id()) {
                     placements[row][column] = 1.0;
                     has_winning_move = true;
                 }

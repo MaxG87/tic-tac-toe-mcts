@@ -75,7 +75,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
 impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
     for ExploringTicTacToeArena<'arena, N, K>
 {
-    fn do_next_move(&mut self) -> (Option<Result>, PlayerID, Option<PointPlacement>) {
+    fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
@@ -84,12 +84,12 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
 
         match maybe_pp {
             Some(pp) => {
-                let maybe_result =
-                    self.referee
-                        .receive_move(&mut self.board, pp, cur_player.get_id());
-                (maybe_result, cur_player.get_id(), Some(pp))
+                let result = self
+                    .referee
+                    .receive_move(&mut self.board, pp, cur_player.get_id());
+                (result, cur_player.get_id(), Some(pp))
             }
-            None => (Some(Result::Defeat), cur_player.get_id(), None),
+            None => (Result::Defeat, cur_player.get_id(), None),
         }
     }
 
