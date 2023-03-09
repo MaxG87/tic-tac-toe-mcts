@@ -17,3 +17,33 @@ impl<const N: usize, const K: usize> Player<N, K> for GuessingPlayer<N, K> {
         return self.id;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_constant_placement() {
+        const N: usize = 10;
+        let mut player = GuessingPlayer::<N, 3> { id: 1 };
+        let board = Board {
+            board: [[Some(0); N]; N],
+        };
+        let placement = player.do_move(&board);
+        let values: Vec<Option<f32>> = placement
+            .into_iter()
+            .flat_map(|row| row.into_iter())
+            .map(|cur| Some(cur))
+            .collect();
+        let mut old_value = None;
+        for val in values {
+            if old_value.is_none() {
+                old_value = val;
+            }
+            if old_value != val {
+                assert!(false, "Placements not unique!");
+            }
+        }
+        assert!(true);
+    }
+}
