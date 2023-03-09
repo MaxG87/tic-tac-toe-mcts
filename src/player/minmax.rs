@@ -75,11 +75,11 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         args: GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
-        for row in 0..N {
-            for column in 0..N {
+        for (row, row_it) in evaluations.iter_mut().enumerate() {
+            for (column, elem) in row_it.iter_mut().enumerate() {
                 let pp = PointPlacement { row, column };
                 let move_result = self.referee.receive_move(board, pp, args.self_id);
-                evaluations[row][column] = match move_result {
+                *elem = match move_result {
                     Some(Result::Defeat) | Some(Result::IllegalMove) => DEFEAT,
                     Some(Result::Victory) => VICTORY,
                     Some(Result::Draw) | None => DRAW,
