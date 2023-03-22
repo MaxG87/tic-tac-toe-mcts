@@ -1,4 +1,5 @@
 use crate::interfaces::*;
+use crate::lib::*;
 use rand::distributions::*;
 use rand::prelude::*;
 
@@ -45,18 +46,16 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         let mut weights = Vec::<f32>::new();
 
         // Get point placement candidates with weights
-        for (row, row_it) in placement.into_iter().enumerate() {
-            for (column, weight) in row_it.into_iter().enumerate() {
-                let pp = PointPlacement { row, column };
-                if board.has_placement_at(pp) {
-                    continue;
-                }
-                if weight == 0.0 {
-                    continue;
-                } else {
-                    pps.push(pp);
-                    weights.push(weight);
-                }
+        for (row, column, weight) in into_iter_2d_array(&placement) {
+            let pp = PointPlacement { row, column };
+            if board.has_placement_at(pp) {
+                continue;
+            }
+            if weight == 0.0 {
+                continue;
+            } else {
+                pps.push(pp);
+                weights.push(weight);
             }
         }
 
