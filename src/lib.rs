@@ -24,6 +24,18 @@ pub fn into_iter_2d_array<T: Clone, const N: usize>(
     iter_2d_array(array).map(|(r, c, v)| (r, c, v.clone()))
 }
 
+pub fn joint_iter_2d_arrays<
+    ValueT1,
+    ValueT2,
+    IterT1: Iterator<Item = (usize, usize, ValueT1)>,
+    IterT2: Iterator<Item = (usize, usize, ValueT2)>,
+>(
+    array_iter1: IterT1,
+    array_iter2: IterT2,
+) -> impl Iterator<Item = (usize, usize, ValueT1, ValueT2)> {
+    zip(array_iter1, array_iter2).map(|(lhs, rhs)| (lhs.0, lhs.1, lhs.2, rhs.2))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -53,6 +65,26 @@ mod tests {
                 let expected_val = row * N + column;
 
                 assert_eq!(result.next().unwrap(), (row, column, expected_val));
+            }
+        }
+        assert_eq!(result.next(), None);
+    }
+
+    #[test]
+    fn test_joint_iter_2d_arrays() {
+        const N: usize = 3;
+        let array = [[0, 1, 2], [3, 4, 5], [6, 7, 8]];
+        let array2 = [[8, 7, 6], [5, 4, 3], [2, 1, 0]];
+        let mut result =
+            joint_iter_2d_arrays(into_iter_2d_array(&array), into_iter_2d_array(&array2));
+        for row in 0..3 {
+            for column in 0..3 {
+                let expected_val = row * N + column;
+
+                assert_eq!(
+                    result.next().unwrap(),
+                    (row, column, expected_val, 8 - expected_val)
+                );
             }
         }
         assert_eq!(result.next(), None);
