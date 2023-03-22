@@ -121,7 +121,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                     -get_maximum(&pp_evaluations)
                 }
             };
-            board.board[row][column] = old_board_val;
+            board.set_placement_at(pp, old_board_val);
         }
 
         if args.max_depth == self.max_depth {

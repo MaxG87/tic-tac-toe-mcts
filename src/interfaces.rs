@@ -20,6 +20,10 @@ impl<const N: usize> Board<N> {
     pub fn has_placement_at(&self, pp: PointPlacement) -> bool {
         self.board[pp.row][pp.column].is_some()
     }
+
+    pub fn set_placement_at(&mut self, pp: PointPlacement, value: BoardStateEntry) {
+        self.board[pp.row][pp.column] = value;
+    }
 }
 
 impl<const N: usize> fmt::Display for Board<N> {
