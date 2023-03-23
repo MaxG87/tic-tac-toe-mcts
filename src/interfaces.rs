@@ -1,3 +1,4 @@
+use crate::lib::*;
 use std::fmt;
 
 pub type BoardStateEntry = Option<PlayerID>;
@@ -21,8 +22,17 @@ impl<const N: usize> Board<N> {
         self.board[pp.row][pp.column].is_some()
     }
 
+    pub fn get_placement_at(&self, pp: PointPlacement) -> BoardStateEntry {
+        self.board[pp.row][pp.column]
+    }
+
     pub fn set_placement_at(&mut self, pp: PointPlacement, value: BoardStateEntry) {
         self.board[pp.row][pp.column] = value;
+    }
+
+    pub fn flatten(&self) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_ {
+        into_iter_2d_array(&self.board)
+            .map(|(row, column, val)| (PointPlacement { row, column }, val))
     }
 }
 

@@ -10,13 +10,12 @@ fn evaluate_board<const N: usize, const K: usize>(board: &Board<N>, player: Play
         (1, 1),  // slash diagonal
         (1, -1), // backslash diagonal
     ];
-    for row in 0..N {
-        for column in 0..N {
-            has_free_cells |= board.board[row][column].is_none();
-            for cur in deltas {
-                if has_winning_state_in_direction::<N, K>(cur, row, column, board, player) {
-                    return Result::Victory;
-                }
+
+    for (pp, value) in board.flatten() {
+        has_free_cells |= value.is_none();
+        for cur in deltas {
+            if has_winning_state_in_direction::<N, K>(cur, pp.row, pp.column, board, player) {
+                return Result::Victory;
             }
         }
     }
@@ -44,7 +43,8 @@ fn has_winning_state_in_direction<const N: usize, const K: usize>(
     for k in 0..K {
         let row = (start_row as i32 + dx * k as i32) as usize;
         let column = (start_column as i32 + dy * k as i32) as usize;
-        has_won &= board.board[row as usize][column as usize] == Some(player);
+        let pp = PointPlacement { row, column };
+        has_won &= board.get_placement_at(pp) == Some(player);
     }
 
     has_won
@@ -57,11 +57,10 @@ impl<const N: usize, const K: usize> TicTacToeReferee<N, K> for NaiveReferee<N, 
         placement: PointPlacement,
         player_id: PlayerID,
     ) -> Result {
-        let (row, col) = (placement.row, placement.column);
         if board.has_placement_at(placement) {
             Result::IllegalMove
         } else {
-            board.board[row][col] = Some(player_id);
+            board.set_placement_at(placement, Some(player_id));
             evaluate_board::<N, K>(board, player_id)
         }
     }
