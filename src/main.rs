@@ -7,6 +7,7 @@ use player::minmax::*;
 use referee::*;
 
 mod arena;
+mod game_state_storage;
 mod interfaces;
 mod player;
 mod referee;
