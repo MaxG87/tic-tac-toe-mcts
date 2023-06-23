@@ -35,7 +35,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         other_id: PlayerID,
         referee: &'player mut dyn TicTacToeReferee<N, K>,
         self_id: PlayerID,
-    ) -> MinMaxPlayer<N, K> {
+    ) -> Self {
         Self {
             other_id,
             self_id,

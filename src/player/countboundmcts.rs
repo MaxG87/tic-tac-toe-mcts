@@ -15,8 +15,8 @@ impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K
         player0: &'player mut dyn Player<N, K>,
         player1: &'player mut dyn Player<N, K>,
         referee: &'player mut dyn TicTacToeReferee<N, K>,
-    ) -> CountBoundMCTSPlayer<'player, N, K> {
-        CountBoundMCTSPlayer {
+    ) -> Self {
+        Self {
             id,
             nsamples,
             player0,

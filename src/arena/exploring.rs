@@ -16,7 +16,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         players: [&'arena mut dyn Player<N, K>; 2],
         starting_player: PlayerID,
         referee: &'arena mut dyn TicTacToeReferee<N, K>,
-    ) -> ExploringTicTacToeArena<'arena, N, K> {
+    ) -> Self {
         let matching_players: Vec<PlayerID> = players
             .iter()
             .enumerate()
@@ -31,7 +31,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
 
         match matching_players[..] {
             [] => panic!("No matching player found for ID {starting_player}"),
-            [n] => ExploringTicTacToeArena {
+            [n] => Self {
                 board,
                 players,
                 active_player: n,
