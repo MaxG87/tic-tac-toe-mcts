@@ -6,7 +6,7 @@ pub type Evaluation<const N: usize> = [[f32; N]; N];
 pub type Placement<const N: usize> = [[f32; N]; N];
 pub type PlayerID = usize;
 
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Board<const N: usize> {
     pub board: [[BoardStateEntry; N]; N],
 }
