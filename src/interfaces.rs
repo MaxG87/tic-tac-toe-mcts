@@ -1,4 +1,4 @@
-use crate::lib::*;
+use crate::utils::*;
 use std::fmt;
 
 pub type BoardStateEntry = Option<PlayerID>;
