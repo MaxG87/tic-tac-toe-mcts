@@ -9,6 +9,7 @@ pub struct CountBoundMCTSPlayer<'player, const N: usize, const K: usize> {
     player1: &'player mut dyn Player<N, K>,
 }
 impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K> {
+    #[allow(dead_code)]
     pub fn new(
         id: PlayerID,
         nsamples: u32,

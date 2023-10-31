@@ -11,6 +11,7 @@ struct NaiveGameStateStorage<const N: usize, Payload> {
 }
 
 impl<const N: usize, Payload> NaiveGameStateStorage<N, Payload> {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
             storage: HashMap::new(),
