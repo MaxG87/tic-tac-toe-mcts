@@ -150,3 +150,34 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for MinMaxPlayer<'pla
         self.self_id
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::referee::*;
+    #[test]
+    fn test_finds_winning_moves_lookahead_1() {
+        const N: usize = 3;
+        let max_depth = 1;
+        let other_id: BoardStateEntry = Some(1);
+        let self_id: BoardStateEntry = Some(0);
+        let board = Board::<N> {
+            board: [
+                [self_id, None, self_id],
+                [None, other_id, other_id],
+                [self_id, None, other_id],
+            ],
+        };
+        let mut referee = NaiveReferee::<N, N> {};
+        let mut player = MinMaxPlayer {
+            max_depth,
+            self_id: self_id.unwrap(),
+            other_id: other_id.unwrap(),
+            referee: &mut referee,
+        };
+
+        let result = player.do_move(&board);
+        let expected = [[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
+        assert_eq!(result, expected)
+    }
+}
