@@ -188,7 +188,7 @@ mod tests {
         },
         [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
     )]
-    fn test_finds_winning_moves_lookahead_1<const N: usize>(
+    fn correct_moves_are_found<const N: usize>(
         #[case] board: Board<N>,
         #[case] expected: Placement<N>,
     ) {
