@@ -155,22 +155,50 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for MinMaxPlayer<'pla
 mod tests {
     use super::*;
     use crate::referee::*;
-    #[test]
-    fn test_finds_winning_moves_lookahead_1() {
-        const N: usize = 3;
+    use rstest::*;
+
+    #[rstest]
+    // direct winning move, vertical
+    #[case(Board::<3> {
+            board: [
+                [Some(0), None, None],
+                [None, Some(1), None],
+                [Some(0), None, Some(1)],
+            ],
+        },
+        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    )]
+    // direct winning move, horizontal
+    #[case(Board::<3> {
+            board: [
+                [Some(0), None, Some(0)],
+                [None, Some(1), None],
+                [None, None, Some(1)],
+            ],
+        },
+        [[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    )]
+    // direct winning move, diagonal
+    #[case(Board::<3> {
+            board: [
+                [Some(0), None, Some(1)],
+                [None, None, Some(1)],
+                [None, None, Some(0)],
+            ],
+        },
+        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
+    )]
+    fn test_finds_winning_moves_lookahead_1<const N: usize>(
+        #[case] board: Board<N>,
+        #[case] expected: Placement<N>,
+    ) {
         const K: usize = 3;
         let max_depth = 1;
         let other_id: BoardStateEntry = Some(1);
         let self_id: BoardStateEntry = Some(0);
-        let board = Board::<N> {
-            board: [
-                [self_id, None, self_id],
-                [None, other_id, other_id],
-                [self_id, None, other_id],
-            ],
-        };
+
         let mut referee = NaiveReferee::<N, K> {};
-        let mut player = MinMaxPlayer {
+        let mut player = MinMaxPlayer::<N, K> {
             max_depth,
             self_id: self_id.unwrap(),
             other_id: other_id.unwrap(),
@@ -178,7 +206,6 @@ mod tests {
         };
 
         let result = player.do_move(&board);
-        let expected = [[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]];
         assert_eq!(result, expected)
     }
 
