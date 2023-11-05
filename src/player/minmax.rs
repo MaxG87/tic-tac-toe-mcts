@@ -177,6 +177,23 @@ mod tests {
         ],
         1
     )]
+    // indirect winning moves
+    #[case(Board {
+            board: [
+                [None, None, Some(0), Some(1)],
+                [None, Some(1), None, None],
+                [Some(0), None, None, None],
+                [Some(1), None, None, None],
+            ]
+        },
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ],
+        3
+    )]
     fn correct_moves_are_found<const N: usize>(
         #[case] board: Board<N>,
         #[case] expected: Placement<N>,
@@ -195,39 +212,6 @@ mod tests {
         };
 
         let result = player.do_move(&board);
-        assert_eq!(result, expected)
-    }
-
-    #[test]
-    fn test_finds_winning_moves_lookahead_2() {
-        const N: usize = 4;
-        const K: usize = 3;
-        let max_depth = 3;
-        let other_id: BoardStateEntry = Some(1);
-        let self_id: BoardStateEntry = Some(0);
-        let board = Board {
-            board: [
-                [None, None, self_id, other_id],
-                [None, other_id, None, None],
-                [self_id, None, None, None],
-                [other_id, None, None, None],
-            ],
-        };
-        let mut referee = NaiveReferee::<N, K> {};
-        let mut player = MinMaxPlayer {
-            max_depth,
-            self_id: self_id.unwrap(),
-            other_id: other_id.unwrap(),
-            referee: &mut referee,
-        };
-
-        let result = player.do_move(&board);
-        let expected = [
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0],
-        ];
         assert_eq!(result, expected)
     }
 }
