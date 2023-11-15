@@ -37,10 +37,10 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         self_id: PlayerID,
     ) -> Self {
         Self {
-            other_id,
-            self_id,
             max_depth,
+            other_id,
             referee,
+            self_id,
         }
     }
 
