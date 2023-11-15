@@ -53,7 +53,7 @@ impl<const N: usize> fmt::Display for Board<N> {
                         Some(id) => format!("{id}"),
                         None => ".".to_string(),
                     }
-                )?
+                )?;
             }
             writeln!(
                 f,
@@ -62,7 +62,7 @@ impl<const N: usize> fmt::Display for Board<N> {
                     Some(id) => format!("{id}"),
                     None => ".".to_string(),
                 }
-            )?
+            )?;
         }
         fmt::Result::Ok(())
     }
