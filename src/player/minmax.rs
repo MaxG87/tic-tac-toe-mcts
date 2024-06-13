@@ -53,6 +53,11 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
         board: &mut Board<N>,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
+        if let Some(evaluations) =
+            self.game_state_storage.get_payload(board, args.max_depth)
+        {
+            return evaluations.to_owned();
+        }
         let evaluations = match args.max_depth {
             0 => panic!("Lookahead must be at least 1!"),
             1 => self.get_evaluations_1(board, args),
