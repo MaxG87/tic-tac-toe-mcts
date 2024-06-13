@@ -41,7 +41,10 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
         }
     }
 
-    fn sample_point_placement(board: &Board<N>, placement: Placement<N>) -> Option<PointPlacement> {
+    fn sample_point_placement(
+        board: &Board<N>,
+        placement: Placement<N>,
+    ) -> Option<PointPlacement> {
         let mut pps = Vec::<PointPlacement>::new();
         let mut weights = Vec::<f32>::new();
 
@@ -77,14 +80,16 @@ impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
-        let maybe_pp =
-            ExploringTicTacToeArena::<N, K>::sample_point_placement(&self.board, placements);
+        let maybe_pp = ExploringTicTacToeArena::<N, K>::sample_point_placement(
+            &self.board,
+            placements,
+        );
 
         match maybe_pp {
             Some(pp) => {
-                let result = self
-                    .referee
-                    .receive_move(&mut self.board, pp, cur_player.get_id());
+                let result =
+                    self.referee
+                        .receive_move(&mut self.board, pp, cur_player.get_id());
                 (result, cur_player.get_id(), Some(pp))
             }
             None => (Result::Defeat, cur_player.get_id(), None),

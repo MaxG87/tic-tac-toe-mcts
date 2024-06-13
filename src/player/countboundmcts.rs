@@ -26,7 +26,9 @@ impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K
         }
     }
 }
-impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPlayer<'player, N, K> {
+impl<'player, const N: usize, const K: usize> Player<N, K>
+    for CountBoundMCTSPlayer<'player, N, K>
+{
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut tries = [[0u32; N]; N];
         let mut wins = [[0u32; N]; N];
@@ -96,7 +98,9 @@ impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K
         loop {
             match arena.do_next_move() {
                 (Result::Undecided, _, _) => continue,
-                (result, player_id, _) => return (result, player_id, first_point_placement),
+                (result, player_id, _) => {
+                    return (result, player_id, first_point_placement)
+                }
             }
         }
     }

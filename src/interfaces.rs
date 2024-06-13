@@ -36,7 +36,9 @@ impl<const N: usize> Board<N> {
         self.board[pp.row][pp.column] = value;
     }
 
-    pub fn flatten(&self) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_ {
+    pub fn flatten(
+        &self,
+    ) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_ {
         into_iter_2d_array(&self.board)
             .map(|(row, column, val)| (PointPlacement { row, column }, val))
     }

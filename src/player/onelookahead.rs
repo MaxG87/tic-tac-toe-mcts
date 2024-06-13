@@ -23,12 +23,18 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
         }
     }
 
-    fn get_loosing_moves(&mut self, board: &Board<N>, placements: &mut Placement<N>) -> bool {
+    fn get_loosing_moves(
+        &mut self,
+        board: &Board<N>,
+        placements: &mut Placement<N>,
+    ) -> bool {
         let mut has_loosing_move = false;
         for (row, column, placement_cell) in iter_mut_2d_array(placements) {
             let pp = PointPlacement { row, column };
             let mut mut_board = board.clone();
-            if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.other_id) {
+            if Result::Victory
+                == self.referee.receive_move(&mut mut_board, pp, self.other_id)
+            {
                 *placement_cell = 1.0;
                 has_loosing_move = true;
             }
@@ -37,12 +43,18 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
         has_loosing_move
     }
 
-    fn get_winning_moves(&mut self, board: &Board<N>, placements: &mut Placement<N>) -> bool {
+    fn get_winning_moves(
+        &mut self,
+        board: &Board<N>,
+        placements: &mut Placement<N>,
+    ) -> bool {
         let mut has_winning_move = false;
         for (row, column, placement_cell) in iter_mut_2d_array(placements) {
             let pp = PointPlacement { row, column };
             let mut mut_board = board.clone();
-            if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.get_id()) {
+            if Result::Victory
+                == self.referee.receive_move(&mut mut_board, pp, self.get_id())
+            {
                 *placement_cell = 1.0;
                 has_winning_move = true;
             }
