@@ -1,3 +1,4 @@
+use crate::game_state_storage::*;
 use crate::interfaces::*;
 use crate::utils::*;
 use std::iter::*;
@@ -16,6 +17,7 @@ struct GetEvaluationsArgs {
 pub struct MinMaxPlayer<'player, const N: usize, const K: u32> {
     max_depth: u32,
     other_id: PlayerID,
+    game_state_storage: &'player mut dyn GameStateStorage<N, Evaluation<N>>,
     referee: &'player mut dyn TicTacToeReferee<N, K>,
     self_id: PlayerID,
 }
@@ -33,12 +35,14 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
     pub fn new(
         max_depth: u32,
         other_id: PlayerID,
+        game_state_storage: &'player mut dyn GameStateStorage<N, Evaluation<N>>,
         referee: &'player mut dyn TicTacToeReferee<N, K>,
         self_id: PlayerID,
     ) -> Self {
         Self {
             max_depth,
             other_id,
+            game_state_storage,
             referee,
             self_id,
         }
@@ -210,16 +214,19 @@ mod tests {
         const K: u32 = 3;
         let other_id: BoardStateEntry = Some(1);
         let self_id: BoardStateEntry = Some(0);
+        let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
 
         let mut referee = NaiveReferee::<N, K> {};
         let mut player = MinMaxPlayer::<N, K> {
             max_depth: lookahead,
             self_id: self_id.unwrap(),
             other_id: other_id.unwrap(),
+            game_state_storage: &mut game_state_storage,
             referee: &mut referee,
         };
 
         let result = player.do_move(&board);
+        let result_from_storage = game_state_storage.get_payload(&board, lookahead);
         assert_eq!(result, expected)
     }
 }

@@ -1,16 +1,28 @@
 use crate::interfaces::*;
 use std::collections::*;
 
-pub trait GameStateStorage<const N: usize, Payload> {
-    fn register_game_state(&mut self, board: &Board<N>, payload: Payload, depth: usize);
-    fn get_payload(&self, board: &Board<N>, depth: usize) -> Option<&Payload>;
+pub trait GameStateStorage<const N: usize, Payload, DepthT: std::cmp::PartialOrd = u32>
+{
+    fn register_game_state(
+        &mut self,
+        board: &Board<N>,
+        payload: Payload,
+        depth: DepthT,
+    );
+    fn get_payload(&self, board: &Board<N>, depth: DepthT) -> Option<&Payload>;
 }
 
-struct NaiveGameStateStorage<const N: usize, Payload> {
-    storage: HashMap<Board<N>, (usize, Payload)>,
+pub struct NaiveGameStateStorage<
+    const N: usize,
+    Payload,
+    DepthT: std::cmp::PartialOrd = u32,
+> {
+    storage: HashMap<Board<N>, (DepthT, Payload)>,
 }
 
-impl<const N: usize, Payload> NaiveGameStateStorage<N, Payload> {
+impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd>
+    NaiveGameStateStorage<N, Payload, DepthT>
+{
     #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
@@ -19,8 +31,8 @@ impl<const N: usize, Payload> NaiveGameStateStorage<N, Payload> {
     }
 }
 
-impl<const N: usize, Payload> GameStateStorage<N, Payload>
-    for NaiveGameStateStorage<N, Payload>
+impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd>
+    GameStateStorage<N, Payload, DepthT> for NaiveGameStateStorage<N, Payload, DepthT>
 {
     /// Registers a game state with a given payload and depth.
     ///
@@ -32,7 +44,7 @@ impl<const N: usize, Payload> GameStateStorage<N, Payload>
         &mut self,
         board: &Board<N>,
         payload: Payload,
-        depth: usize,
+        depth: DepthT,
     ) {
         self.storage.insert(board.clone(), (depth, payload));
     }
@@ -44,7 +56,7 @@ impl<const N: usize, Payload> GameStateStorage<N, Payload>
     /// # Arguments
     /// * `board` - The board to retrieve the payload for.
     /// * `depth` - The minimal required search depth.
-    fn get_payload(&self, board: &Board<N>, depth: usize) -> Option<&Payload> {
+    fn get_payload(&self, board: &Board<N>, depth: DepthT) -> Option<&Payload> {
         self.storage.get(board).and_then(|(stored_depth, payload)| {
             if *stored_depth >= depth {
                 Some(payload)
