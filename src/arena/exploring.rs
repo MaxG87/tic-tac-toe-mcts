@@ -3,14 +3,14 @@ use crate::utils::*;
 use rand::distributions::*;
 use rand::prelude::*;
 
-pub struct ExploringTicTacToeArena<'arena, const N: usize, const K: usize> {
+pub struct ExploringTicTacToeArena<'arena, const N: usize, const K: u32> {
     active_player: usize,
     board: Board<N>,
     players: [&'arena mut (dyn Player<N, K>); 2],
     referee: &'arena mut (dyn TicTacToeReferee<N, K>),
 }
 
-impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, K> {
+impl<'arena, const N: usize, const K: u32> ExploringTicTacToeArena<'arena, N, K> {
     pub fn new(
         board: Board<N>,
         players: [&'arena mut dyn Player<N, K>; 2],
@@ -73,7 +73,7 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
     }
 }
 
-impl<'arena, const N: usize, const K: usize> TicTacToeArena<N, K>
+impl<'arena, const N: usize, const K: u32> TicTacToeArena<N, K>
     for ExploringTicTacToeArena<'arena, N, K>
 {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
