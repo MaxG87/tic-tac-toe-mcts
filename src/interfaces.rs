@@ -2,6 +2,7 @@ use crate::utils::*;
 use std::fmt;
 
 pub type BoardStateEntry = Option<PlayerID>;
+// TODO: Apply NewType idiom for Evaluation and Placement
 pub type Evaluation<const N: usize> = [[f32; N]; N];
 pub type Placement<const N: usize> = [[f32; N]; N];
 pub type PlayerID = usize;
