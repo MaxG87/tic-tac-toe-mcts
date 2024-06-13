@@ -1,7 +1,11 @@
 use crate::interfaces::*;
 use std::collections::*;
 
-pub trait GameStateStorage<const N: usize, Payload, DepthT: std::cmp::PartialOrd = u32>
+pub trait GameStateStorage<
+    const N: usize,
+    Payload,
+    DepthT: std::cmp::PartialOrd + Copy = u32,
+>
 {
     fn register_game_state(
         &mut self,
@@ -15,12 +19,12 @@ pub trait GameStateStorage<const N: usize, Payload, DepthT: std::cmp::PartialOrd
 pub struct NaiveGameStateStorage<
     const N: usize,
     Payload,
-    DepthT: std::cmp::PartialOrd = u32,
+    DepthT: std::cmp::PartialOrd + Copy = u32,
 > {
     storage: HashMap<Board<N>, (DepthT, Payload)>,
 }
 
-impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd>
+impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
     NaiveGameStateStorage<N, Payload, DepthT>
 {
     #[allow(dead_code)]
@@ -31,7 +35,7 @@ impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd>
     }
 }
 
-impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd>
+impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
     GameStateStorage<N, Payload, DepthT> for NaiveGameStateStorage<N, Payload, DepthT>
 {
     /// Registers a game state with a given payload and depth.
@@ -46,7 +50,9 @@ impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd>
         payload: Payload,
         depth: DepthT,
     ) {
-        self.storage.insert(board.clone(), (depth, payload));
+        if self.get_payload(board, depth).is_none() {
+            self.storage.insert(board.clone(), (depth, payload));
+        }
     }
     /// Retrieves the payload for a given board.
     ///
@@ -128,5 +134,20 @@ mod tests {
         storage.register_game_state(&board, payload.clone(), depth - 1);
         let result = storage.get_payload(&board, depth);
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_registering_shallow_board_does_not_overwrite_deeper_one() {
+        const N: usize = 7;
+        let deep_payload = "Deep Payload!".to_string();
+        let shallow_payload = "Shallow Payload!".to_string();
+        let depth = 5;
+        let board = Board::<N>::new();
+        let mut storage = NaiveGameStateStorage::<N, String>::new();
+
+        storage.register_game_state(&board, deep_payload.clone(), depth);
+        storage.register_game_state(&board, shallow_payload.clone(), depth - 1);
+        let result = storage.get_payload(&board, depth - 1);
+        assert_eq!(result, Some(&deep_payload));
     }
 }
