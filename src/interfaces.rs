@@ -14,7 +14,7 @@ pub trait AbstractBoard<ColumnsRowsT> {
     fn has_placement_at(&self, pp: PointPlacement) -> bool;
     fn get_placement_at(&self, pp: PointPlacement) -> BoardStateEntry;
     fn set_placement_at(&mut self, pp: PointPlacement, value: BoardStateEntry);
-    fn flatten(&self) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_;
+    fn flatten(&self) -> Vec<(PointPlacement, BoardStateEntry)>;
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
@@ -49,9 +49,10 @@ impl<const N: usize> AbstractBoard<usize> for Board<N> {
         self.board[pp.row][pp.column] = value;
     }
 
-    fn flatten(&self) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_ {
+    fn flatten(&self) -> Vec<(PointPlacement, BoardStateEntry)> {
         into_iter_2d_array(&self.board)
             .map(|(row, column, val)| (PointPlacement { row, column }, val))
+            .collect()
     }
 }
 
