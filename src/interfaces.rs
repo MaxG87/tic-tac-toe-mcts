@@ -7,39 +7,49 @@ pub type Evaluation<const N: usize> = [[f32; N]; N];
 pub type Placement<const N: usize> = [[f32; N]; N];
 pub type PlayerID = usize;
 
+pub trait AbstractBoard<ColumnsRowsT> {
+    /// Creates a new board with all positions unset
+    fn rows(&self) -> ColumnsRowsT;
+    fn columns(&self) -> ColumnsRowsT;
+    fn has_placement_at(&self, pp: PointPlacement) -> bool;
+    fn get_placement_at(&self, pp: PointPlacement) -> BoardStateEntry;
+    fn set_placement_at(&mut self, pp: PointPlacement, value: BoardStateEntry);
+    fn flatten(&self) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_;
+}
+
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Board<const N: usize> {
     pub board: [[BoardStateEntry; N]; N],
 }
 
 impl<const N: usize> Board<N> {
-    /// Creates a new board with all positions unset
     pub fn new() -> Self {
         Self {
             board: [[None; N]; N],
         }
     }
-    pub fn rows(&self) -> usize {
+}
+
+impl<const N: usize> AbstractBoard<usize> for Board<N> {
+    fn rows(&self) -> usize {
         N
     }
-    pub fn columns(&self) -> usize {
+    fn columns(&self) -> usize {
         N
     }
-    pub fn has_placement_at(&self, pp: PointPlacement) -> bool {
+    fn has_placement_at(&self, pp: PointPlacement) -> bool {
         self.board[pp.row][pp.column].is_some()
     }
 
-    pub fn get_placement_at(&self, pp: PointPlacement) -> BoardStateEntry {
+    fn get_placement_at(&self, pp: PointPlacement) -> BoardStateEntry {
         self.board[pp.row][pp.column]
     }
 
-    pub fn set_placement_at(&mut self, pp: PointPlacement, value: BoardStateEntry) {
+    fn set_placement_at(&mut self, pp: PointPlacement, value: BoardStateEntry) {
         self.board[pp.row][pp.column] = value;
     }
 
-    pub fn flatten(
-        &self,
-    ) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_ {
+    fn flatten(&self) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> + '_ {
         into_iter_2d_array(&self.board)
             .map(|(row, column, val)| (PointPlacement { row, column }, val))
     }
