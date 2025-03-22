@@ -26,9 +26,7 @@ impl<'player, const N: usize, const K: u32> CountBoundMCTSPlayer<'player, N, K> 
         }
     }
 }
-impl<'player, const N: usize, const K: u32> Player<N, K>
-    for CountBoundMCTSPlayer<'player, N, K>
-{
+impl<const N: usize, const K: u32> Player<N, K> for CountBoundMCTSPlayer<'_, N, K> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut tries = [[0u32; N]; N];
         let mut wins = [[0u32; N]; N];
@@ -87,7 +85,7 @@ impl<'player, const N: usize, const K: u32> Player<N, K>
     }
 }
 
-impl<'player, const N: usize, const K: u32> CountBoundMCTSPlayer<'player, N, K> {
+impl<const N: usize, const K: u32> CountBoundMCTSPlayer<'_, N, K> {
     fn do_one_step_sample(
         arena: &mut ExploringTicTacToeArena<N, K>,
     ) -> (Result, PlayerID, Option<PointPlacement>) {
