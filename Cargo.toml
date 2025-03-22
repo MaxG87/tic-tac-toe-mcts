@@ -8,7 +8,7 @@ license = "GPL-3.0-or-later"
 rand = "0.8.5"
 
 [dev-dependencies]
-rstest = "0.21.0"
+rstest = "0.25.0"
 
 [lints.rust]
 unsafe_code = "forbid"
