@@ -7,6 +7,7 @@ pub struct CLIPlayer<const N: usize, const K: u32> {
 
 impl<const N: usize, const K: u32> CLIPlayer<N, K> {
     fn get_point_placement(&self) -> PointPlacement {
+        let _ = self; // self is not needed here.
         loop {
             let mut buffer = String::new();
             io::stdin().read_line(&mut buffer).unwrap();
