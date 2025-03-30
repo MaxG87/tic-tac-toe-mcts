@@ -21,30 +21,22 @@ impl<const N: usize, const K: u32> Player<N, K> for GuessingPlayer<N, K> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
 
     #[test]
-    fn test_constant_placement() {
+    fn test_guessing_player_uses_constant_probabilities() {
         const N: usize = 10;
         const K: u32 = 3;
         const ID: usize = 1;
         let mut player = GuessingPlayer::<N, K> { id: ID };
         let board = Board::<N>::new();
         let placement = player.do_move(&board);
-        let values: Vec<Option<f32>> = placement
+        let values = placement
             .into_iter()
             .flat_map(|row| row.into_iter())
-            .map(Some)
-            .collect();
-        let mut old_value = None;
-        for val in values {
-            if old_value.is_none() {
-                old_value = val;
-            }
-            if old_value != val {
-                assert!(false, "Placements not unique!");
-            }
-        }
-        assert!(true);
+            .map(|f| f.to_bits())
+            .collect::<HashSet<_>>();
+        assert_eq!(values.len(), 1);
     }
 
     #[test]
