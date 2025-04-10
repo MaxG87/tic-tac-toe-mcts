@@ -1,5 +1,5 @@
 use crate::interfaces::BoardSizeT;
-use std::iter::*;
+use std::iter::{Iterator, zip};
 
 pub fn iter_2d_array<T, const N: BoardSizeT>(
     array: &[[T; N]; N],
