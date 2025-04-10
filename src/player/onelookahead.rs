@@ -1,4 +1,7 @@
-use crate::interfaces::*;
+use crate::interfaces::{
+    Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result,
+    TicTacToeReferee, WinLengthT,
+};
 use crate::utils::*;
 
 pub struct OneLookaheadPlayer<const N: BoardSizeT, const K: WinLengthT> {
