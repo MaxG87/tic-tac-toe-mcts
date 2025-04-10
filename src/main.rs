@@ -2,7 +2,7 @@
 // use crate::player::onelookahead::*;
 use crate::game_state_storage::*;
 use arena::exploiting::*;
-use interfaces::*;
+use interfaces::{Board, BoardSizeT, Evaluation, Result, TicTacToeArena, WinLengthT};
 use player::cli::*;
 use player::minmax::*;
 use referee::*;
