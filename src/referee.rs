@@ -1,4 +1,7 @@
-use crate::interfaces::*;
+use crate::interfaces::{
+    AbstractBoard, Board, BoardSizeT, PlayerID, PointPlacement, Result,
+    TicTacToeReferee, WinLengthT,
+};
 
 pub struct NaiveReferee<const N: BoardSizeT, const K: WinLengthT> {}
 
