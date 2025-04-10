@@ -1,4 +1,4 @@
-use crate::interfaces::*;
+use crate::interfaces::{Board, BoardSizeT, Placement, Player, PlayerID, WinLengthT};
 
 pub struct GuessingPlayer<const N: BoardSizeT, const K: WinLengthT> {
     pub id: PlayerID,
