@@ -16,7 +16,7 @@ mod utils;
 
 fn main() {
     const N: BoardSizeT = 7;
-    const K: u32 = 3;
+    const K: WinLengthT = 3;
     let mut mcts_referee = NaiveReferee::<N, K> {};
     let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
 
@@ -24,7 +24,7 @@ fn main() {
     // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<N, K> {}), 1);
     // let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
     //     0,
-    //     (N * N * 10000) as u32,
+    //     (N * N * 10000) as WinLengthT,
     //     &mut mcts_base_player0,
     //     &mut mcts_base_player1,
     //     &mut mcts_referee,
