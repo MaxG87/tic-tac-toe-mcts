@@ -1,10 +1,10 @@
-use crate::game_state_storage::*;
+use crate::game_state_storage::GameStateStorage;
 use crate::interfaces::{
     AbstractBoard, Board, BoardSizeT, BoardStateEntry, Evaluation, Placement, Player,
     PlayerID, PointPlacement, Result, TicTacToeReferee, WinLengthT,
 };
-use crate::utils::*;
-use std::iter::*;
+use crate::utils::{into_iter_2d_array, iter_mut_2d_array, joint_iter_2d_arrays};
+use std::iter::Iterator;
 
 const DEFEAT: f32 = -1.0;
 const VICTORY: f32 = 1.0;
@@ -175,6 +175,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for MinMaxPlayer<'_,
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::game_state_storage::NaiveGameStateStorage;
     use crate::referee::*;
     use rstest::*;
 

@@ -2,7 +2,7 @@ use crate::interfaces::{
     Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result,
     TicTacToeReferee, WinLengthT,
 };
-use crate::utils::*;
+use crate::utils::iter_mut_2d_array;
 
 pub struct OneLookaheadPlayer<const N: BoardSizeT, const K: WinLengthT> {
     other_id: PlayerID,
