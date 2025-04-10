@@ -1,14 +1,14 @@
 use crate::interfaces::*;
 
-pub struct GuessingPlayer<const N: usize, const K: u32> {
+pub struct GuessingPlayer<const N: BoardSizeT, const K: u32> {
     pub id: PlayerID,
 }
 
-impl<const N: usize, const K: u32> GuessingPlayer<N, K> {
+impl<const N: BoardSizeT, const K: u32> GuessingPlayer<N, K> {
     const PLACEMENT: Placement<N> = [[1.0; N]; N];
 }
 
-impl<const N: usize, const K: u32> Player<N, K> for GuessingPlayer<N, K> {
+impl<const N: BoardSizeT, const K: u32> Player<N, K> for GuessingPlayer<N, K> {
     fn do_move(&mut self, _: &Board<N>) -> Placement<N> {
         GuessingPlayer::<N, K>::PLACEMENT
     }
@@ -25,9 +25,9 @@ mod tests {
 
     #[test]
     fn test_guessing_player_uses_constant_probabilities() {
-        const N: usize = 10;
+        const N: BoardSizeT = 10;
         const K: u32 = 3;
-        const ID: usize = 1;
+        const ID: PlayerID = 1;
         let mut player = GuessingPlayer::<N, K> { id: ID };
         let board = Board::<N>::new();
         let placement = player.do_move(&board);
@@ -41,9 +41,9 @@ mod tests {
 
     #[test]
     fn test_get_id() {
-        const N: usize = 10;
+        const N: BoardSizeT = 10;
         const K: u32 = 3;
-        const ID: usize = 1;
+        const ID: PlayerID = 1;
         let player = GuessingPlayer::<N, K> { id: ID };
         assert_eq!(player.id, ID);
     }

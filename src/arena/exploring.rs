@@ -4,14 +4,14 @@ use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
 use rand::rng;
 
-pub struct ExploringTicTacToeArena<'arena, const N: usize, const K: u32> {
-    active_player: usize,
+pub struct ExploringTicTacToeArena<'arena, const N: BoardSizeT, const K: u32> {
+    active_player: PlayerID,
     board: Board<N>,
     players: [&'arena mut (dyn Player<N, K>); 2],
     referee: &'arena mut (dyn TicTacToeReferee<N, K>),
 }
 
-impl<'arena, const N: usize, const K: u32> ExploringTicTacToeArena<'arena, N, K> {
+impl<'arena, const N: BoardSizeT, const K: u32> ExploringTicTacToeArena<'arena, N, K> {
     pub fn new(
         board: Board<N>,
         players: [&'arena mut dyn Player<N, K>; 2],
@@ -74,7 +74,7 @@ impl<'arena, const N: usize, const K: u32> ExploringTicTacToeArena<'arena, N, K>
     }
 }
 
-impl<const N: usize, const K: u32> TicTacToeArena<N, K>
+impl<const N: BoardSizeT, const K: u32> TicTacToeArena<N, K>
     for ExploringTicTacToeArena<'_, N, K>
 {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
