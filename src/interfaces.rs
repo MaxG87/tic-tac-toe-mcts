@@ -48,7 +48,7 @@ impl<const N: usize> fmt::Display for Board<N> {
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct PointPlacement {
     pub row: usize,
     pub column: usize,
