@@ -76,11 +76,16 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         args: GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
-        for (row, column, elem) in iter_mut_2d_array(&mut evaluations) {
+        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = joint_iter_2d_arrays(
+            iter_mut_2d_array(&mut evaluations),
+            into_iter_2d_array(&board.board),
+        )
+        .collect();
+
+        for (row, column, cur_evaluation, old_board_val) in flattened {
             let pp = PointPlacement { row, column };
-            let old_board_val = board.board[row][column];
             let move_result = self.referee.receive_move(board, pp, args.self_id);
-            *elem = match move_result {
+            *cur_evaluation = match move_result {
                 Result::Defeat | Result::IllegalMove => DEFEAT,
                 Result::Victory => VICTORY,
                 Result::Draw | Result::Undecided => DRAW,
