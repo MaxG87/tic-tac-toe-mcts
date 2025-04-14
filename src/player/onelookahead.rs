@@ -1,4 +1,5 @@
 use crate::interfaces::*;
+use crate::lib::*;
 
 pub struct OneLookaheadPlayer<const N: usize, const K: usize> {
     other_id: PlayerID,
@@ -23,14 +24,12 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
 
     fn get_loosing_moves(&mut self, board: &Board<N>, placements: &mut Placement<N>) -> bool {
         let mut has_loosing_move = false;
-        for row in 0..board.rows() {
-            for column in 0..board.columns() {
-                let pp = PointPlacement { row, column };
-                let mut mut_board = board.clone();
-                if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.other_id) {
-                    placements[row][column] = 1.0;
-                    has_loosing_move = true;
-                }
+        for (row, column, placement_cell) in iter_mut_2d_array(placements) {
+            let pp = PointPlacement { row, column };
+            let mut mut_board = board.clone();
+            if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.other_id) {
+                *placement_cell = 1.0;
+                has_loosing_move = true;
             }
         }
 
@@ -39,14 +38,12 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
 
     fn get_winning_moves(&mut self, board: &Board<N>, placements: &mut Placement<N>) -> bool {
         let mut has_winning_move = false;
-        for row in 0..board.rows() {
-            for column in 0..board.columns() {
-                let pp = PointPlacement { row, column };
-                let mut mut_board = board.clone();
-                if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.get_id()) {
-                    placements[row][column] = 1.0;
-                    has_winning_move = true;
-                }
+        for (row, column, placement_cell) in iter_mut_2d_array(placements) {
+            let pp = PointPlacement { row, column };
+            let mut mut_board = board.clone();
+            if Result::Victory == self.referee.receive_move(&mut mut_board, pp, self.get_id()) {
+                *placement_cell = 1.0;
+                has_winning_move = true;
             }
         }
 
