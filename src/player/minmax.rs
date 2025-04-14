@@ -13,7 +13,7 @@ struct GetEvaluationsArgs {
     max_depth: u32,
 }
 
-pub struct MinMaxPlayer<'player, const N: usize, const K: usize> {
+pub struct MinMaxPlayer<'player, const N: usize, const K: u32> {
     max_depth: u32,
     other_id: PlayerID,
     referee: &'player mut dyn TicTacToeReferee<N, K>,
@@ -27,7 +27,7 @@ fn get_maximum<const N: usize>(evaluations: &Evaluation<N>) -> f32 {
         .unwrap()
 }
 
-impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
+impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
     const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
 
     pub fn new(
@@ -140,7 +140,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
     }
 }
 
-impl<'player, const N: usize, const K: usize> Player<N, K>
+impl<'player, const N: usize, const K: u32> Player<N, K>
     for MinMaxPlayer<'player, N, K>
 {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
@@ -207,7 +207,7 @@ mod tests {
         #[case] expected: Placement<N>,
         #[case] lookahead: u32,
     ) {
-        const K: usize = 3;
+        const K: u32 = 3;
         let other_id: BoardStateEntry = Some(1);
         let self_id: BoardStateEntry = Some(0);
 

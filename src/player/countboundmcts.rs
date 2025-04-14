@@ -1,14 +1,14 @@
 use crate::arena::exploring::*;
 use crate::interfaces::*;
 
-pub struct CountBoundMCTSPlayer<'player, const N: usize, const K: usize> {
+pub struct CountBoundMCTSPlayer<'player, const N: usize, const K: u32> {
     id: PlayerID,
     nsamples: u32,
     player0: &'player mut dyn Player<N, K>,
     player1: &'player mut dyn Player<N, K>,
     referee: &'player mut dyn TicTacToeReferee<N, K>,
 }
-impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K> {
+impl<'player, const N: usize, const K: u32> CountBoundMCTSPlayer<'player, N, K> {
     #[allow(dead_code)]
     pub fn new(
         id: PlayerID,
@@ -26,7 +26,7 @@ impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K
         }
     }
 }
-impl<'player, const N: usize, const K: usize> Player<N, K>
+impl<'player, const N: usize, const K: u32> Player<N, K>
     for CountBoundMCTSPlayer<'player, N, K>
 {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
@@ -87,7 +87,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K>
     }
 }
 
-impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K> {
+impl<'player, const N: usize, const K: u32> CountBoundMCTSPlayer<'player, N, K> {
     fn do_one_step_sample(
         arena: &mut ExploringTicTacToeArena<N, K>,
     ) -> (Result, PlayerID, Option<PointPlacement>) {
