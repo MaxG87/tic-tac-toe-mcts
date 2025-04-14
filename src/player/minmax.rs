@@ -20,10 +20,9 @@ pub struct MinMaxPlayer<'player, const N: usize, const K: usize> {
     self_id: PlayerID,
 }
 
-fn get_maximum<const N: usize>(evaluations: &Evaluation<N>) -> &f32 {
-    evaluations
-        .iter()
-        .flat_map(|row| row.iter())
+fn get_maximum<const N: usize>(evaluations: &Evaluation<N>) -> f32 {
+    into_iter_2d_array(evaluations)
+        .map(|(_, _, val)| val)
         .reduce(|accum, val| if accum > val { accum } else { val })
         .unwrap()
 }
@@ -55,7 +54,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
 
     fn to_placement(evaluations: &Evaluation<N>) -> Placement<N> {
         let max = get_maximum(evaluations);
-        if max == &DEFEAT {
+        if max == DEFEAT {
             println!("Sure defeat detected. Using default placements.");
             return Self::DEFAULT_PLACEMENT;
         }
@@ -63,7 +62,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         let mut placements: Placement<N> = [[0.0; N]; N];
         for row in 0..N {
             for column in 0..N {
-                if evaluations[row][column] == *max {
+                if evaluations[row][column] == max {
                     placements[row][column] = 1.0;
                 }
             }
