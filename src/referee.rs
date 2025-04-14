@@ -3,7 +3,7 @@ use crate::interfaces::*;
 pub struct NaiveReferee<const N: usize, const K: u32> {}
 
 fn evaluate_board<const N: usize, const K: u32>(
-    board: &Board<N>,
+    board: &dyn AbstractBoard<usize>,
     player: PlayerID,
 ) -> Result {
     let mut has_free_cells = false;
@@ -34,7 +34,7 @@ fn has_winning_state_in_direction<const N: usize, const K: u32>(
     delta: (i32, i32),
     start_row: usize,
     start_column: usize,
-    board: &Board<N>,
+    board: &dyn AbstractBoard<usize>,
     player: PlayerID,
 ) -> bool {
     let (dx, dy) = delta;
