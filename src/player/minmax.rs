@@ -152,9 +152,7 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
     }
 }
 
-impl<'player, const N: usize, const K: u32> Player<N, K>
-    for MinMaxPlayer<'player, N, K>
-{
+impl<const N: usize, const K: u32> Player<N, K> for MinMaxPlayer<'_, N, K> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
