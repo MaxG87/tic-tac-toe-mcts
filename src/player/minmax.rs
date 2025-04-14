@@ -81,6 +81,9 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
         let mut placements: Placement<N> = [[0.0; N]; N];
         for row in 0..N {
             for column in 0..N {
+                // Direct comparsion is fine as float value was taken from the
+                // evaluations array.
+                #[allow(clippy::float_cmp)]
                 if evaluations[row][column] == max {
                     placements[row][column] = 1.0;
                 }
