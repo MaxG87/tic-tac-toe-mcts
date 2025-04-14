@@ -1,5 +1,6 @@
 use crate::interfaces::*;
 use crate::lib::*;
+use std::iter::*;
 
 const DEFEAT: f32 = -1.0;
 const VICTORY: f32 = 1.0;
@@ -101,23 +102,28 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
             self_id: args.other_id,
             max_depth: args.max_depth - 1,
         };
-        for (row, row_it) in evaluations.iter_mut().enumerate() {
-            for (column, elem) in row_it.iter_mut().enumerate() {
-                let pp = PointPlacement { row, column };
-                let old_board_val = board.board[row][column];
-                let move_result = self.referee.receive_move(board, pp, args.self_id);
-                *elem = match move_result {
-                    Result::Defeat | Result::IllegalMove => DEFEAT,
-                    Result::Victory => VICTORY,
-                    Result::Draw => DRAW,
-                    Result::Undecided => {
-                        let pp_evaluations = self.get_evaluations(board, pass_down_args.clone());
-                        -get_maximum(&pp_evaluations)
-                    }
-                };
-                board.board[row][column] = old_board_val;
-            }
+        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = zip(
+            iter_mut_2d_array(&mut evaluations),
+            into_iter_2d_array(&board.board),
+        )
+        .map(|(eval, board)| (eval.0, eval.1, eval.2, board.2))
+        .collect();
+
+        for (row, column, cur_evaluation, old_board_val) in flattened {
+            let pp = PointPlacement { row, column };
+            let move_result = self.referee.receive_move(board, pp, args.self_id);
+            *cur_evaluation = match move_result {
+                Result::Defeat | Result::IllegalMove => DEFEAT,
+                Result::Victory => VICTORY,
+                Result::Draw => DRAW,
+                Result::Undecided => {
+                    let pp_evaluations = self.get_evaluations(board, pass_down_args.clone());
+                    -get_maximum(&pp_evaluations)
+                }
+            };
+            board.board[row][column] = old_board_val;
         }
+
         if args.max_depth == self.max_depth {
             println!("{evaluations:?}");
         }
