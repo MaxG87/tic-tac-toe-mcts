@@ -1,11 +1,11 @@
 // use crate::player::countboundmcts::*;
 // use crate::player::onelookahead::*;
-use crate::game_state_storage::*;
-use arena::exploiting::*;
+use crate::game_state_storage::NaiveGameStateStorage;
+use arena::exploiting::ExploitingArena;
 use interfaces::{Board, BoardSizeT, Evaluation, Result, TicTacToeArena, WinLengthT};
-use player::cli::*;
-use player::minmax::*;
-use referee::*;
+use player::cli::CLIPlayer;
+use player::minmax::MinMaxPlayer;
+use referee::NaiveReferee;
 
 mod arena;
 mod game_state_storage;

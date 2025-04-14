@@ -1,4 +1,4 @@
-use crate::arena::exploring::*;
+use crate::arena::exploring::ExploringTicTacToeArena;
 use crate::interfaces::{
     Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result,
     TicTacToeArena, TicTacToeReferee, WinLengthT,

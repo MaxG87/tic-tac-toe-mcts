@@ -2,7 +2,7 @@ use crate::interfaces::{
     AbstractBoard, Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement,
     Result, TicTacToeArena, TicTacToeReferee, WinLengthT,
 };
-use crate::utils::*;
+use crate::utils::into_iter_2d_array;
 use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
 use rand::rng;
