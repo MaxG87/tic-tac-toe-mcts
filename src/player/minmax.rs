@@ -158,37 +158,23 @@ mod tests {
     use rstest::*;
 
     #[rstest]
-    // direct winning move, vertical
-    #[case(Board::<3> {
+    // direct winning moves
+    #[case(Board {
             board: [
-                [Some(0), None, None],
-                [None, Some(1), None],
-                [Some(0), None, Some(1)],
+                [None, Some(1), None, None, None],
+                [None, Some(0), None, None, None],
+                [None, None, Some(0), None, Some(0)],
+                [None, Some(0), None, None, Some(1)],
+                [None, Some(1), None, None, Some(1)],
             ],
         },
-        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-        1
-    )]
-    // direct winning move, horizontal
-    #[case(Board::<3> {
-            board: [
-                [Some(0), None, Some(0)],
-                [None, Some(1), None],
-                [None, None, Some(1)],
-            ],
-        },
-        [[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-        1
-    )]
-    // direct winning move, diagonal
-    #[case(Board::<3> {
-            board: [
-                [Some(0), None, Some(1)],
-                [None, None, Some(1)],
-                [None, None, Some(0)],
-            ],
-        },
-        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]],
+        [
+            [1.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0, 0.0],
+        ],
         1
     )]
     fn correct_moves_are_found<const N: usize>(
