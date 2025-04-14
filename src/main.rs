@@ -8,6 +8,7 @@ use referee::*;
 
 mod arena;
 mod interfaces;
+mod lib;
 mod player;
 mod referee;
 
