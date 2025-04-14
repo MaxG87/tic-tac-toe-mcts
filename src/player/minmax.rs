@@ -166,7 +166,8 @@ mod tests {
                 [Some(0), None, Some(1)],
             ],
         },
-        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+        1
     )]
     // direct winning move, horizontal
     #[case(Board::<3> {
@@ -176,7 +177,8 @@ mod tests {
                 [None, None, Some(1)],
             ],
         },
-        [[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        [[0.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+        1
     )]
     // direct winning move, diagonal
     #[case(Board::<3> {
@@ -186,20 +188,21 @@ mod tests {
                 [None, None, Some(0)],
             ],
         },
-        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
+        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]],
+        1
     )]
     fn correct_moves_are_found<const N: usize>(
         #[case] board: Board<N>,
         #[case] expected: Placement<N>,
+        #[case] lookahead: u32,
     ) {
         const K: usize = 3;
-        let max_depth = 1;
         let other_id: BoardStateEntry = Some(1);
         let self_id: BoardStateEntry = Some(0);
 
         let mut referee = NaiveReferee::<N, K> {};
         let mut player = MinMaxPlayer::<N, K> {
-            max_depth,
+            max_depth: lookahead,
             self_id: self_id.unwrap(),
             other_id: other_id.unwrap(),
             referee: &mut referee,
