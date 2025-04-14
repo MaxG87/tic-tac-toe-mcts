@@ -1,7 +1,8 @@
 use crate::interfaces::*;
 use crate::utils::*;
-use rand::distributions::*;
+use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
+use rand::rng;
 
 pub struct ExploringTicTacToeArena<'arena, const N: usize, const K: u32> {
     active_player: usize,
@@ -66,7 +67,7 @@ impl<'arena, const N: usize, const K: u32> ExploringTicTacToeArena<'arena, N, K>
         }
 
         // Sample candidate from eligble options
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let dist = WeightedIndex::new(weights).unwrap();
         let sampled_idx = dist.sample(&mut rng);
         Some(pps[sampled_idx])
