@@ -2,6 +2,7 @@ use crate::utils::*;
 use std::fmt;
 
 pub type BoardSizeT = usize;
+pub type WinLengthT = BoardSizeT;
 pub type PlayerID = usize;
 pub type BoardStateEntry = Option<PlayerID>;
 // TODO: Apply NewType idiom for Evaluation and Placement
@@ -115,7 +116,7 @@ impl fmt::Display for Result {
     }
 }
 
-pub trait TicTacToeReferee<const N: BoardSizeT, const K: u32> {
+pub trait TicTacToeReferee<const N: BoardSizeT, const K: WinLengthT> {
     fn receive_move(
         &mut self,
         board: &mut Board<N>,
@@ -124,12 +125,12 @@ pub trait TicTacToeReferee<const N: BoardSizeT, const K: u32> {
     ) -> Result;
 }
 
-pub trait Player<const N: usize, const K: u32> {
+pub trait Player<const N: usize, const K: WinLengthT> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N>;
     fn get_id(&self) -> PlayerID;
 }
 
-pub trait TicTacToeArena<const N: usize, const K: u32> {
+pub trait TicTacToeArena<const N: usize, const K: WinLengthT> {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>);
     fn get_board(&self) -> Board<N>;
 }

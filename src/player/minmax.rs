@@ -14,7 +14,7 @@ struct GetEvaluationsArgs {
     max_depth: u32,
 }
 
-pub struct MinMaxPlayer<'player, const N: BoardSizeT, const K: u32> {
+pub struct MinMaxPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
     max_depth: u32,
     other_id: PlayerID,
     game_state_storage: &'player mut dyn GameStateStorage<N, Evaluation<N>>,
@@ -29,7 +29,7 @@ fn get_maximum<const N: BoardSizeT>(evaluations: &Evaluation<N>) -> f32 {
         .unwrap()
 }
 
-impl<'player, const N: BoardSizeT, const K: u32> MinMaxPlayer<'player, N, K> {
+impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N, K> {
     const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
 
     pub fn new(
@@ -152,7 +152,7 @@ impl<'player, const N: BoardSizeT, const K: u32> MinMaxPlayer<'player, N, K> {
     }
 }
 
-impl<const N: BoardSizeT, const K: u32> Player<N, K> for MinMaxPlayer<'_, N, K> {
+impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for MinMaxPlayer<'_, N, K> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
@@ -217,7 +217,7 @@ mod tests {
         #[case] expected: Placement<N>,
         #[case] lookahead: u32,
     ) {
-        const K: u32 = 3;
+        const K: WinLengthT = 3;
         let other_id = 1;
         let self_id = 0;
         let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();

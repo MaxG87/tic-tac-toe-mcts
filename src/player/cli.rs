@@ -1,11 +1,11 @@
 use crate::interfaces::*;
 use std::io;
 
-pub struct CLIPlayer<const N: BoardSizeT, const K: u32> {
+pub struct CLIPlayer<const N: BoardSizeT, const K: WinLengthT> {
     pub id: PlayerID,
 }
 
-impl<const N: BoardSizeT, const K: u32> CLIPlayer<N, K> {
+impl<const N: BoardSizeT, const K: WinLengthT> CLIPlayer<N, K> {
     fn get_point_placement(&self) -> PointPlacement {
         let _ = self; // self is not needed here.
         loop {
@@ -29,7 +29,7 @@ impl<const N: BoardSizeT, const K: u32> CLIPlayer<N, K> {
     }
 }
 
-impl<const N: BoardSizeT, const K: u32> Player<N, K> for CLIPlayer<N, K> {
+impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for CLIPlayer<N, K> {
     fn do_move(&mut self, _: &Board<N>) -> Placement<N> {
         let point_placement = self.get_point_placement();
         let mut placements: Placement<N> = [[0.0; N]; N];

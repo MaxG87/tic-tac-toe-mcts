@@ -1,8 +1,8 @@
 use crate::interfaces::*;
 
-pub struct NaiveReferee<const N: BoardSizeT, const K: u32> {}
+pub struct NaiveReferee<const N: BoardSizeT, const K: WinLengthT> {}
 
-fn evaluate_board<const N: BoardSizeT, const K: u32>(
+fn evaluate_board<const N: BoardSizeT, const K: WinLengthT>(
     board: &dyn AbstractBoard<BoardSizeT>,
     player: PlayerID,
 ) -> Result {
@@ -30,7 +30,7 @@ fn evaluate_board<const N: BoardSizeT, const K: u32>(
     Result::Undecided
 }
 
-fn has_winning_state_in_direction<const N: BoardSizeT, const K: u32>(
+fn has_winning_state_in_direction<const N: BoardSizeT, const K: WinLengthT>(
     delta: (i32, i32),
     start_row: BoardSizeT,
     start_column: BoardSizeT,
@@ -55,7 +55,9 @@ fn has_winning_state_in_direction<const N: BoardSizeT, const K: u32>(
     has_won
 }
 
-impl<const N: BoardSizeT, const K: u32> TicTacToeReferee<N, K> for NaiveReferee<N, K> {
+impl<const N: BoardSizeT, const K: WinLengthT> TicTacToeReferee<N, K>
+    for NaiveReferee<N, K>
+{
     fn receive_move(
         &mut self,
         board: &mut Board<N>,
