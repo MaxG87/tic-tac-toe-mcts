@@ -1,4 +1,7 @@
-use crate::interfaces::*;
+use crate::interfaces::{
+    AbstractBoard, Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement,
+    Result, TicTacToeArena, TicTacToeReferee, WinLengthT,
+};
 use crate::utils::*;
 use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
