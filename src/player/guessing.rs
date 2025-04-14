@@ -33,8 +33,8 @@ mod tests {
         let placement = player.do_move(&board);
         let values = placement
             .into_iter()
-            .flat_map(|row| row.into_iter())
-            .map(|f| f.to_bits())
+            .flat_map(std::iter::IntoIterator::into_iter)
+            .map(f32::to_bits)
             .collect::<HashSet<_>>();
         assert_eq!(values.len(), 1);
     }

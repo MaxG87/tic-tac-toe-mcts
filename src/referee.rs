@@ -41,16 +41,16 @@ fn has_winning_state_in_direction<const N: BoardSizeT, const K: WinLengthT>(
     player: PlayerID,
 ) -> bool {
     let (dx, dy) = delta;
-    let end_x: i32 = dx * (K - 1) as i32 + start_row as i32;
-    let end_y: i32 = dy * (K - 1) as i32 + start_column as i32;
+    let end_x: i32 = dx * i32::from(K - 1) + start_row as i32;
+    let end_y: i32 = dy * i32::from(K - 1) + start_column as i32;
     if end_x < 0 || end_x >= N as i32 || end_y < 0 || end_y >= N as i32 {
         return false;
     }
 
     let mut has_won = true;
     for k in 0..K {
-        let row = (start_row as i32 + dx * k as i32) as BoardSizeT;
-        let column = (start_column as i32 + dy * k as i32) as BoardSizeT;
+        let row = (start_row as i32 + dx * i32::from(k)) as BoardSizeT;
+        let column = (start_column as i32 + dy * i32::from(k)) as BoardSizeT;
         let pp = PointPlacement { row, column };
         has_won &= board.get_placement_at(pp) == Some(player);
     }

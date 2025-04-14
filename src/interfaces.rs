@@ -2,7 +2,7 @@ use crate::utils::into_iter_2d_array;
 use std::fmt;
 
 pub type BoardSizeT = usize;
-pub type WinLengthT = BoardSizeT;
+pub type WinLengthT = u16;
 pub type PlayerID = usize;
 pub type BoardStateEntry = Option<PlayerID>;
 // TODO: Apply NewType idiom for Evaluation and Placement
