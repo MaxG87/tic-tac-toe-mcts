@@ -8,9 +8,9 @@ use referee::*;
 
 mod arena;
 mod interfaces;
-mod lib;
 mod player;
 mod referee;
+mod utils;
 
 fn main() {
     const N: usize = 7;

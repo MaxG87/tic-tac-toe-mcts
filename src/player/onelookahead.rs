@@ -1,5 +1,5 @@
 use crate::interfaces::*;
-use crate::lib::*;
+use crate::utils::*;
 
 pub struct OneLookaheadPlayer<const N: usize, const K: usize> {
     other_id: PlayerID,
