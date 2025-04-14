@@ -10,6 +10,7 @@ pub struct OneLookaheadPlayer<const N: usize, const K: usize> {
 impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
     const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
 
+    #[allow(dead_code)]
     pub fn new(
         other_id: PlayerID,
         referee: Box<dyn TicTacToeReferee<N, K>>,
