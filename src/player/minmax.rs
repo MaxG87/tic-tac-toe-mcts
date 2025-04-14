@@ -218,15 +218,15 @@ mod tests {
         #[case] lookahead: u32,
     ) {
         const K: u32 = 3;
-        let other_id: BoardStateEntry = Some(1);
-        let self_id: BoardStateEntry = Some(0);
+        let other_id = 1;
+        let self_id = 0;
         let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
 
         let mut referee = NaiveReferee::<N, K> {};
         let mut player = MinMaxPlayer::<N, K> {
             max_depth: lookahead,
-            self_id: self_id.unwrap(),
-            other_id: other_id.unwrap(),
+            self_id,
+            other_id,
             game_state_storage: &mut game_state_storage,
             referee: &mut referee,
         };
