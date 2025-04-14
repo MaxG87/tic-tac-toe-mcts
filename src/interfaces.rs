@@ -1,4 +1,4 @@
-use crate::utils::*;
+use crate::utils::into_iter_2d_array;
 use std::fmt;
 
 pub type BoardSizeT = usize;
