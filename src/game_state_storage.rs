@@ -67,7 +67,7 @@ mod tests {
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth);
-        let result: Option<&String> = storage.get_payload(&board, depth);
+        let result = storage.get_payload(&board, depth);
         assert_eq!(result, Some(&payload));
     }
 
@@ -82,7 +82,39 @@ mod tests {
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth + 1);
-        let result: Option<&String> = storage.get_payload(&board, depth);
+        let result = storage.get_payload(&board, depth);
         assert_eq!(result, Some(&payload));
+    }
+
+    #[test]
+    fn test_nothing_retrived_for_wrong_payload() {
+        /// This test tests wether the storage can retrieve states with a bigger lookahead than the
+        /// one it was registered with.
+        const N: usize = 3;
+        let payload = "Some Payload!".to_string();
+        let depth = 2;
+        let board = Board::<N>::new();
+        let mut new_board = Board::<N>::new();
+        let mut storage = NaiveGameStateStorage::<N, String>::new();
+
+        new_board.set_placement_at(PointPlacement { row: 0, column: 0 }, Some(1));
+        storage.register_game_state(&board, payload.clone(), depth + 1);
+        let result = storage.get_payload(&new_board, depth);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_nothing_retrived_for_to_deep_depth() {
+        /// This test tests wether the storage can retrieve states with a bigger lookahead than the
+        /// one it was registered with.
+        const N: usize = 7;
+        let payload = "Some Payload!".to_string();
+        let depth = 5;
+        let board = Board::<N>::new();
+        let mut storage = NaiveGameStateStorage::<N, String>::new();
+
+        storage.register_game_state(&board, payload.clone(), depth - 1);
+        let result = storage.get_payload(&board, depth);
+        assert_eq!(result, None);
     }
 }
