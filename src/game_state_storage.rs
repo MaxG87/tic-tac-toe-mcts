@@ -1,4 +1,4 @@
-use crate::interfaces::Board;
+use crate::board::Board;
 use std::collections::HashMap;
 
 pub trait GameStateStorage<
@@ -7,13 +7,8 @@ pub trait GameStateStorage<
     DepthT: std::cmp::PartialOrd + Copy = u32,
 >
 {
-    fn register_game_state(
-        &mut self,
-        board: &Board<N>,
-        payload: Payload,
-        depth: DepthT,
-    );
-    fn get_payload(&self, board: &Board<N>, depth: DepthT) -> Option<&Payload>;
+    fn register_game_state(&mut self, board: &Board, payload: Payload, depth: DepthT);
+    fn get_payload(&self, board: &Board, depth: DepthT) -> Option<&Payload>;
 }
 
 pub struct NaiveGameStateStorage<
@@ -21,7 +16,7 @@ pub struct NaiveGameStateStorage<
     Payload,
     DepthT: std::cmp::PartialOrd + Copy = u32,
 > {
-    storage: HashMap<Board<N>, (DepthT, Payload)>,
+    storage: HashMap<Board, (DepthT, Payload)>,
 }
 
 impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
@@ -44,12 +39,7 @@ impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
     /// * `board` - The board to register.
     /// * `payload` - The payload for the given board.
     /// * `depth` - The search depth used to derive the payload.
-    fn register_game_state(
-        &mut self,
-        board: &Board<N>,
-        payload: Payload,
-        depth: DepthT,
-    ) {
+    fn register_game_state(&mut self, board: &Board, payload: Payload, depth: DepthT) {
         if self.get_payload(board, depth).is_none() {
             self.storage.insert(board.clone(), (depth, payload));
         }
@@ -62,7 +52,7 @@ impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
     /// # Arguments
     /// * `board` - The board to retrieve the payload for.
     /// * `depth` - The minimal required search depth.
-    fn get_payload(&self, board: &Board<N>, depth: DepthT) -> Option<&Payload> {
+    fn get_payload(&self, board: &Board, depth: DepthT) -> Option<&Payload> {
         self.storage.get(board).and_then(|(stored_depth, payload)| {
             if *stored_depth >= depth {
                 Some(payload)
@@ -76,14 +66,14 @@ impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interfaces::{AbstractBoard, PointPlacement};
+    use crate::interfaces::PointPlacement;
 
     #[test]
     fn test_can_store_and_retrieve() {
         const N: usize = 3;
         let payload = "Some Payload!".to_string();
         let depth = 2;
-        let board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth);
@@ -98,7 +88,7 @@ mod tests {
         const N: usize = 3;
         let payload = "Some Payload!".to_string();
         let depth = 2;
-        let board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth + 1);
@@ -113,11 +103,12 @@ mod tests {
         const N: usize = 3;
         let payload = "Some Payload!".to_string();
         let depth = 2;
-        let board = Board::<N>::new();
-        let mut new_board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
+        let mut new_board =
+            Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
-        new_board.set_placement_at(PointPlacement { row: 0, column: 0 }, Some(1));
+        new_board[PointPlacement { row: 0, column: 0 }] = Some(1);
         storage.register_game_state(&board, payload.clone(), depth + 1);
         let result = storage.get_payload(&new_board, depth);
         assert_eq!(result, None);
@@ -130,7 +121,7 @@ mod tests {
         const N: usize = 7;
         let payload = "Some Payload!".to_string();
         let depth = 5;
-        let board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth - 1);
@@ -144,7 +135,7 @@ mod tests {
         let deep_payload = "Deep Payload!".to_string();
         let shallow_payload = "Shallow Payload!".to_string();
         let depth = 5;
-        let board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, shallow_payload.clone(), depth - 1);
@@ -161,7 +152,7 @@ mod tests {
         let deep_payload = "Deep Payload!".to_string();
         let shallow_payload = "Shallow Payload!".to_string();
         let depth = 5;
-        let board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let mut storage = NaiveGameStateStorage::<N, String>::new();
 
         storage.register_game_state(&board, deep_payload.clone(), depth);

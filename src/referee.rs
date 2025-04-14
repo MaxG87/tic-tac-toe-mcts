@@ -1,12 +1,12 @@
+use crate::board::Board;
 use crate::interfaces::{
-    AbstractBoard, Board, BoardSizeT, PlayerID, PointPlacement, Result,
-    TicTacToeReferee, WinLengthT,
+    BoardSizeT, PlayerID, PointPlacement, Result, TicTacToeReferee, WinLengthT,
 };
 
 pub struct NaiveReferee<const N: BoardSizeT, const K: WinLengthT> {}
 
 fn evaluate_board<const N: BoardSizeT, const K: WinLengthT>(
-    board: &dyn AbstractBoard<BoardSizeT>,
+    board: &Board,
     player: PlayerID,
 ) -> Result {
     let mut has_free_cells = false;
@@ -17,7 +17,7 @@ fn evaluate_board<const N: BoardSizeT, const K: WinLengthT>(
         (1, -1), // backslash diagonal
     ];
 
-    for (pp, value) in board.flatten() {
+    for (pp, value) in board.iter_2d() {
         has_free_cells |= value.is_none();
         for cur in deltas {
             if has_winning_state_in_direction::<N, K>(
@@ -37,7 +37,7 @@ fn has_winning_state_in_direction<const N: BoardSizeT, const K: WinLengthT>(
     delta: (i32, i32),
     start_row: BoardSizeT,
     start_column: BoardSizeT,
-    board: &dyn AbstractBoard<BoardSizeT>,
+    board: &Board,
     player: PlayerID,
 ) -> bool {
     let (dx, dy) = delta;
@@ -52,7 +52,7 @@ fn has_winning_state_in_direction<const N: BoardSizeT, const K: WinLengthT>(
         let row = (start_row as i32 + dx * i32::from(k)) as BoardSizeT;
         let column = (start_column as i32 + dy * i32::from(k)) as BoardSizeT;
         let pp = PointPlacement { row, column };
-        has_won &= board.get_placement_at(pp) == Some(player);
+        has_won &= board[pp] == Some(player);
     }
 
     has_won
@@ -63,14 +63,14 @@ impl<const N: BoardSizeT, const K: WinLengthT> TicTacToeReferee<N, K>
 {
     fn receive_move(
         &mut self,
-        board: &mut Board<N>,
+        board: &mut Board,
         placement: PointPlacement,
         player_id: PlayerID,
     ) -> Result {
         if board.has_placement_at(placement) {
             Result::IllegalMove
         } else {
-            board.set_placement_at(placement, Some(player_id));
+            board[placement] = Some(player_id);
             evaluate_board::<N, K>(board, player_id)
         }
     }

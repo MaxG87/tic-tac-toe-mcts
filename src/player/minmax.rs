@@ -1,7 +1,8 @@
+use crate::board::Board;
 use crate::game_state_storage::GameStateStorage;
 use crate::interfaces::{
-    AbstractBoard, Board, BoardSizeT, BoardStateEntry, Evaluation, Placement, Player,
-    PlayerID, PointPlacement, Result, TicTacToeReferee, WinLengthT,
+    BoardSizeT, BoardStateEntry, Evaluation, Placement, Player, PlayerID,
+    PointPlacement, Result, TicTacToeReferee, WinLengthT,
 };
 use crate::utils::{into_iter_2d_array, iter_mut_2d_array, joint_iter_2d_arrays};
 use std::iter::Iterator;
@@ -53,7 +54,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 
     fn get_evaluations(
         &mut self,
-        board: &mut Board<N>,
+        board: &mut Board,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         if let Some(evaluations) =
@@ -94,14 +95,17 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 
     fn get_evaluations_1(
         &mut self,
-        board: &mut Board<N>,
+        board: &mut Board,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
         let flattened: Vec<(BoardSizeT, BoardSizeT, &mut f32, BoardStateEntry)> =
             joint_iter_2d_arrays(
                 iter_mut_2d_array(&mut evaluations),
-                into_iter_2d_array(&board.board),
+                board
+                    .clone()
+                    .into_iter_2d()
+                    .map(|(pp, elem)| (pp.row, pp.column, elem)),
             )
             .collect();
 
@@ -113,14 +117,14 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
                 Result::Victory => VICTORY,
                 Result::Draw | Result::Undecided => DRAW,
             };
-            board.set_placement_at(pp, old_board_val);
+            board[pp] = old_board_val;
         }
         evaluations
     }
 
     fn get_evaluations_n(
         &mut self,
-        board: &mut Board<N>,
+        board: &mut Board,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
@@ -132,7 +136,10 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
         let flattened: Vec<(BoardSizeT, BoardSizeT, &mut f32, BoardStateEntry)> =
             joint_iter_2d_arrays(
                 iter_mut_2d_array(&mut evaluations),
-                into_iter_2d_array(&board.board),
+                board
+                    .clone()
+                    .into_iter_2d()
+                    .map(|(pp, elem)| (pp.row, pp.column, elem)),
             )
             .collect();
 
@@ -148,7 +155,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
                     -get_maximum(&pp_evaluations)
                 }
             };
-            board.set_placement_at(pp, old_board_val);
+            board[pp] = old_board_val;
         }
 
         if args.max_depth == self.max_depth {
@@ -159,7 +166,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 }
 
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for MinMaxPlayer<'_, N, K> {
-    fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
+    fn do_move(&mut self, board: &Board) -> Placement<N> {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
             self_id: self.self_id,
@@ -184,15 +191,15 @@ mod tests {
 
     #[rstest]
     // direct winning moves
-    #[case(Board {
-            board: [
-                [None, Some(1), None, None, None],
-                [None, Some(0), None, None, None],
-                [None, None, Some(0), None, Some(0)],
-                [None, Some(0), None, None, Some(1)],
-                [None, Some(1), None, None, Some(1)],
-            ],
-        },
+    #[case(Board::new_with_values(
+        [
+            [None, Some(1), None, None, None],
+            [None, Some(0), None, None, None],
+            [None, None, Some(0), None, Some(0)],
+            [None, Some(0), None, None, Some(1)],
+            [None, Some(1), None, None, Some(1)],
+        ]
+    ).unwrap(),
         [
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
@@ -203,14 +210,15 @@ mod tests {
         1
     )]
     // indirect winning moves
-    #[case(Board {
-            board: [
+    #[case(Board::new_with_values(
+            [
                 [None, None, Some(0), Some(1)],
                 [None, Some(1), None, None],
                 [Some(0), None, None, None],
-                [Some(1), None, None, None],
-            ]
-        },
+                [Some(1), None, None, None]
+            ],
+
+        ).unwrap(),
         [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
@@ -220,7 +228,7 @@ mod tests {
         3
     )]
     fn correct_moves_are_found<const N: BoardSizeT>(
-        #[case] board: Board<N>,
+        #[case] board: Board,
         #[case] expected: Placement<N>,
         #[case] lookahead: u32,
     ) {

@@ -1,13 +1,15 @@
 // use crate::player::countboundmcts::*;
 // use crate::player::onelookahead::*;
+use crate::board::Board;
 use crate::game_state_storage::NaiveGameStateStorage;
 use arena::exploiting::ExploitingArena;
-use interfaces::{Board, BoardSizeT, Evaluation, Result, TicTacToeArena, WinLengthT};
+use interfaces::{BoardSizeT, Evaluation, Result, TicTacToeArena, WinLengthT};
 use player::cli::CLIPlayer;
 use player::minmax::MinMaxPlayer;
 use referee::NaiveReferee;
 
 mod arena;
+mod board;
 mod game_state_storage;
 mod interfaces;
 mod player;
@@ -30,10 +32,10 @@ fn main() {
     //     &mut mcts_referee,
     // );
     let mut player0 =
-        MinMaxPlayer::<N, K>::new(4, 1, &mut game_state_storage, &mut mcts_referee, 0);
+        MinMaxPlayer::<N, K>::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
-    let board = Board::<N>::new();
+    let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
     let mut arena = ExploitingArena::<N, K>::new(
         0,
         board,
