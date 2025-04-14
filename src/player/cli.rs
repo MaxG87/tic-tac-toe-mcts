@@ -1,4 +1,6 @@
-use crate::interfaces::*;
+use crate::interfaces::{
+    Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, WinLengthT,
+};
 use std::io;
 
 pub struct CLIPlayer<const N: BoardSizeT, const K: WinLengthT> {
