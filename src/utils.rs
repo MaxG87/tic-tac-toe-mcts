@@ -12,10 +12,9 @@ pub fn iter_2d_array<T, const N: usize>(
 pub fn iter_mut_2d_array<T, const N: usize>(
     array: &mut [[T; N]; N],
 ) -> impl Iterator<Item = (usize, usize, &mut T)> {
-    array
-        .iter_mut()
-        .enumerate()
-        .flat_map(|(r, row)| row.iter_mut().enumerate().map(move |(c, val)| (r, c, val)))
+    array.iter_mut().enumerate().flat_map(|(r, row)| {
+        row.iter_mut().enumerate().map(move |(c, val)| (r, c, val))
+    })
 }
 
 pub fn into_iter_2d_array<T: Clone, const N: usize>(
@@ -75,8 +74,10 @@ mod tests {
         const N: usize = 3;
         let array = [[0, 1, 2], [3, 4, 5], [6, 7, 8]];
         let array2 = [[8, 7, 6], [5, 4, 3], [2, 1, 0]];
-        let mut result =
-            joint_iter_2d_arrays(into_iter_2d_array(&array), into_iter_2d_array(&array2));
+        let mut result = joint_iter_2d_arrays(
+            into_iter_2d_array(&array),
+            into_iter_2d_array(&array2),
+        );
         for row in 0..3 {
             for column in 0..3 {
                 let expected_val = row * N + column;

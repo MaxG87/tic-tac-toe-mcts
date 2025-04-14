@@ -2,7 +2,10 @@ use crate::interfaces::*;
 
 pub struct NaiveReferee<const N: usize, const K: usize> {}
 
-fn evaluate_board<const N: usize, const K: usize>(board: &Board<N>, player: PlayerID) -> Result {
+fn evaluate_board<const N: usize, const K: usize>(
+    board: &Board<N>,
+    player: PlayerID,
+) -> Result {
     let mut has_free_cells = false;
     let deltas = [
         (0, 1),  // horizontal
@@ -14,7 +17,9 @@ fn evaluate_board<const N: usize, const K: usize>(board: &Board<N>, player: Play
     for (pp, value) in board.flatten() {
         has_free_cells |= value.is_none();
         for cur in deltas {
-            if has_winning_state_in_direction::<N, K>(cur, pp.row, pp.column, board, player) {
+            if has_winning_state_in_direction::<N, K>(
+                cur, pp.row, pp.column, board, player,
+            ) {
                 return Result::Victory;
             }
         }

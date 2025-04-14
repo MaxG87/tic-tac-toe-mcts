@@ -80,11 +80,12 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
-        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = joint_iter_2d_arrays(
-            iter_mut_2d_array(&mut evaluations),
-            into_iter_2d_array(&board.board),
-        )
-        .collect();
+        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> =
+            joint_iter_2d_arrays(
+                iter_mut_2d_array(&mut evaluations),
+                into_iter_2d_array(&board.board),
+            )
+            .collect();
 
         for (row, column, cur_evaluation, old_board_val) in flattened {
             let pp = PointPlacement { row, column };
@@ -110,11 +111,12 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
             self_id: args.other_id,
             max_depth: args.max_depth - 1,
         };
-        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = joint_iter_2d_arrays(
-            iter_mut_2d_array(&mut evaluations),
-            into_iter_2d_array(&board.board),
-        )
-        .collect();
+        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> =
+            joint_iter_2d_arrays(
+                iter_mut_2d_array(&mut evaluations),
+                into_iter_2d_array(&board.board),
+            )
+            .collect();
 
         for (row, column, cur_evaluation, old_board_val) in flattened {
             let pp = PointPlacement { row, column };
@@ -138,7 +140,9 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
     }
 }
 
-impl<'player, const N: usize, const K: usize> Player<N, K> for MinMaxPlayer<'player, N, K> {
+impl<'player, const N: usize, const K: usize> Player<N, K>
+    for MinMaxPlayer<'player, N, K>
+{
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {

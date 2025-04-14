@@ -19,14 +19,21 @@ impl<const N: usize, Payload> NaiveGameStateStorage<N, Payload> {
     }
 }
 
-impl<const N: usize, Payload> GameStateStorage<N, Payload> for NaiveGameStateStorage<N, Payload> {
+impl<const N: usize, Payload> GameStateStorage<N, Payload>
+    for NaiveGameStateStorage<N, Payload>
+{
     /// Registers a game state with a given payload and depth.
     ///
     /// # Arguments
     /// * `board` - The board to register.
     /// * `payload` - The payload for the given board.
     /// * `depth` - The search depth used to derive the payload.
-    fn register_game_state(&mut self, board: &Board<N>, payload: Payload, depth: usize) {
+    fn register_game_state(
+        &mut self,
+        board: &Board<N>,
+        payload: Payload,
+        depth: usize,
+    ) {
         self.storage.insert(board.clone(), (depth, payload));
     }
     /// Retrieves the payload for a given board.

@@ -30,8 +30,12 @@ fn main() {
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
     let board = Board::<N>::new();
-    let mut arena =
-        ExploitingArena::<N, K>::new(0, board, [&mut player1, &mut player0], &mut referee);
+    let mut arena = ExploitingArena::<N, K>::new(
+        0,
+        board,
+        [&mut player1, &mut player0],
+        &mut referee,
+    );
     loop {
         let (result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(
@@ -47,7 +51,9 @@ fn main() {
             Result::Defeat => Some(format!("Player {player_id} lost.")),
             Result::Victory => Some(format!("Player {player_id} won.")),
             Result::Draw => Some("The game ended draw!".to_string()),
-            Result::IllegalMove => Some(format!("Player {player_id} made an illegal move.")),
+            Result::IllegalMove => {
+                Some(format!("Player {player_id} made an illegal move."))
+            }
             Result::Undecided => None,
         };
         if maybe_result_msg.is_some() {
