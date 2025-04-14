@@ -1,5 +1,8 @@
 use crate::arena::exploring::*;
-use crate::interfaces::*;
+use crate::interfaces::{
+    Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result,
+    TicTacToeArena, TicTacToeReferee, WinLengthT,
+};
 
 pub struct CountBoundMCTSPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
     id: PlayerID,
