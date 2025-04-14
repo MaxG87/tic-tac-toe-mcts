@@ -137,6 +137,23 @@ mod tests {
     }
 
     #[test]
+    fn test_registering_deeper_boards_overwrites_shallower_ones() {
+        const N: usize = 7;
+        let deep_payload = "Deep Payload!".to_string();
+        let shallow_payload = "Shallow Payload!".to_string();
+        let depth = 5;
+        let board = Board::<N>::new();
+        let mut storage = NaiveGameStateStorage::<N, String>::new();
+
+        storage.register_game_state(&board, shallow_payload.clone(), depth - 1);
+        storage.register_game_state(&board, deep_payload.clone(), depth);
+        let shallow_result = storage.get_payload(&board, depth - 1);
+        let deep_result = storage.get_payload(&board, depth);
+        assert_eq!(shallow_result, Some(&deep_payload));
+        assert_eq!(deep_result, Some(&deep_payload));
+    }
+
+    #[test]
     fn test_registering_shallow_board_does_not_overwrite_deeper_one() {
         const N: usize = 7;
         let deep_payload = "Deep Payload!".to_string();
