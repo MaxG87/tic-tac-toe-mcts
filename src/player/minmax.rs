@@ -37,7 +37,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         referee: &'player mut dyn TicTacToeReferee<N, K>,
         self_id: PlayerID,
     ) -> MinMaxPlayer<N, K> {
-        MinMaxPlayer {
+        Self {
             other_id,
             self_id,
             max_depth,
@@ -53,11 +53,11 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         }
     }
 
-    fn to_placement(&self, evaluations: &Evaluation<N>) -> Placement<N> {
+    fn to_placement(evaluations: &Evaluation<N>) -> Placement<N> {
         let max = get_maximum(evaluations);
         if max == &DEFEAT {
             println!("Sure defeat detected. Using default placements.");
-            return MinMaxPlayer::<N, K>::DEFAULT_PLACEMENT;
+            return Self::DEFAULT_PLACEMENT;
         }
 
         let mut placements: Placement<N> = [[0.0; N]; N];
@@ -139,7 +139,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for MinMaxPlayer<'pla
             max_depth: self.max_depth,
         };
         let evaluations = self.get_evaluations(&mut board, args);
-        self.to_placement(&evaluations)
+        Self::to_placement(&evaluations)
     }
 
     fn get_id(&self) -> PlayerID {
