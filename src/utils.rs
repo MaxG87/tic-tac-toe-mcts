@@ -1,5 +1,54 @@
-use crate::interfaces::BoardSizeT;
-use std::iter::{Iterator, zip};
+use crate::interfaces::{BoardSizeT, BoardStateEntry, PointPlacement};
+use std::ops::IndexMut;
+use std::{
+    iter::{zip, Iterator},
+    ops::Index,
+};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Board {
+    nrows: u16,
+    ncolumns: u16,
+    board: Vec<BoardStateEntry>,
+}
+
+#[allow(dead_code)]
+impl Board {
+    pub fn new(nrows: u16, ncolumns: u16) -> Self {
+        let nelems = usize::from(nrows) * usize::from(ncolumns);
+        let board = vec![None; nelems];
+        Board {
+            nrows,
+            ncolumns,
+            board,
+        }
+    }
+
+    pub fn has_placement_at(&self, pp: PointPlacement) -> bool {
+        let index = Self::to_index(pp);
+        self.board[index].is_some()
+    }
+
+    fn to_index(pp: PointPlacement) -> usize {
+        pp.row * pp.column
+    }
+}
+
+impl Index<PointPlacement> for Board {
+    type Output = BoardStateEntry;
+
+    fn index(&self, index: PointPlacement) -> &Self::Output {
+        let index = Self::to_index(index);
+        &self.board[index]
+    }
+}
+
+impl IndexMut<PointPlacement> for Board {
+    fn index_mut(&mut self, index: PointPlacement) -> &mut Self::Output {
+        let index = Self::to_index(index);
+        &mut self.board[index]
+    }
+}
 
 pub fn iter_2d_array<T, const N: BoardSizeT>(
     array: &[[T; N]; N],
@@ -39,6 +88,27 @@ pub fn joint_iter_2d_arrays<
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::*;
+
+    #[rstest]
+    #[case(5, 5)]
+    #[case(3, 3)]
+    #[case(5, 10)]
+    #[case(31, 11)]
+    fn test_basic_board_workflow(#[case] nrows: u16, #[case] ncolumns: u16) {
+        let mut board = Board::new(nrows, ncolumns);
+        let pp_min = PointPlacement { row: 0, column: 0 };
+        let pp_max = PointPlacement {
+            row: usize::from(nrows - 1),
+            column: usize::from(ncolumns - 1),
+        };
+        assert!(!board.has_placement_at(pp_min));
+        assert!(!board.has_placement_at(pp_max));
+        board[pp_min] = Some(0);
+        board[pp_max] = Some(1);
+        assert!(board.has_placement_at(pp_min));
+        assert!(board.has_placement_at(pp_max));
+    }
 
     #[test]
     fn test_iter_2d_array() {
