@@ -10,3 +10,11 @@ rand = "0.8.5"
 
 [dev-dependencies]
 rstest = "0.21.0"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+# One day pedantic must be enabled to get rid of the numeric issues!
+# pedantic = "deny"
+style = "deny"
