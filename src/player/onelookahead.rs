@@ -14,8 +14,8 @@ impl<const N: usize, const K: usize> OneLookaheadPlayer<N, K> {
         other_id: PlayerID,
         referee: Box<dyn TicTacToeReferee<N, K>>,
         self_id: PlayerID,
-    ) -> OneLookaheadPlayer<N, K> {
-        OneLookaheadPlayer {
+    ) -> Self {
+        Self {
             other_id,
             referee,
             self_id,
