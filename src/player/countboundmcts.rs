@@ -4,9 +4,11 @@ use crate::interfaces::{
     TicTacToeArena, TicTacToeReferee, WinLengthT,
 };
 
+type NSamplesT = u16;
+
 pub struct CountBoundMCTSPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
     id: PlayerID,
-    nsamples: u32,
+    nsamples: NSamplesT,
     player0: &'player mut dyn Player<N, K>,
     player1: &'player mut dyn Player<N, K>,
     referee: &'player mut dyn TicTacToeReferee<N, K>,
@@ -17,7 +19,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT>
     #[allow(dead_code)]
     pub fn new(
         id: PlayerID,
-        nsamples: u32,
+        nsamples: NSamplesT,
         player0: &'player mut dyn Player<N, K>,
         player1: &'player mut dyn Player<N, K>,
         referee: &'player mut dyn TicTacToeReferee<N, K>,
@@ -35,9 +37,9 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
     for CountBoundMCTSPlayer<'_, N, K>
 {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
-        let mut tries = [[0u32; N]; N];
-        let mut wins = [[0u32; N]; N];
-        let mut draws = [[0u32; N]; N];
+        let mut tries: [[NSamplesT; N]; N] = [[0; N]; N];
+        let mut wins: [[NSamplesT; N]; N] = [[0; N]; N];
+        let mut draws: [[NSamplesT; N]; N] = [[0; N]; N];
         let mut has_win_prob = false;
 
         for _ in 0..self.nsamples {
@@ -56,7 +58,8 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
                     tries[pp.row][pp.column] += 1;
                     match result {
                         Result::Victory => {
-                            wins[pp.row][pp.column] += u32::from(player_id == self.id);
+                            wins[pp.row][pp.column] +=
+                                NSamplesT::from(player_id == self.id);
                             has_win_prob |= true;
                         }
                         Result::Draw => {
@@ -75,7 +78,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
                 placements[row][column] = if tries[row][column] == 0 {
                     0.0
                 } else {
-                    (working_arr[row][column] as f32) / (tries[row][column] as f32)
+                    f32::from(working_arr[row][column]) / f32::from(tries[row][column])
                 };
             }
         }
@@ -102,7 +105,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> CountBoundMCTSPlayer<'_, N, K> {
         }
         loop {
             match arena.do_next_move() {
-                (Result::Undecided, _, _) => continue,
+                (Result::Undecided, _, _) => {}
                 (result, player_id, _) => {
                     return (result, player_id, first_point_placement);
                 }
