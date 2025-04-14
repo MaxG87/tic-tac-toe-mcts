@@ -1,5 +1,6 @@
 // use crate::player::countboundmcts::*;
 // use crate::player::onelookahead::*;
+use crate::game_state_storage::*;
 use arena::exploiting::*;
 use interfaces::*;
 use player::cli::*;
@@ -17,6 +18,8 @@ fn main() {
     const N: usize = 7;
     const K: u32 = 3;
     let mut mcts_referee = NaiveReferee::<N, K> {};
+    let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
+
     // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<N, K> {}), 0);
     // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<N, K> {}), 1);
     // let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
@@ -26,7 +29,8 @@ fn main() {
     //     &mut mcts_base_player1,
     //     &mut mcts_referee,
     // );
-    let mut player0 = MinMaxPlayer::<N, K>::new(4, 1, &mut mcts_referee, 0);
+    let mut player0 =
+        MinMaxPlayer::<N, K>::new(4, 1, &mut game_state_storage, &mut mcts_referee, 0);
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
     let board = Board::<N>::new();
