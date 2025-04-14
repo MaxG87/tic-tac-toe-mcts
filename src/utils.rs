@@ -39,6 +39,16 @@ impl Board {
         })
     }
 
+    pub fn into_iter_2d(
+        self,
+    ) -> impl Iterator<Item = (BoardSizeT, BoardSizeT, BoardStateEntry)> {
+        self.board.into_iter().enumerate().map(move |(index, val)| {
+            let row = index / usize::from(self.ncolumns);
+            let column = index % usize::from(self.ncolumns);
+            (row, column, val)
+        })
+    }
+
     fn to_index(&self, pp: PointPlacement) -> usize {
         pp.row * usize::from(self.ncolumns) + pp.column
     }
@@ -148,20 +158,33 @@ mod tests {
         }
         assert_eq!(result_iter.next(), None);
     }
-
-    #[test]
-    fn test_into_iter_2d_array() {
-        const N: BoardSizeT = 3;
-        let array = [[0, 1, 2], [3, 4, 5], [6, 7, 8]];
-        let mut result = into_iter_2d_array(&array);
-        for row in 0..3 {
-            for column in 0..3 {
-                let expected_val = row * N + column;
-
-                assert_eq!(result.next().unwrap(), (row, column, expected_val));
+    #[rstest]
+    #[rstest]
+    #[case(5, 5)]
+    #[case(3, 3)]
+    #[case(5, 10)]
+    #[case(31, 11)]
+    fn test_into_iter_2d(#[case] nrows: u16, #[case] ncolumns: u16) {
+        let mut board = Board::new(nrows, ncolumns);
+        let nrows: usize = nrows.into();
+        let ncolumns: usize = ncolumns.into();
+        // [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+        for row in 0..nrows {
+            for column in 0..ncolumns {
+                let val: usize = row * ncolumns + column;
+                let pp = PointPlacement { row, column };
+                board[pp] = Some(val);
             }
         }
-        assert_eq!(result.next(), None);
+        let mut result_iter = board.into_iter_2d();
+        for row in 0..nrows {
+            for column in 0..ncolumns {
+                let expected_val = Some(row * ncolumns + column);
+                let result = result_iter.next().unwrap();
+                assert_eq!(result, (row, column, expected_val));
+            }
+        }
+        assert_eq!(result_iter.next(), None);
     }
 
     #[test]
