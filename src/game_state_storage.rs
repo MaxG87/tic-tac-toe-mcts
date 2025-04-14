@@ -1,5 +1,5 @@
-use crate::interfaces::*;
-use std::collections::*;
+use crate::interfaces::Board;
+use std::collections::HashMap;
 
 pub trait GameStateStorage<
     const N: usize,
@@ -76,6 +76,8 @@ impl<const N: usize, Payload, DepthT: std::cmp::PartialOrd + Copy>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interfaces::{AbstractBoard, PointPlacement};
+
     #[test]
     fn test_can_store_and_retrieve() {
         const N: usize = 3;
