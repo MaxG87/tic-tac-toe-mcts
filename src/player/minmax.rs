@@ -85,7 +85,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                 Result::Victory => VICTORY,
                 Result::Draw | Result::Undecided => DRAW,
             };
-            board.board[row][column] = old_board_val;
+            board.set_placement_at(pp, old_board_val);
         }
         evaluations
     }
