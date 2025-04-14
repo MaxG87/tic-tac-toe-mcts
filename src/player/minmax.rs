@@ -53,11 +53,14 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
         board: &mut Board<N>,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
-        match args.max_depth {
+        let evaluations = match args.max_depth {
             0 => panic!("Lookahead must be at least 1!"),
             1 => self.get_evaluations_1(board, args),
             _ => self.get_evaluations_n(board, args),
-        }
+        };
+        self.game_state_storage
+            .register_game_state(board, evaluations, args.max_depth);
+        evaluations
     }
 
     fn to_placement(evaluations: &Evaluation<N>) -> Placement<N> {
@@ -226,7 +229,11 @@ mod tests {
         };
 
         let result = player.do_move(&board);
-        let result_from_storage = game_state_storage.get_payload(&board, lookahead);
-        assert_eq!(result, expected)
+        let result_from_storage =
+            game_state_storage.get_payload(&board, lookahead).unwrap();
+        let placement_from_storage =
+            MinMaxPlayer::<N, K>::to_placement(result_from_storage);
+        assert_eq!(placement_from_storage, expected);
+        assert_eq!(result, expected);
     }
 }
