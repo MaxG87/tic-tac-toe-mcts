@@ -28,9 +28,7 @@ fn main() {
     let mut player0 = MinMaxPlayer::<N, K>::new(4, 1, &mut mcts_referee, 0);
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
     let mut referee = NaiveReferee::<N, K> {};
-    let board = Board {
-        board: [[None; N]; N],
-    };
+    let board = Board::<N>::new();
     let mut arena =
         ExploitingArena::<N, K>::new(0, board, [&mut player1, &mut player0], &mut referee);
     loop {

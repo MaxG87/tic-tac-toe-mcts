@@ -28,9 +28,7 @@ mod tests {
         const K: usize = 3;
         const ID: usize = 1;
         let mut player = GuessingPlayer::<N, K> { id: ID };
-        let board = Board {
-            board: [[Some(0); N]; N],
-        };
+        let board = Board::<N>::new();
         let placement = player.do_move(&board);
         let values: Vec<Option<f32>> = placement
             .into_iter()

@@ -12,6 +12,12 @@ pub struct Board<const N: usize> {
 }
 
 impl<const N: usize> Board<N> {
+    /// Creates a new board with all positions unset
+    pub fn new() -> Self {
+        Self {
+            board: [[None; N]; N],
+        }
+    }
     pub fn rows(&self) -> usize {
         N
     }
