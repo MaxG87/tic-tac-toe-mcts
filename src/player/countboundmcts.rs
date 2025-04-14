@@ -97,7 +97,7 @@ impl<const N: usize, const K: u32> CountBoundMCTSPlayer<'_, N, K> {
             match arena.do_next_move() {
                 (Result::Undecided, _, _) => continue,
                 (result, player_id, _) => {
-                    return (result, player_id, first_point_placement)
+                    return (result, player_id, first_point_placement);
                 }
             }
         }
