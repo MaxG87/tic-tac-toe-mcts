@@ -1,5 +1,8 @@
 use crate::game_state_storage::*;
-use crate::interfaces::*;
+use crate::interfaces::{
+    AbstractBoard, Board, BoardSizeT, BoardStateEntry, Evaluation, Placement, Player,
+    PlayerID, PointPlacement, Result, TicTacToeReferee, WinLengthT,
+};
 use crate::utils::*;
 use std::iter::*;
 
