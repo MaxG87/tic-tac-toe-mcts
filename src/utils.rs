@@ -49,6 +49,15 @@ impl Board {
         })
     }
 
+    pub fn joint_iter_2d(
+        self,
+        board2: Board,
+    ) -> impl Iterator<Item = (BoardSizeT, BoardSizeT, BoardStateEntry, BoardStateEntry)>
+    {
+        zip(self.into_iter_2d(), board2.into_iter_2d())
+            .map(|(lhs, rhs)| (lhs.0, lhs.1, lhs.2, rhs.2))
+    }
+
     fn to_index(&self, pp: PointPlacement) -> usize {
         pp.row * usize::from(self.ncolumns) + pp.column
     }
@@ -158,7 +167,7 @@ mod tests {
         }
         assert_eq!(result_iter.next(), None);
     }
-    #[rstest]
+
     #[rstest]
     #[case(5, 5)]
     #[case(3, 3)]
@@ -187,22 +196,36 @@ mod tests {
         assert_eq!(result_iter.next(), None);
     }
 
-    #[test]
-    fn test_joint_iter_2d_arrays() {
-        const N: BoardSizeT = 3;
-        let array = [[0, 1, 2], [3, 4, 5], [6, 7, 8]];
-        let array2 = [[8, 7, 6], [5, 4, 3], [2, 1, 0]];
-        let mut result = joint_iter_2d_arrays(
-            into_iter_2d_array(&array),
-            into_iter_2d_array(&array2),
-        );
-        for row in 0..3 {
-            for column in 0..3 {
-                let expected_val = row * N + column;
+    #[rstest]
+    #[case(5, 5)]
+    #[case(3, 3)]
+    #[case(5, 10)]
+    #[case(31, 11)]
+    fn test_joint_iter_2d_arrays(#[case] nrows: u16, #[case] ncolumns: u16) {
+        let mut board = Board::new(nrows, ncolumns);
+        let mut board2 = Board::new(nrows, ncolumns);
+        let nrows: usize = nrows.into();
+        let ncolumns: usize = ncolumns.into();
+        // [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+        for row in 0..nrows {
+            for column in 0..ncolumns {
+                let val = row * ncolumns + column;
+                let val2 = nrows * ncolumns - 1 - val;
+                let pp = PointPlacement { row, column };
+                board[pp] = Some(val);
+                board2[pp] = Some(val2);
+            }
+        }
+        let mut result = board.joint_iter_2d(board2);
+
+        for row in 0..nrows {
+            for column in 0..ncolumns {
+                let expected_val = row * ncolumns + column;
+                let expected_val2 = nrows * ncolumns - 1 - expected_val;
 
                 assert_eq!(
                     result.next().unwrap(),
-                    (row, column, expected_val, 8 - expected_val)
+                    (row, column, Some(expected_val), Some(expected_val2))
                 );
             }
         }
