@@ -14,7 +14,7 @@ struct GetEvaluationsArgs {
     max_depth: u32,
 }
 
-pub struct MinMaxPlayer<'player, const N: usize, const K: u32> {
+pub struct MinMaxPlayer<'player, const N: BoardSizeT, const K: u32> {
     max_depth: u32,
     other_id: PlayerID,
     game_state_storage: &'player mut dyn GameStateStorage<N, Evaluation<N>>,
@@ -22,14 +22,14 @@ pub struct MinMaxPlayer<'player, const N: usize, const K: u32> {
     self_id: PlayerID,
 }
 
-fn get_maximum<const N: usize>(evaluations: &Evaluation<N>) -> f32 {
+fn get_maximum<const N: BoardSizeT>(evaluations: &Evaluation<N>) -> f32 {
     into_iter_2d_array(evaluations)
         .map(|(_, _, val)| val)
         .reduce(|accum, val| if accum > val { accum } else { val })
         .unwrap()
 }
 
-impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
+impl<'player, const N: BoardSizeT, const K: u32> MinMaxPlayer<'player, N, K> {
     const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
 
     pub fn new(
@@ -92,7 +92,7 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
-        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> =
+        let flattened: Vec<(BoardSizeT, BoardSizeT, &mut f32, BoardStateEntry)> =
             joint_iter_2d_arrays(
                 iter_mut_2d_array(&mut evaluations),
                 into_iter_2d_array(&board.board),
@@ -123,7 +123,7 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
             self_id: args.other_id,
             max_depth: args.max_depth - 1,
         };
-        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> =
+        let flattened: Vec<(BoardSizeT, BoardSizeT, &mut f32, BoardStateEntry)> =
             joint_iter_2d_arrays(
                 iter_mut_2d_array(&mut evaluations),
                 into_iter_2d_array(&board.board),
@@ -152,7 +152,7 @@ impl<'player, const N: usize, const K: u32> MinMaxPlayer<'player, N, K> {
     }
 }
 
-impl<const N: usize, const K: u32> Player<N, K> for MinMaxPlayer<'_, N, K> {
+impl<const N: BoardSizeT, const K: u32> Player<N, K> for MinMaxPlayer<'_, N, K> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
@@ -212,7 +212,7 @@ mod tests {
         ],
         3
     )]
-    fn correct_moves_are_found<const N: usize>(
+    fn correct_moves_are_found<const N: BoardSizeT>(
         #[case] board: Board<N>,
         #[case] expected: Placement<N>,
         #[case] lookahead: u32,

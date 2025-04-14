@@ -15,7 +15,7 @@ mod referee;
 mod utils;
 
 fn main() {
-    const N: usize = 7;
+    const N: BoardSizeT = 7;
     const K: u32 = 3;
     let mut mcts_referee = NaiveReferee::<N, K> {};
     let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();

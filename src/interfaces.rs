@@ -1,11 +1,12 @@
 use crate::utils::*;
 use std::fmt;
 
+pub type BoardSizeT = usize;
+pub type PlayerID = usize;
 pub type BoardStateEntry = Option<PlayerID>;
 // TODO: Apply NewType idiom for Evaluation and Placement
-pub type Evaluation<const N: usize> = [[f32; N]; N];
-pub type Placement<const N: usize> = [[f32; N]; N];
-pub type PlayerID = usize;
+pub type Evaluation<const N: BoardSizeT> = [[f32; N]; N];
+pub type Placement<const N: BoardSizeT> = [[f32; N]; N];
 
 pub trait AbstractBoard<ColumnsRowsT> {
     /// Creates a new board with all positions unset
@@ -18,11 +19,11 @@ pub trait AbstractBoard<ColumnsRowsT> {
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
-pub struct Board<const N: usize> {
+pub struct Board<const N: BoardSizeT> {
     pub board: [[BoardStateEntry; N]; N],
 }
 
-impl<const N: usize> Board<N> {
+impl<const N: BoardSizeT> Board<N> {
     pub fn new() -> Self {
         Self {
             board: [[None; N]; N],
@@ -30,11 +31,11 @@ impl<const N: usize> Board<N> {
     }
 }
 
-impl<const N: usize> AbstractBoard<usize> for Board<N> {
-    fn rows(&self) -> usize {
+impl<const N: BoardSizeT> AbstractBoard<BoardSizeT> for Board<N> {
+    fn rows(&self) -> BoardSizeT {
         N
     }
-    fn columns(&self) -> usize {
+    fn columns(&self) -> BoardSizeT {
         N
     }
     fn has_placement_at(&self, pp: PointPlacement) -> bool {
@@ -56,7 +57,7 @@ impl<const N: usize> AbstractBoard<usize> for Board<N> {
     }
 }
 
-impl<const N: usize> fmt::Display for Board<N> {
+impl<const N: BoardSizeT> fmt::Display for Board<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for row in 0..self.rows() {
             for column in 0..(self.columns() - 1) {
@@ -84,8 +85,8 @@ impl<const N: usize> fmt::Display for Board<N> {
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct PointPlacement {
-    pub row: usize,
-    pub column: usize,
+    pub row: BoardSizeT,
+    pub column: BoardSizeT,
 }
 
 impl fmt::Display for PointPlacement {
@@ -114,7 +115,7 @@ impl fmt::Display for Result {
     }
 }
 
-pub trait TicTacToeReferee<const N: usize, const K: u32> {
+pub trait TicTacToeReferee<const N: BoardSizeT, const K: u32> {
     fn receive_move(
         &mut self,
         board: &mut Board<N>,

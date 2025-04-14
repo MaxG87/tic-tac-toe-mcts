@@ -1,13 +1,13 @@
 use crate::interfaces::*;
 use crate::utils::*;
 
-pub struct OneLookaheadPlayer<const N: usize, const K: u32> {
+pub struct OneLookaheadPlayer<const N: BoardSizeT, const K: u32> {
     other_id: PlayerID,
     referee: Box<dyn TicTacToeReferee<N, K>>,
     self_id: PlayerID,
 }
 
-impl<const N: usize, const K: u32> OneLookaheadPlayer<N, K> {
+impl<const N: BoardSizeT, const K: u32> OneLookaheadPlayer<N, K> {
     const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
 
     #[allow(dead_code)]
@@ -64,7 +64,7 @@ impl<const N: usize, const K: u32> OneLookaheadPlayer<N, K> {
     }
 }
 
-impl<const N: usize, const K: u32> Player<N, K> for OneLookaheadPlayer<N, K> {
+impl<const N: BoardSizeT, const K: u32> Player<N, K> for OneLookaheadPlayer<N, K> {
     fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
         let mut placements: Placement<N> = [[0.0; N]; N];
         if self.get_winning_moves(board, &mut placements) {

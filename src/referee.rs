@@ -1,9 +1,9 @@
 use crate::interfaces::*;
 
-pub struct NaiveReferee<const N: usize, const K: u32> {}
+pub struct NaiveReferee<const N: BoardSizeT, const K: u32> {}
 
-fn evaluate_board<const N: usize, const K: u32>(
-    board: &dyn AbstractBoard<usize>,
+fn evaluate_board<const N: BoardSizeT, const K: u32>(
+    board: &dyn AbstractBoard<BoardSizeT>,
     player: PlayerID,
 ) -> Result {
     let mut has_free_cells = false;
@@ -30,11 +30,11 @@ fn evaluate_board<const N: usize, const K: u32>(
     Result::Undecided
 }
 
-fn has_winning_state_in_direction<const N: usize, const K: u32>(
+fn has_winning_state_in_direction<const N: BoardSizeT, const K: u32>(
     delta: (i32, i32),
-    start_row: usize,
-    start_column: usize,
-    board: &dyn AbstractBoard<usize>,
+    start_row: BoardSizeT,
+    start_column: BoardSizeT,
+    board: &dyn AbstractBoard<BoardSizeT>,
     player: PlayerID,
 ) -> bool {
     let (dx, dy) = delta;
@@ -46,8 +46,8 @@ fn has_winning_state_in_direction<const N: usize, const K: u32>(
 
     let mut has_won = true;
     for k in 0..K {
-        let row = (start_row as i32 + dx * k as i32) as usize;
-        let column = (start_column as i32 + dy * k as i32) as usize;
+        let row = (start_row as i32 + dx * k as i32) as BoardSizeT;
+        let column = (start_column as i32 + dy * k as i32) as BoardSizeT;
         let pp = PointPlacement { row, column };
         has_won &= board.get_placement_at(pp) == Some(player);
     }
@@ -55,7 +55,7 @@ fn has_winning_state_in_direction<const N: usize, const K: u32>(
     has_won
 }
 
-impl<const N: usize, const K: u32> TicTacToeReferee<N, K> for NaiveReferee<N, K> {
+impl<const N: BoardSizeT, const K: u32> TicTacToeReferee<N, K> for NaiveReferee<N, K> {
     fn receive_move(
         &mut self,
         board: &mut Board<N>,
