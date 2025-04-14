@@ -102,11 +102,10 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
             self_id: args.other_id,
             max_depth: args.max_depth - 1,
         };
-        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = zip(
+        let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = joint_iter_2d_arrays(
             iter_mut_2d_array(&mut evaluations),
             into_iter_2d_array(&board.board),
         )
-        .map(|(eval, board)| (eval.0, eval.1, eval.2, board.2))
         .collect();
 
         for (row, column, cur_evaluation, old_board_val) in flattened {
