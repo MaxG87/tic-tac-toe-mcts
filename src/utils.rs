@@ -79,6 +79,41 @@ impl IndexMut<PointPlacement> for Board {
     }
 }
 
+impl std::fmt::Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in 0..self.nrows {
+            for column in 0..(self.ncolumns - 1) {
+                let pp = PointPlacement {
+                    row: row.into(),
+                    column: column.into(),
+                };
+                write!(
+                    f,
+                    "{}",
+                    match self[pp] {
+                        Some(id) => format!("{id}"),
+                        None => ".".to_string(),
+                    }
+                )?;
+            }
+
+            let pp = PointPlacement {
+                row: row.into(),
+                column: (self.ncolumns - 1).into(),
+            };
+            writeln!(
+                f,
+                "{}",
+                match self[pp] {
+                    Some(id) => format!("{id}"),
+                    None => ".".to_string(),
+                }
+            )?;
+        }
+        std::fmt::Result::Ok(())
+    }
+}
+
 pub fn iter_2d_array<T, const N: BoardSizeT>(
     array: &[[T; N]; N],
 ) -> impl Iterator<Item = (BoardSizeT, BoardSizeT, &T)> {
