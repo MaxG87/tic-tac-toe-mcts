@@ -74,8 +74,8 @@ impl<'arena, const N: usize, const K: u32> ExploringTicTacToeArena<'arena, N, K>
     }
 }
 
-impl<'arena, const N: usize, const K: u32> TicTacToeArena<N, K>
-    for ExploringTicTacToeArena<'arena, N, K>
+impl<const N: usize, const K: u32> TicTacToeArena<N, K>
+    for ExploringTicTacToeArena<'_, N, K>
 {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
         let cur_player = &mut self.players[self.active_player % 2];
