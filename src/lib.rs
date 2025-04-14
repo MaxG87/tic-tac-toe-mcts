@@ -9,6 +9,15 @@ pub fn iter_2d_array<T, const N: usize>(
         .flat_map(|(r, row)| row.iter().enumerate().map(move |(c, val)| (r, c, val)))
 }
 
+pub fn iter_mut_2d_array<T, const N: usize>(
+    array: &mut [[T; N]; N],
+) -> impl Iterator<Item = (usize, usize, &mut T)> {
+    array
+        .iter_mut()
+        .enumerate()
+        .flat_map(|(r, row)| row.iter_mut().enumerate().map(move |(c, val)| (r, c, val)))
+}
+
 pub fn into_iter_2d_array<T: Clone, const N: usize>(
     array: &[[T; N]; N],
 ) -> impl Iterator<Item = (usize, usize, T)> + '_ {

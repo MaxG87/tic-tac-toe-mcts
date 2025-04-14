@@ -1,4 +1,5 @@
 use crate::interfaces::*;
+use crate::lib::*;
 
 const DEFEAT: f32 = -1.0;
 const VICTORY: f32 = 1.0;
@@ -75,18 +76,16 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         args: GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
-        for (row, row_it) in evaluations.iter_mut().enumerate() {
-            for (column, elem) in row_it.iter_mut().enumerate() {
-                let pp = PointPlacement { row, column };
-                let old_board_val = board.board[row][column];
-                let move_result = self.referee.receive_move(board, pp, args.self_id);
-                *elem = match move_result {
-                    Result::Defeat | Result::IllegalMove => DEFEAT,
-                    Result::Victory => VICTORY,
-                    Result::Draw | Result::Undecided => DRAW,
-                };
-                board.board[row][column] = old_board_val;
-            }
+        for (row, column, elem) in iter_mut_2d_array(&mut evaluations) {
+            let pp = PointPlacement { row, column };
+            let old_board_val = board.board[row][column];
+            let move_result = self.referee.receive_move(board, pp, args.self_id);
+            *elem = match move_result {
+                Result::Defeat | Result::IllegalMove => DEFEAT,
+                Result::Victory => VICTORY,
+                Result::Draw | Result::Undecided => DRAW,
+            };
+            board.board[row][column] = old_board_val;
         }
         evaluations
     }
