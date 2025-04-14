@@ -37,7 +37,7 @@ fn main() {
         println!(
             "Player {player_id} made {}.",
             match maybe_point_placement {
-                Some(pp) => format!("move {}", pp),
+                Some(pp) => format!("move {pp}"),
                 None => "no legal move".to_string(),
             }
         );

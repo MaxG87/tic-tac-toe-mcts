@@ -4,9 +4,9 @@ use crate::interfaces::*;
 pub struct CountBoundMCTSPlayer<'player, const N: usize, const K: usize> {
     id: PlayerID,
     nsamples: u32,
-    referee: &'player mut dyn TicTacToeReferee<N, K>,
     player0: &'player mut dyn Player<N, K>,
     player1: &'player mut dyn Player<N, K>,
+    referee: &'player mut dyn TicTacToeReferee<N, K>,
 }
 impl<'player, const N: usize, const K: usize> CountBoundMCTSPlayer<'player, N, K> {
     #[allow(dead_code)]
@@ -49,7 +49,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
                     tries[pp.row][pp.column] += 1;
                     match result {
                         Result::Victory => {
-                            wins[pp.row][pp.column] += (player_id == self.id) as u32;
+                            wins[pp.row][pp.column] += u32::from(player_id == self.id);
                             has_win_prob |= true;
                         }
                         Result::Draw => {
@@ -73,10 +73,10 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for CountBoundMCTSPla
             }
         }
 
-        println!("{:?}", wins);
-        println!("{:?}", draws);
-        println!("{:?}", tries);
-        println!("{:?}", placements);
+        println!("{wins:?}");
+        println!("{draws:?}");
+        println!("{tries:?}");
+        println!("{placements:?}");
         placements
     }
 

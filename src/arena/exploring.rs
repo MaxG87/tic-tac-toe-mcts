@@ -53,10 +53,9 @@ impl<'arena, const N: usize, const K: usize> ExploringTicTacToeArena<'arena, N, 
             }
             if weight == 0.0 {
                 continue;
-            } else {
-                pps.push(pp);
-                weights.push(weight);
             }
+            pps.push(pp);
+            weights.push(weight);
         }
 
         if weights.is_empty() {
