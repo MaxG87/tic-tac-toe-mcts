@@ -44,7 +44,11 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
         }
     }
 
-    fn get_evaluations(&mut self, board: &mut Board<N>, args: GetEvaluationsArgs) -> Evaluation<N> {
+    fn get_evaluations(
+        &mut self,
+        board: &mut Board<N>,
+        args: &GetEvaluationsArgs,
+    ) -> Evaluation<N> {
         match args.max_depth {
             0 => panic!("Lookahead must be at least 1!"),
             1 => self.get_evaluations_1(board, args),
@@ -73,7 +77,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
     fn get_evaluations_1(
         &mut self,
         board: &mut Board<N>,
-        args: GetEvaluationsArgs,
+        args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
         let flattened: Vec<(usize, usize, &mut f32, BoardStateEntry)> = joint_iter_2d_arrays(
@@ -98,7 +102,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
     fn get_evaluations_n(
         &mut self,
         board: &mut Board<N>,
-        args: GetEvaluationsArgs,
+        args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
         let pass_down_args = GetEvaluationsArgs {
@@ -120,7 +124,7 @@ impl<'player, const N: usize, const K: usize> MinMaxPlayer<'player, N, K> {
                 Result::Victory => VICTORY,
                 Result::Draw => DRAW,
                 Result::Undecided => {
-                    let pp_evaluations = self.get_evaluations(board, pass_down_args.clone());
+                    let pp_evaluations = self.get_evaluations(board, &pass_down_args);
                     -get_maximum(&pp_evaluations)
                 }
             };
@@ -142,7 +146,7 @@ impl<'player, const N: usize, const K: usize> Player<N, K> for MinMaxPlayer<'pla
             other_id: self.other_id,
             max_depth: self.max_depth,
         };
-        let evaluations = self.get_evaluations(&mut board, args);
+        let evaluations = self.get_evaluations(&mut board, &args);
         Self::to_placement(&evaluations)
     }
 
