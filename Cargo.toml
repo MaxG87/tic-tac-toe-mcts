@@ -19,3 +19,11 @@ unsafe_code = "forbid"
 # One day pedantic must be enabled to get rid of the numeric issues!
 # pedantic = "deny"
 style = "deny"
+
+[profile.dev]
+debug = false
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
