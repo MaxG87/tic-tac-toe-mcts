@@ -1,8 +1,7 @@
 use crate::arena::exploring::ExploringTicTacToeArena;
-use crate::board::Board;
 use crate::interfaces::{
-    BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
-    TicTacToeReferee, WinLengthT,
+    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, Result,
+    TicTacToeArena, TicTacToeReferee, WinLengthT,
 };
 
 type NSamplesT = u16;
@@ -37,7 +36,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT>
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
     for CountBoundMCTSPlayer<'_, N, K>
 {
-    fn do_move(&mut self, board: &Board) -> Placement<N> {
+    fn do_move(&mut self, board: &GameState) -> Placement<N> {
         let mut tries: [[NSamplesT; N]; N] = [[0; N]; N];
         let mut wins: [[NSamplesT; N]; N] = [[0; N]; N];
         let mut draws: [[NSamplesT; N]; N] = [[0; N]; N];

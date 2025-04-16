@@ -1,7 +1,6 @@
-use crate::board::Board;
 use crate::interfaces::{
-    BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeReferee,
-    WinLengthT,
+    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, Result,
+    TicTacToeReferee, WinLengthT,
 };
 use crate::utils::iter_mut_2d_array;
 
@@ -29,7 +28,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
 
     fn get_loosing_moves(
         &mut self,
-        board: &Board,
+        board: &GameState,
         placements: &mut Placement<N>,
     ) -> bool {
         let mut has_loosing_move = false;
@@ -49,7 +48,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
 
     fn get_winning_moves(
         &mut self,
-        board: &Board,
+        board: &GameState,
         placements: &mut Placement<N>,
     ) -> bool {
         let mut has_winning_move = false;
@@ -71,7 +70,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
     for OneLookaheadPlayer<N, K>
 {
-    fn do_move(&mut self, board: &Board) -> Placement<N> {
+    fn do_move(&mut self, board: &GameState) -> Placement<N> {
         let mut placements: Placement<N> = [[0.0; N]; N];
         if self.get_winning_moves(board, &mut placements) {
             return placements;

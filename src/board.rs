@@ -1,4 +1,4 @@
-use crate::interfaces::{BoardStateEntry, PointPlacement};
+use crate::interfaces::PointPlacement;
 use anyhow::Context;
 use std::ops::IndexMut;
 use std::{
@@ -7,16 +7,16 @@ use std::{
 };
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct Board {
+pub struct Board<T> {
     nrows: u16,
     ncolumns: u16,
-    board: Vec<BoardStateEntry>,
+    board: Vec<T>,
 }
 
-impl Board {
-    pub fn new(nrows: u16, ncolumns: u16) -> Self {
+impl<T: std::marker::Copy> Board<T> {
+    pub fn new<U: Into<T>>(nrows: u16, ncolumns: u16, initial_value: U) -> Self {
         let nelems = usize::from(nrows) * usize::from(ncolumns);
-        let board = vec![None; nelems];
+        let board = vec![initial_value.into(); nelems];
         Board {
             nrows,
             ncolumns,
@@ -25,17 +25,19 @@ impl Board {
     }
 
     #[allow(dead_code)]
-    pub fn new_with_values<Matrix, Row>(values: Matrix) -> anyhow::Result<Self>
+    pub fn new_with_values<Matrix, Row, U>(values: Matrix) -> anyhow::Result<Self>
     where
+        U: Into<T> + std::marker::Copy,
         Matrix: AsRef<[Row]>,
-        Row: AsRef<[BoardStateEntry]>,
+        Row: AsRef<[U]>,
     {
         let board = values
             .as_ref()
             .iter()
             .flat_map(|row| row.as_ref().iter())
             .copied()
-            .collect::<Vec<_>>();
+            .map(U::into)
+            .collect::<Vec<T>>();
         let nrows = u16::try_from(values.as_ref().len())
             .context("Number of rows too big. Must fit in u16!")?;
         if nrows == 0 {
@@ -47,11 +49,7 @@ impl Board {
     }
 
     #[allow(dead_code)]
-    pub fn new_with_board(
-        nrows: u16,
-        ncolumns: u16,
-        board: Vec<BoardStateEntry>,
-    ) -> Self {
+    pub fn new_with_board(nrows: u16, ncolumns: u16, board: Vec<T>) -> Self {
         Board {
             nrows,
             ncolumns,
@@ -67,12 +65,7 @@ impl Board {
         self.ncolumns
     }
 
-    pub fn has_placement_at(&self, pp: PointPlacement) -> bool {
-        let index = self.to_index(pp);
-        self.board[index].is_some()
-    }
-
-    pub fn iter_2d(&self) -> impl Iterator<Item = (PointPlacement, &BoardStateEntry)> {
+    pub fn iter_2d(&self) -> impl Iterator<Item = (PointPlacement, &T)> {
         self.board.iter().enumerate().map(|(index, val)| {
             let row = index / usize::from(self.ncolumns);
             let column = index % usize::from(self.ncolumns);
@@ -81,9 +74,7 @@ impl Board {
         })
     }
 
-    pub fn into_iter_2d(
-        self,
-    ) -> impl Iterator<Item = (PointPlacement, BoardStateEntry)> {
+    pub fn into_iter_2d(self) -> impl Iterator<Item = (PointPlacement, T)> {
         self.board.into_iter().enumerate().map(move |(index, val)| {
             let row = index / usize::from(self.ncolumns);
             let column = index % usize::from(self.ncolumns);
@@ -93,10 +84,10 @@ impl Board {
     }
 
     #[allow(dead_code)]
-    pub fn joint_iter_2d(
+    pub fn joint_iter_2d<U: Copy>(
         self,
-        board2: Board,
-    ) -> impl Iterator<Item = (PointPlacement, BoardStateEntry, BoardStateEntry)> {
+        board2: Board<U>,
+    ) -> impl Iterator<Item = (PointPlacement, T, U)> {
         zip(self.into_iter_2d(), board2.into_iter_2d())
             .map(|(lhs, rhs)| (lhs.0, lhs.1, rhs.1))
     }
@@ -106,8 +97,8 @@ impl Board {
     }
 }
 
-impl Index<PointPlacement> for Board {
-    type Output = BoardStateEntry;
+impl<T: std::marker::Copy> Index<PointPlacement> for Board<T> {
+    type Output = T;
 
     fn index(&self, index: PointPlacement) -> &Self::Output {
         let index = self.to_index(index);
@@ -115,14 +106,14 @@ impl Index<PointPlacement> for Board {
     }
 }
 
-impl IndexMut<PointPlacement> for Board {
+impl<T: std::marker::Copy> IndexMut<PointPlacement> for Board<T> {
     fn index_mut(&mut self, index: PointPlacement) -> &mut Self::Output {
         let index = self.to_index(index);
         &mut self.board[index]
     }
 }
 
-impl std::fmt::Display for Board {
+impl<T: std::marker::Copy + std::fmt::Display> std::fmt::Display for Board<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in 0..self.nrows {
             for column in 0..(self.ncolumns - 1) {
@@ -130,28 +121,14 @@ impl std::fmt::Display for Board {
                     row: row.into(),
                     column: column.into(),
                 };
-                write!(
-                    f,
-                    "{}",
-                    match self[pp] {
-                        Some(id) => format!("{id}"),
-                        None => ".".to_string(),
-                    }
-                )?;
+                write!(f, "{}", self[pp])?;
             }
 
             let pp = PointPlacement {
                 row: row.into(),
                 column: (self.ncolumns - 1).into(),
             };
-            writeln!(
-                f,
-                "{}",
-                match self[pp] {
-                    Some(id) => format!("{id}"),
-                    None => ".".to_string(),
-                }
-            )?;
+            writeln!(f, "{}", self[pp])?;
         }
         std::fmt::Result::Ok(())
     }
@@ -160,7 +137,10 @@ impl std::fmt::Display for Board {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interfaces::BoardStateEntry;
     use rstest::*;
+
+    type GameState = Board<BoardStateEntry>;
 
     #[rstest]
     #[case(5, 5)]
@@ -168,18 +148,18 @@ mod tests {
     #[case(5, 10)]
     #[case(31, 11)]
     fn test_basic_board_workflow(#[case] nrows: u16, #[case] ncolumns: u16) {
-        let mut board = Board::new(nrows, ncolumns);
+        let mut board = GameState::new(nrows, ncolumns, None);
         let pp_min = PointPlacement { row: 0, column: 0 };
         let pp_max = PointPlacement {
             row: usize::from(nrows - 1),
             column: usize::from(ncolumns - 1),
         };
-        assert!(!board.has_placement_at(pp_min));
-        assert!(!board.has_placement_at(pp_max));
-        board[pp_min] = Some(0);
-        board[pp_max] = Some(1);
-        assert!(board.has_placement_at(pp_min));
-        assert!(board.has_placement_at(pp_max));
+        assert!(board[pp_min].is_free());
+        assert!(board[pp_max].is_free());
+        board[pp_min] = Some(0).into();
+        board[pp_max] = Some(1).into();
+        assert!(board[pp_min].is_taken());
+        assert!(board[pp_max].is_taken());
     }
 
     #[rstest]
@@ -189,7 +169,7 @@ mod tests {
     #[case(5, 10)]
     #[case(31, 11)]
     fn test_iter_2d(#[case] nrows: u16, #[case] ncolumns: u16) {
-        let mut board = Board::new(nrows, ncolumns);
+        let mut board = GameState::new(nrows, ncolumns, None);
         let nrows: usize = nrows.into();
         let ncolumns: usize = ncolumns.into();
         // [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -197,14 +177,14 @@ mod tests {
             for column in 0..ncolumns {
                 let val: usize = row * ncolumns + column;
                 let pp = PointPlacement { row, column };
-                board[pp] = Some(val);
+                board[pp] = Some(val).into();
             }
         }
         let mut result_iter = board.iter_2d();
         for row in 0..nrows {
             for column in 0..ncolumns {
                 let pp = PointPlacement { row, column };
-                let expected_val = Some(row * ncolumns + column);
+                let expected_val = Some(row * ncolumns + column).into();
                 let result = result_iter.next().unwrap();
                 assert_eq!(result, (pp, &expected_val));
             }
@@ -218,7 +198,7 @@ mod tests {
     #[case(5, 10)]
     #[case(31, 11)]
     fn test_into_iter_2d(#[case] nrows: u16, #[case] ncolumns: u16) {
-        let mut board = Board::new(nrows, ncolumns);
+        let mut board = GameState::new(nrows, ncolumns, None);
         let nrows: usize = nrows.into();
         let ncolumns: usize = ncolumns.into();
         // [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -226,14 +206,14 @@ mod tests {
             for column in 0..ncolumns {
                 let val: usize = row * ncolumns + column;
                 let pp = PointPlacement { row, column };
-                board[pp] = Some(val);
+                board[pp] = Some(val).into();
             }
         }
         let mut result_iter = board.into_iter_2d();
         for row in 0..nrows {
             for column in 0..ncolumns {
                 let pp = PointPlacement { row, column };
-                let expected_val = Some(row * ncolumns + column);
+                let expected_val = Some(row * ncolumns + column).into();
                 let result = result_iter.next().unwrap();
                 assert_eq!(result, (pp, expected_val));
             }
@@ -247,8 +227,8 @@ mod tests {
     #[case(5, 10)]
     #[case(31, 11)]
     fn test_joint_iter_2d_arrays(#[case] nrows: u16, #[case] ncolumns: u16) {
-        let mut board = Board::new(nrows, ncolumns);
-        let mut board2 = Board::new(nrows, ncolumns);
+        let mut board = GameState::new(nrows, ncolumns, None);
+        let mut board2 = GameState::new(nrows, ncolumns, None);
         let nrows: usize = nrows.into();
         let ncolumns: usize = ncolumns.into();
         // [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -257,8 +237,8 @@ mod tests {
                 let val = row * ncolumns + column;
                 let val2 = nrows * ncolumns - 1 - val;
                 let pp = PointPlacement { row, column };
-                board[pp] = Some(val);
-                board2[pp] = Some(val2);
+                board[pp] = Some(val).into();
+                board2[pp] = Some(val2).into();
             }
         }
         let mut result = board.joint_iter_2d(board2);
@@ -271,7 +251,7 @@ mod tests {
 
                 assert_eq!(
                     result.next().unwrap(),
-                    (pp, Some(expected_val), Some(expected_val2))
+                    (pp, Some(expected_val).into(), Some(expected_val2).into())
                 );
             }
         }

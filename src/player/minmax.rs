@@ -1,8 +1,7 @@
-use crate::board::Board;
 use crate::game_state_storage::GameStateStorage;
 use crate::interfaces::{
-    BoardSizeT, BoardStateEntry, Evaluation, Placement, Player, PlayerID,
-    PointPlacement, Result, TicTacToeReferee, WinLengthT,
+    BoardSizeT, Evaluation, GameState, Placement, Player, PlayerID, PointPlacement,
+    Result, TicTacToeReferee, WinLengthT,
 };
 use crate::utils::{into_iter_2d_array, iter_mut_2d_array, joint_iter_2d_arrays};
 use std::iter::Iterator;
@@ -21,7 +20,7 @@ struct GetEvaluationsArgs {
 pub struct MinMaxPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
     max_depth: u32,
     other_id: PlayerID,
-    game_state_storage: &'player mut dyn GameStateStorage<Evaluation<N>>,
+    game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation<N>>,
     referee: &'player mut dyn TicTacToeReferee<K>,
     self_id: PlayerID,
 }
@@ -39,7 +38,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
     pub fn new(
         max_depth: u32,
         other_id: PlayerID,
-        game_state_storage: &'player mut dyn GameStateStorage<Evaluation<N>>,
+        game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation<N>>,
         referee: &'player mut dyn TicTacToeReferee<K>,
         self_id: PlayerID,
     ) -> Self {
@@ -54,7 +53,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 
     fn get_evaluations(
         &mut self,
-        board: &mut Board,
+        board: &mut GameState,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         if let Some(evaluations) =
@@ -95,19 +94,18 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 
     fn get_evaluations_1(
         &mut self,
-        board: &mut Board,
+        board: &mut GameState,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
-        let flattened: Vec<(BoardSizeT, BoardSizeT, &mut f32, BoardStateEntry)> =
-            joint_iter_2d_arrays(
-                iter_mut_2d_array(&mut evaluations),
-                board
-                    .clone()
-                    .into_iter_2d()
-                    .map(|(pp, elem)| (pp.row, pp.column, elem)),
-            )
-            .collect();
+        let flattened: Vec<_> = joint_iter_2d_arrays(
+            iter_mut_2d_array(&mut evaluations),
+            board
+                .clone()
+                .into_iter_2d()
+                .map(|(pp, elem)| (pp.row, pp.column, elem)),
+        )
+        .collect();
 
         for (row, column, cur_evaluation, old_board_val) in flattened {
             let pp = PointPlacement { row, column };
@@ -124,7 +122,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 
     fn get_evaluations_n(
         &mut self,
-        board: &mut Board,
+        board: &mut GameState,
         args: &GetEvaluationsArgs,
     ) -> Evaluation<N> {
         let mut evaluations = [[DEFEAT; N]; N];
@@ -133,15 +131,14 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
             self_id: args.other_id,
             max_depth: args.max_depth - 1,
         };
-        let flattened: Vec<(BoardSizeT, BoardSizeT, &mut f32, BoardStateEntry)> =
-            joint_iter_2d_arrays(
-                iter_mut_2d_array(&mut evaluations),
-                board
-                    .clone()
-                    .into_iter_2d()
-                    .map(|(pp, elem)| (pp.row, pp.column, elem)),
-            )
-            .collect();
+        let flattened: Vec<_> = joint_iter_2d_arrays(
+            iter_mut_2d_array(&mut evaluations),
+            board
+                .clone()
+                .into_iter_2d()
+                .map(|(pp, elem)| (pp.row, pp.column, elem)),
+        )
+        .collect();
 
         for (row, column, cur_evaluation, old_board_val) in flattened {
             let pp = PointPlacement { row, column };
@@ -166,7 +163,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 }
 
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for MinMaxPlayer<'_, N, K> {
-    fn do_move(&mut self, board: &Board) -> Placement<N> {
+    fn do_move(&mut self, board: &GameState) -> Placement<N> {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
             self_id: self.self_id,
@@ -191,7 +188,7 @@ mod tests {
 
     #[rstest]
     // direct winning moves
-    #[case(Board::new_with_values(
+    #[case(GameState::new_with_values(
         [
             [None, Some(1), None, None, None],
             [None, Some(0), None, None, None],
@@ -210,7 +207,7 @@ mod tests {
         1
     )]
     // indirect winning moves
-    #[case(Board::new_with_values(
+    #[case(GameState::new_with_values(
             [
                 [None, None, Some(0), Some(1)],
                 [None, Some(1), None, None],
@@ -228,14 +225,14 @@ mod tests {
         3
     )]
     fn correct_moves_are_found<const N: BoardSizeT>(
-        #[case] board: Board,
+        #[case] board: GameState,
         #[case] expected: Placement<N>,
         #[case] lookahead: u32,
     ) {
         const K: WinLengthT = 3;
         let other_id = 1;
         let self_id = 0;
-        let mut game_state_storage = NaiveGameStateStorage::<Evaluation<N>>::new();
+        let mut game_state_storage = NaiveGameStateStorage::<_, _>::new();
 
         let mut referee = NaiveReferee::<K> {};
         let mut player = MinMaxPlayer::<N, K> {

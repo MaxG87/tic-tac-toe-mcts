@@ -1,6 +1,5 @@
-use crate::board::Board;
 use crate::interfaces::{
-    BoardSizeT, Placement, Player, PlayerID, PointPlacement, WinLengthT,
+    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, WinLengthT,
 };
 use std::io;
 
@@ -33,7 +32,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> CLIPlayer<N, K> {
 }
 
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for CLIPlayer<N, K> {
-    fn do_move(&mut self, _: &Board) -> Placement<N> {
+    fn do_move(&mut self, _: &GameState) -> Placement<N> {
         let point_placement = self.get_point_placement();
         let mut placements: Placement<N> = [[0.0; N]; N];
         placements[point_placement.row][point_placement.column] = 1.0;
