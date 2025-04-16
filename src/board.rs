@@ -13,7 +13,6 @@ pub struct Board {
     board: Vec<BoardStateEntry>,
 }
 
-#[allow(dead_code)]
 impl Board {
     pub fn new(nrows: u16, ncolumns: u16) -> Self {
         let nelems = usize::from(nrows) * usize::from(ncolumns);
@@ -25,6 +24,7 @@ impl Board {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_with_values<Matrix, Row>(values: Matrix) -> anyhow::Result<Self>
     where
         Matrix: AsRef<[Row]>,
@@ -46,6 +46,7 @@ impl Board {
         Ok(Board::new_with_board(nrows, ncolumns, board))
     }
 
+    #[allow(dead_code)]
     pub fn new_with_board(
         nrows: u16,
         ncolumns: u16,
@@ -91,6 +92,7 @@ impl Board {
         })
     }
 
+    #[allow(dead_code)]
     pub fn joint_iter_2d(
         self,
         board2: Board,
