@@ -22,7 +22,7 @@ pub struct MinMaxPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
     max_depth: u32,
     other_id: PlayerID,
     game_state_storage: &'player mut dyn GameStateStorage<N, Evaluation<N>>,
-    referee: &'player mut dyn TicTacToeReferee<N, K>,
+    referee: &'player mut dyn TicTacToeReferee<K>,
     self_id: PlayerID,
 }
 
@@ -40,7 +40,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
         max_depth: u32,
         other_id: PlayerID,
         game_state_storage: &'player mut dyn GameStateStorage<N, Evaluation<N>>,
-        referee: &'player mut dyn TicTacToeReferee<N, K>,
+        referee: &'player mut dyn TicTacToeReferee<K>,
         self_id: PlayerID,
     ) -> Self {
         Self {
@@ -237,7 +237,7 @@ mod tests {
         let self_id = 0;
         let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
 
-        let mut referee = NaiveReferee::<N, K> {};
+        let mut referee = NaiveReferee::<K> {};
         let mut player = MinMaxPlayer::<N, K> {
             max_depth: lookahead,
             self_id,

@@ -7,7 +7,7 @@ use crate::utils::iter_mut_2d_array;
 
 pub struct OneLookaheadPlayer<const N: BoardSizeT, const K: WinLengthT> {
     other_id: PlayerID,
-    referee: Box<dyn TicTacToeReferee<N, K>>,
+    referee: Box<dyn TicTacToeReferee<K>>,
     self_id: PlayerID,
 }
 
@@ -17,7 +17,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
     #[allow(dead_code)]
     pub fn new(
         other_id: PlayerID,
-        referee: Box<dyn TicTacToeReferee<N, K>>,
+        referee: Box<dyn TicTacToeReferee<K>>,
         self_id: PlayerID,
     ) -> Self {
         Self {

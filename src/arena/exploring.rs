@@ -12,7 +12,7 @@ pub struct ExploringTicTacToeArena<'arena, const N: BoardSizeT, const K: WinLeng
     active_player: PlayerID,
     board: Board,
     players: [&'arena mut (dyn Player<N, K>); 2],
-    referee: &'arena mut (dyn TicTacToeReferee<N, K>),
+    referee: &'arena mut (dyn TicTacToeReferee<K>),
 }
 
 impl<'arena, const N: BoardSizeT, const K: WinLengthT>
@@ -22,7 +22,7 @@ impl<'arena, const N: BoardSizeT, const K: WinLengthT>
         board: Board,
         players: [&'arena mut dyn Player<N, K>; 2],
         starting_player: PlayerID,
-        referee: &'arena mut dyn TicTacToeReferee<N, K>,
+        referee: &'arena mut dyn TicTacToeReferee<K>,
     ) -> Self {
         let matching_players: Vec<PlayerID> = players
             .iter()

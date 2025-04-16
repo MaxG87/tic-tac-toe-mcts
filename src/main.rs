@@ -19,11 +19,11 @@ mod utils;
 fn main() {
     const N: BoardSizeT = 7;
     const K: WinLengthT = 3;
-    let mut mcts_referee = NaiveReferee::<N, K> {};
+    let mut mcts_referee = NaiveReferee::<K> {};
     let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
 
-    // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<N, K> {}), 0);
-    // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<N, K> {}), 1);
+    // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<K> {}), 0);
+    // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<K> {}), 1);
     // let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
     //     0,
     //     (N * N * 10000) as WinLengthT,
@@ -34,7 +34,7 @@ fn main() {
     let mut player0 =
         MinMaxPlayer::<N, K>::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
     let mut player1 = CLIPlayer::<N, K> { id: 1 };
-    let mut referee = NaiveReferee::<N, K> {};
+    let mut referee = NaiveReferee::<K> {};
     let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
     let mut arena = ExploitingArena::<N, K>::new(
         0,

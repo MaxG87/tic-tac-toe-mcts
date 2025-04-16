@@ -12,7 +12,7 @@ pub struct CountBoundMCTSPlayer<'player, const N: BoardSizeT, const K: WinLength
     nsamples: NSamplesT,
     player0: &'player mut dyn Player<N, K>,
     player1: &'player mut dyn Player<N, K>,
-    referee: &'player mut dyn TicTacToeReferee<N, K>,
+    referee: &'player mut dyn TicTacToeReferee<K>,
 }
 impl<'player, const N: BoardSizeT, const K: WinLengthT>
     CountBoundMCTSPlayer<'player, N, K>
@@ -23,7 +23,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT>
         nsamples: NSamplesT,
         player0: &'player mut dyn Player<N, K>,
         player1: &'player mut dyn Player<N, K>,
-        referee: &'player mut dyn TicTacToeReferee<N, K>,
+        referee: &'player mut dyn TicTacToeReferee<K>,
     ) -> Self {
         Self {
             id,

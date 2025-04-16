@@ -41,7 +41,7 @@ impl fmt::Display for Result {
     }
 }
 
-pub trait TicTacToeReferee<const N: BoardSizeT, const K: WinLengthT> {
+pub trait TicTacToeReferee<const K: WinLengthT> {
     fn receive_move(
         &mut self,
         board: &mut Board,

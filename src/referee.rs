@@ -3,7 +3,7 @@ use crate::interfaces::{
     BoardSizeT, PlayerID, PointPlacement, Result, TicTacToeReferee, WinLengthT,
 };
 
-pub struct NaiveReferee<const N: BoardSizeT, const K: WinLengthT> {}
+pub struct NaiveReferee<const K: WinLengthT> {}
 
 fn evaluate_board<const K: WinLengthT>(board: &Board, player: PlayerID) -> Result {
     let mut has_free_cells = false;
@@ -57,9 +57,7 @@ fn has_winning_state_in_direction<const K: WinLengthT>(
     has_won
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> TicTacToeReferee<N, K>
-    for NaiveReferee<N, K>
-{
+impl<const K: WinLengthT> TicTacToeReferee<K> for NaiveReferee<K> {
     fn receive_move(
         &mut self,
         board: &mut Board,
