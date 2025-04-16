@@ -5,10 +5,7 @@ use crate::interfaces::{
 
 pub struct NaiveReferee<const N: BoardSizeT, const K: WinLengthT> {}
 
-fn evaluate_board<const N: BoardSizeT, const K: WinLengthT>(
-    board: &Board,
-    player: PlayerID,
-) -> Result {
+fn evaluate_board<const K: WinLengthT>(board: &Board, player: PlayerID) -> Result {
     let mut has_free_cells = false;
     let deltas = [
         (0, 1),  // horizontal
@@ -20,7 +17,7 @@ fn evaluate_board<const N: BoardSizeT, const K: WinLengthT>(
     for (pp, value) in board.iter_2d() {
         has_free_cells |= value.is_none();
         for cur in deltas {
-            if has_winning_state_in_direction::<N, K>(
+            if has_winning_state_in_direction::<K>(
                 cur, pp.row, pp.column, board, player,
             ) {
                 return Result::Victory;
@@ -33,17 +30,19 @@ fn evaluate_board<const N: BoardSizeT, const K: WinLengthT>(
     Result::Undecided
 }
 
-fn has_winning_state_in_direction<const N: BoardSizeT, const K: WinLengthT>(
+fn has_winning_state_in_direction<const K: WinLengthT>(
     delta: (i32, i32),
     start_row: BoardSizeT,
     start_column: BoardSizeT,
     board: &Board,
     player: PlayerID,
 ) -> bool {
+    let nrows = board.get_number_of_rows();
+    let ncolumns = board.get_number_of_columns();
     let (dx, dy) = delta;
     let end_x: i32 = dx * i32::from(K - 1) + start_row as i32;
     let end_y: i32 = dy * i32::from(K - 1) + start_column as i32;
-    if end_x < 0 || end_x >= N as i32 || end_y < 0 || end_y >= N as i32 {
+    if end_x < 0 || end_x >= ncolumns as i32 || end_y < 0 || end_y >= nrows as i32 {
         return false;
     }
 
@@ -71,7 +70,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> TicTacToeReferee<N, K>
             Result::IllegalMove
         } else {
             board[placement] = Some(player_id);
-            evaluate_board::<N, K>(board, player_id)
+            evaluate_board::<K>(board, player_id)
         }
     }
 }

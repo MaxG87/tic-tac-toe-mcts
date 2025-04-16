@@ -58,6 +58,14 @@ impl Board {
         }
     }
 
+    pub fn get_number_of_rows(&self) -> u16 {
+        self.nrows
+    }
+
+    pub fn get_number_of_columns(&self) -> u16 {
+        self.ncolumns
+    }
+
     pub fn has_placement_at(&self, pp: PointPlacement) -> bool {
         let index = self.to_index(pp);
         self.board[index].is_some()
