@@ -1,7 +1,8 @@
 use crate::arena::exploring::ExploringTicTacToeArena;
+use crate::board::Board;
 use crate::interfaces::{
-    Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result,
-    TicTacToeArena, TicTacToeReferee, WinLengthT,
+    BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
+    TicTacToeReferee, WinLengthT,
 };
 
 type NSamplesT = u16;
@@ -11,7 +12,7 @@ pub struct CountBoundMCTSPlayer<'player, const N: BoardSizeT, const K: WinLength
     nsamples: NSamplesT,
     player0: &'player mut dyn Player<N, K>,
     player1: &'player mut dyn Player<N, K>,
-    referee: &'player mut dyn TicTacToeReferee<N, K>,
+    referee: &'player mut dyn TicTacToeReferee<K>,
 }
 impl<'player, const N: BoardSizeT, const K: WinLengthT>
     CountBoundMCTSPlayer<'player, N, K>
@@ -22,7 +23,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT>
         nsamples: NSamplesT,
         player0: &'player mut dyn Player<N, K>,
         player1: &'player mut dyn Player<N, K>,
-        referee: &'player mut dyn TicTacToeReferee<N, K>,
+        referee: &'player mut dyn TicTacToeReferee<K>,
     ) -> Self {
         Self {
             id,
@@ -36,7 +37,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT>
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
     for CountBoundMCTSPlayer<'_, N, K>
 {
-    fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
+    fn do_move(&mut self, board: &Board) -> Placement<N> {
         let mut tries: [[NSamplesT; N]; N] = [[0; N]; N];
         let mut wins: [[NSamplesT; N]; N] = [[0; N]; N];
         let mut draws: [[NSamplesT; N]; N] = [[0; N]; N];

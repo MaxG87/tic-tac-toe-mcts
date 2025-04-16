@@ -1,6 +1,7 @@
+use crate::board::Board;
 use crate::interfaces::{
-    AbstractBoard, Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement,
-    Result, TicTacToeArena, TicTacToeReferee, WinLengthT,
+    BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
+    TicTacToeReferee, WinLengthT,
 };
 use crate::utils::into_iter_2d_array;
 use rand::distr::weighted::WeightedIndex;
@@ -9,19 +10,19 @@ use rand::rng;
 
 pub struct ExploringTicTacToeArena<'arena, const N: BoardSizeT, const K: WinLengthT> {
     active_player: PlayerID,
-    board: Board<N>,
+    board: Board,
     players: [&'arena mut (dyn Player<N, K>); 2],
-    referee: &'arena mut (dyn TicTacToeReferee<N, K>),
+    referee: &'arena mut (dyn TicTacToeReferee<K>),
 }
 
 impl<'arena, const N: BoardSizeT, const K: WinLengthT>
     ExploringTicTacToeArena<'arena, N, K>
 {
     pub fn new(
-        board: Board<N>,
+        board: Board,
         players: [&'arena mut dyn Player<N, K>; 2],
         starting_player: PlayerID,
-        referee: &'arena mut dyn TicTacToeReferee<N, K>,
+        referee: &'arena mut dyn TicTacToeReferee<K>,
     ) -> Self {
         let matching_players: Vec<PlayerID> = players
             .iter()
@@ -48,7 +49,7 @@ impl<'arena, const N: BoardSizeT, const K: WinLengthT>
     }
 
     fn sample_point_placement(
-        board: &Board<N>,
+        board: &Board,
         placement: Placement<N>,
     ) -> Option<PointPlacement> {
         let mut pps = Vec::<PointPlacement>::new();
@@ -102,7 +103,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> TicTacToeArena<N, K>
         }
     }
 
-    fn get_board(&self) -> Board<N> {
+    fn get_board(&self) -> Board {
         self.board.clone()
     }
 }

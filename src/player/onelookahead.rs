@@ -1,12 +1,13 @@
+use crate::board::Board;
 use crate::interfaces::{
-    Board, BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result,
-    TicTacToeReferee, WinLengthT,
+    BoardSizeT, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeReferee,
+    WinLengthT,
 };
 use crate::utils::iter_mut_2d_array;
 
 pub struct OneLookaheadPlayer<const N: BoardSizeT, const K: WinLengthT> {
     other_id: PlayerID,
-    referee: Box<dyn TicTacToeReferee<N, K>>,
+    referee: Box<dyn TicTacToeReferee<K>>,
     self_id: PlayerID,
 }
 
@@ -16,7 +17,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
     #[allow(dead_code)]
     pub fn new(
         other_id: PlayerID,
-        referee: Box<dyn TicTacToeReferee<N, K>>,
+        referee: Box<dyn TicTacToeReferee<K>>,
         self_id: PlayerID,
     ) -> Self {
         Self {
@@ -28,7 +29,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
 
     fn get_loosing_moves(
         &mut self,
-        board: &Board<N>,
+        board: &Board,
         placements: &mut Placement<N>,
     ) -> bool {
         let mut has_loosing_move = false;
@@ -48,7 +49,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
 
     fn get_winning_moves(
         &mut self,
-        board: &Board<N>,
+        board: &Board,
         placements: &mut Placement<N>,
     ) -> bool {
         let mut has_winning_move = false;
@@ -70,7 +71,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
     for OneLookaheadPlayer<N, K>
 {
-    fn do_move(&mut self, board: &Board<N>) -> Placement<N> {
+    fn do_move(&mut self, board: &Board) -> Placement<N> {
         let mut placements: Placement<N> = [[0.0; N]; N];
         if self.get_winning_moves(board, &mut placements) {
             return placements;

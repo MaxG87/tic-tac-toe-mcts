@@ -1,4 +1,5 @@
-use crate::interfaces::{Board, BoardSizeT, Placement, Player, PlayerID, WinLengthT};
+use crate::board::Board;
+use crate::interfaces::{BoardSizeT, Placement, Player, PlayerID, WinLengthT};
 
 pub struct GuessingPlayer<const N: BoardSizeT, const K: WinLengthT> {
     pub id: PlayerID,
@@ -9,7 +10,7 @@ impl<const N: BoardSizeT, const K: WinLengthT> GuessingPlayer<N, K> {
 }
 
 impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for GuessingPlayer<N, K> {
-    fn do_move(&mut self, _: &Board<N>) -> Placement<N> {
+    fn do_move(&mut self, _: &Board) -> Placement<N> {
         GuessingPlayer::<N, K>::PLACEMENT
     }
 
@@ -29,7 +30,7 @@ mod tests {
         const K: WinLengthT = 3;
         const ID: PlayerID = 1;
         let mut player = GuessingPlayer::<N, K> { id: ID };
-        let board = Board::<N>::new();
+        let board = Board::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap());
         let placement = player.do_move(&board);
         let values = placement
             .into_iter()
