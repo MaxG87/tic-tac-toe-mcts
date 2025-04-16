@@ -89,15 +89,6 @@ impl<T: std::marker::Copy> Board<T> {
         })
     }
 
-    pub fn iter_mut_2d(&mut self) -> impl Iterator<Item = (PointPlacement, &mut T)> {
-        self.board.iter_mut().enumerate().map(|(index, val)| {
-            let row = index / usize::from(self.ncolumns);
-            let column = index % usize::from(self.ncolumns);
-            let pp = PointPlacement { row, column };
-            (pp, val)
-        })
-    }
-
     pub fn into_iter_2d(self) -> impl Iterator<Item = (PointPlacement, T)> {
         self.board.into_iter().enumerate().map(move |(index, val)| {
             let row = index / usize::from(self.ncolumns);
@@ -107,7 +98,6 @@ impl<T: std::marker::Copy> Board<T> {
         })
     }
 
-    #[allow(dead_code)]
     pub fn joint_iter_2d<'a, U>(
         &'a self,
         board2: &'a Board<U>,
@@ -119,7 +109,6 @@ impl<T: std::marker::Copy> Board<T> {
         zip(self.iter_2d(), board2.iter_2d()).map(|(lhs, rhs)| (lhs.0, lhs.1, rhs.1))
     }
 
-    #[allow(dead_code)]
     pub fn joint_into_iter_2d<U: Copy>(
         self,
         board2: Board<U>,

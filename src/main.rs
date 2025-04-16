@@ -15,7 +15,6 @@ mod game_state_storage;
 mod interfaces;
 mod player;
 mod referee;
-mod utils;
 
 fn main() {
     const N: BoardSizeT = 7;
