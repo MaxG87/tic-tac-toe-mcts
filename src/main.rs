@@ -20,7 +20,7 @@ fn main() {
     const N: BoardSizeT = 7;
     const K: WinLengthT = 3;
     let mut mcts_referee = NaiveReferee::<K> {};
-    let mut game_state_storage = NaiveGameStateStorage::<N, Evaluation<N>>::new();
+    let mut game_state_storage = NaiveGameStateStorage::<Evaluation<N>>::new();
 
     // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<K> {}), 0);
     // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<K> {}), 1);
