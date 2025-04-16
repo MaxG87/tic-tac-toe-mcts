@@ -1,18 +1,14 @@
 use crate::interfaces::{
-    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, Result,
-    TicTacToeReferee, WinLengthT,
+    GameState, Placement, Player, PlayerID, Result, TicTacToeReferee, WinLengthT,
 };
-use crate::utils::iter_mut_2d_array;
 
-pub struct OneLookaheadPlayer<const N: BoardSizeT, const K: WinLengthT> {
+pub struct OneLookaheadPlayer<const K: WinLengthT> {
     other_id: PlayerID,
     referee: Box<dyn TicTacToeReferee<K>>,
     self_id: PlayerID,
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
-    const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
-
+impl<const K: WinLengthT> OneLookaheadPlayer<K> {
     #[allow(dead_code)]
     pub fn new(
         other_id: PlayerID,
@@ -26,59 +22,66 @@ impl<const N: BoardSizeT, const K: WinLengthT> OneLookaheadPlayer<N, K> {
         }
     }
 
-    fn get_loosing_moves(
-        &mut self,
-        board: &GameState,
-        placements: &mut Placement<N>,
-    ) -> bool {
+    fn get_loosing_moves(&mut self, board: &GameState) -> (bool, Placement) {
         let mut has_loosing_move = false;
-        for (row, column, placement_cell) in iter_mut_2d_array(placements) {
-            let pp = PointPlacement { row, column };
-            let mut mut_board = board.clone();
+        let mut placements = Placement::new(
+            board.get_number_of_rows(),
+            board.get_number_of_columns(),
+            1.0,
+        );
+        let mut mut_board = board.clone();
+        for (pp, old_val) in board.iter_2d() {
             if Result::Victory
                 == self.referee.receive_move(&mut mut_board, pp, self.other_id)
             {
-                *placement_cell = 1.0;
+                placements[pp] = 1.0;
                 has_loosing_move = true;
             }
+            mut_board[pp] = *old_val;
         }
 
-        has_loosing_move
+        (has_loosing_move, placements)
     }
 
-    fn get_winning_moves(
-        &mut self,
-        board: &GameState,
-        placements: &mut Placement<N>,
-    ) -> bool {
+    fn get_winning_moves(&mut self, board: &GameState) -> (bool, Placement) {
         let mut has_winning_move = false;
-        for (row, column, placement_cell) in iter_mut_2d_array(placements) {
-            let pp = PointPlacement { row, column };
-            let mut mut_board = board.clone();
+        let mut mut_board = board.clone();
+        let mut placements = Placement::new(
+            board.get_number_of_rows(),
+            board.get_number_of_columns(),
+            0.0,
+        );
+        for (pp, old_val) in board.iter_2d() {
             if Result::Victory
                 == self.referee.receive_move(&mut mut_board, pp, self.get_id())
             {
-                *placement_cell = 1.0;
+                placements[pp] = 1.0;
                 has_winning_move = true;
             }
+            mut_board[pp] = *old_val;
         }
 
-        has_winning_move
+        (has_winning_move, placements)
     }
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
-    for OneLookaheadPlayer<N, K>
-{
-    fn do_move(&mut self, board: &GameState) -> Placement<N> {
-        let mut placements: Placement<N> = [[0.0; N]; N];
-        if self.get_winning_moves(board, &mut placements) {
+impl<const K: WinLengthT> Player<K> for OneLookaheadPlayer<K> {
+    fn do_move(&mut self, board: &GameState) -> Placement {
+        let (has_winning_move, placements) = self.get_winning_moves(board);
+        if has_winning_move {
             return placements;
         }
-        if self.get_loosing_moves(board, &mut placements) {
+
+        let (has_loosing_move, placements) = self.get_loosing_moves(board);
+        if has_loosing_move {
             return placements;
         }
-        OneLookaheadPlayer::<N, K>::DEFAULT_PLACEMENT
+
+        Placement::new(
+            board.get_number_of_rows(),
+            board.get_number_of_columns(),
+            1.0,
+        )
     }
 
     fn get_id(&self) -> PlayerID {

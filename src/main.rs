@@ -21,11 +21,11 @@ fn main() {
     const N: BoardSizeT = 7;
     const K: WinLengthT = 3;
     let mut mcts_referee = NaiveReferee::<K> {};
-    let mut game_state_storage = NaiveGameStateStorage::<_, Evaluation<N>>::new();
+    let mut game_state_storage = NaiveGameStateStorage::<_, Evaluation>::new();
 
     // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<K> {}), 0);
     // let mut mcts_base_player1 = OneLookaheadPlayer::new(0, Box::new(NaiveReferee::<K> {}), 1);
-    // let mut player0 = CountBoundMCTSPlayer::<N, K>::new(
+    // let mut player0 = CountBoundMCTSPlayer::<K>::new(
     //     0,
     //     (N * N * 10000) as WinLengthT,
     //     &mut mcts_base_player0,
@@ -33,17 +33,13 @@ fn main() {
     //     &mut mcts_referee,
     // );
     let mut player0 =
-        MinMaxPlayer::<N, K>::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
-    let mut player1 = CLIPlayer::<N, K> { id: 1 };
+        MinMaxPlayer::<K>::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
+    let mut player1 = CLIPlayer::<K> { id: 1 };
     let mut referee = NaiveReferee::<K> {};
     let board =
         GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
-    let mut arena = ExploitingArena::<N, K>::new(
-        0,
-        board,
-        [&mut player1, &mut player0],
-        &mut referee,
-    );
+    let mut arena =
+        ExploitingArena::<K>::new(0, board, [&mut player1, &mut player0], &mut referee);
     loop {
         let (result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(

@@ -24,6 +24,21 @@ impl<T: std::marker::Copy> Board<T> {
         }
     }
 
+    pub fn new_from_existing<U: std::marker::Copy, ValT: Into<T>>(
+        board: &Board<U>,
+        initial_value: ValT,
+    ) -> Self {
+        let nrows = board.get_number_of_rows();
+        let ncolumns = board.get_number_of_columns();
+        let nelems = usize::from(nrows) * usize::from(ncolumns);
+        let board = vec![initial_value.into(); nelems];
+        Board {
+            nrows,
+            ncolumns,
+            board,
+        }
+    }
+
     #[allow(dead_code)]
     pub fn new_with_values<Matrix, Row, U>(values: Matrix) -> anyhow::Result<Self>
     where
@@ -74,6 +89,15 @@ impl<T: std::marker::Copy> Board<T> {
         })
     }
 
+    pub fn iter_mut_2d(&mut self) -> impl Iterator<Item = (PointPlacement, &mut T)> {
+        self.board.iter_mut().enumerate().map(|(index, val)| {
+            let row = index / usize::from(self.ncolumns);
+            let column = index % usize::from(self.ncolumns);
+            let pp = PointPlacement { row, column };
+            (pp, val)
+        })
+    }
+
     pub fn into_iter_2d(self) -> impl Iterator<Item = (PointPlacement, T)> {
         self.board.into_iter().enumerate().map(move |(index, val)| {
             let row = index / usize::from(self.ncolumns);
@@ -84,7 +108,19 @@ impl<T: std::marker::Copy> Board<T> {
     }
 
     #[allow(dead_code)]
-    pub fn joint_iter_2d<U: Copy>(
+    pub fn joint_iter_2d<'a, U>(
+        &'a self,
+        board2: &'a Board<U>,
+    ) -> impl Iterator<Item = (PointPlacement, &'a T, &'a U)>
+    where
+        U: std::marker::Copy + 'a,
+        T: 'a,
+    {
+        zip(self.iter_2d(), board2.iter_2d()).map(|(lhs, rhs)| (lhs.0, lhs.1, rhs.1))
+    }
+
+    #[allow(dead_code)]
+    pub fn joint_into_iter_2d<U: Copy>(
         self,
         board2: Board<U>,
     ) -> impl Iterator<Item = (PointPlacement, T, U)> {
@@ -241,7 +277,7 @@ mod tests {
                 board2[pp] = Some(val2).into();
             }
         }
-        let mut result = board.joint_iter_2d(board2);
+        let mut result = board.joint_into_iter_2d(board2);
 
         for row in 0..nrows {
             for column in 0..ncolumns {

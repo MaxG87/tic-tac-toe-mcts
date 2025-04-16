@@ -1,25 +1,22 @@
 use crate::interfaces::{
-    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, Result,
-    TicTacToeArena, TicTacToeReferee, WinLengthT,
+    GameState, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
+    TicTacToeReferee, WinLengthT,
 };
-use crate::utils::into_iter_2d_array;
 use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
 use rand::rng;
 
-pub struct ExploringTicTacToeArena<'arena, const N: BoardSizeT, const K: WinLengthT> {
+pub struct ExploringTicTacToeArena<'arena, const K: WinLengthT> {
     active_player: PlayerID,
     board: GameState,
-    players: [&'arena mut (dyn Player<N, K>); 2],
+    players: [&'arena mut (dyn Player<K>); 2],
     referee: &'arena mut (dyn TicTacToeReferee<K>),
 }
 
-impl<'arena, const N: BoardSizeT, const K: WinLengthT>
-    ExploringTicTacToeArena<'arena, N, K>
-{
+impl<'arena, const K: WinLengthT> ExploringTicTacToeArena<'arena, K> {
     pub fn new(
         board: GameState,
-        players: [&'arena mut dyn Player<N, K>; 2],
+        players: [&'arena mut dyn Player<K>; 2],
         starting_player: PlayerID,
         referee: &'arena mut dyn TicTacToeReferee<K>,
     ) -> Self {
@@ -49,14 +46,13 @@ impl<'arena, const N: BoardSizeT, const K: WinLengthT>
 
     fn sample_point_placement(
         board: &GameState,
-        placement: Placement<N>,
+        placement: Placement,
     ) -> Option<PointPlacement> {
         let mut pps = Vec::<PointPlacement>::new();
         let mut weights = Vec::<f32>::new();
 
         // Get point placement candidates with weights
-        for (row, column, weight) in into_iter_2d_array(&placement) {
-            let pp = PointPlacement { row, column };
+        for (pp, weight) in placement.into_iter_2d() {
             if board[pp].is_taken() {
                 // Skip already occupied cells
                 continue;
@@ -80,14 +76,12 @@ impl<'arena, const N: BoardSizeT, const K: WinLengthT>
     }
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> TicTacToeArena<N, K>
-    for ExploringTicTacToeArena<'_, N, K>
-{
+impl<const K: WinLengthT> TicTacToeArena<K> for ExploringTicTacToeArena<'_, K> {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
-        let maybe_pp = ExploringTicTacToeArena::<N, K>::sample_point_placement(
+        let maybe_pp = ExploringTicTacToeArena::<K>::sample_point_placement(
             &self.board,
             placements,
         );

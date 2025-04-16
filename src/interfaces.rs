@@ -5,9 +5,9 @@ pub type BoardSizeT = usize;
 pub type WinLengthT = u16;
 pub type PlayerID = usize;
 // TODO: Apply NewType idiom for Evaluation and Placement
-pub type Evaluation<const N: BoardSizeT> = [[f32; N]; N];
-pub type Placement<const N: BoardSizeT> = [[f32; N]; N];
 
+pub type Evaluation = Board<f32>;
+pub type Placement = Board<f32>;
 pub type GameState = Board<BoardStateEntry>;
 
 #[derive(PartialEq, Hash, Eq, Copy, Clone, Debug)]
@@ -79,12 +79,12 @@ pub trait TicTacToeReferee<const K: WinLengthT> {
     ) -> Result;
 }
 
-pub trait Player<const N: usize, const K: WinLengthT> {
-    fn do_move(&mut self, board: &GameState) -> Placement<N>;
+pub trait Player<const K: WinLengthT> {
+    fn do_move(&mut self, board: &GameState) -> Placement;
     fn get_id(&self) -> PlayerID;
 }
 
-pub trait TicTacToeArena<const N: usize, const K: WinLengthT> {
+pub trait TicTacToeArena<const K: WinLengthT> {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>);
     fn get_board(&self) -> GameState;
 }

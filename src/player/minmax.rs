@@ -1,9 +1,8 @@
 use crate::game_state_storage::GameStateStorage;
 use crate::interfaces::{
-    BoardSizeT, Evaluation, GameState, Placement, Player, PlayerID, PointPlacement,
-    Result, TicTacToeReferee, WinLengthT,
+    Evaluation, GameState, Placement, Player, PlayerID, Result, TicTacToeReferee,
+    WinLengthT,
 };
-use crate::utils::{into_iter_2d_array, iter_mut_2d_array, joint_iter_2d_arrays};
 use std::iter::Iterator;
 
 const DEFEAT: f32 = -1.0;
@@ -17,28 +16,28 @@ struct GetEvaluationsArgs {
     max_depth: u32,
 }
 
-pub struct MinMaxPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
+pub struct MinMaxPlayer<'player, const K: WinLengthT> {
     max_depth: u32,
     other_id: PlayerID,
-    game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation<N>>,
+    game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
     referee: &'player mut dyn TicTacToeReferee<K>,
     self_id: PlayerID,
 }
 
-fn get_maximum<const N: BoardSizeT>(evaluations: &Evaluation<N>) -> f32 {
-    into_iter_2d_array(evaluations)
-        .map(|(_, _, val)| val)
+fn get_maximum(evaluations: &Evaluation) -> f32 {
+    let max = evaluations
+        .iter_2d()
+        .map(|(_, val)| val)
         .reduce(|accum, val| if accum > val { accum } else { val })
-        .unwrap()
+        .unwrap();
+    *max
 }
 
-impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N, K> {
-    const DEFAULT_PLACEMENT: Placement<N> = [[1.0; N]; N];
-
+impl<'player, const K: WinLengthT> MinMaxPlayer<'player, K> {
     pub fn new(
         max_depth: u32,
         other_id: PlayerID,
-        game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation<N>>,
+        game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
         referee: &'player mut dyn TicTacToeReferee<K>,
         self_id: PlayerID,
     ) -> Self {
@@ -55,7 +54,7 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
         &mut self,
         board: &mut GameState,
         args: &GetEvaluationsArgs,
-    ) -> Evaluation<N> {
+    ) -> Evaluation {
         if let Some(evaluations) =
             self.game_state_storage.get_payload(board, args.max_depth)
         {
@@ -66,27 +65,32 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
             1 => self.get_evaluations_1(board, args),
             _ => self.get_evaluations_n(board, args),
         };
-        self.game_state_storage
-            .register_game_state(board, evaluations, args.max_depth);
+        self.game_state_storage.register_game_state(
+            board,
+            evaluations.clone(),
+            args.max_depth,
+        );
         evaluations
     }
 
-    fn to_placement(evaluations: &Evaluation<N>) -> Placement<N> {
+    fn to_placement(evaluations: &Evaluation) -> Placement {
         let max = get_maximum(evaluations);
         if max == DEFEAT {
             println!("Sure defeat detected. Using default placements.");
-            return Self::DEFAULT_PLACEMENT;
+            return Placement::new(
+                evaluations.get_number_of_rows(),
+                evaluations.get_number_of_columns(),
+                1.0,
+            );
         }
 
-        let mut placements: Placement<N> = [[0.0; N]; N];
-        for row in 0..N {
-            for column in 0..N {
-                // Direct comparsion is fine as float value was taken from the
-                // evaluations array.
-                #[allow(clippy::float_cmp)]
-                if evaluations[row][column] == max {
-                    placements[row][column] = 1.0;
-                }
+        let mut placements = Placement::new_from_existing(evaluations, 0.0);
+        for (pp, eval) in evaluations.iter_2d() {
+            // Direct comparsion is fine as float value was taken from the
+            // evaluations array.
+            #[allow(clippy::float_cmp)]
+            if *eval == max {
+                placements[pp] = 1.0;
             }
         }
         placements
@@ -94,76 +98,73 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT> MinMaxPlayer<'player, N,
 
     fn get_evaluations_1(
         &mut self,
-        board: &mut GameState,
+        board: &GameState,
         args: &GetEvaluationsArgs,
-    ) -> Evaluation<N> {
-        let mut evaluations = [[DEFEAT; N]; N];
-        let flattened: Vec<_> = joint_iter_2d_arrays(
-            iter_mut_2d_array(&mut evaluations),
-            board
-                .clone()
-                .into_iter_2d()
-                .map(|(pp, elem)| (pp.row, pp.column, elem)),
-        )
-        .collect();
+    ) -> Evaluation {
+        let mut evaluation = Evaluation::new(
+            board.get_number_of_rows(),
+            board.get_number_of_columns(),
+            DEFEAT,
+        );
+        let mut temporary_board = board.clone();
 
-        for (row, column, cur_evaluation, old_board_val) in flattened {
-            let pp = PointPlacement { row, column };
-            let move_result = self.referee.receive_move(board, pp, args.self_id);
-            *cur_evaluation = match move_result {
+        for (pp, old_board_val) in board.iter_2d() {
+            let move_result =
+                self.referee
+                    .receive_move(&mut temporary_board, pp, args.self_id);
+            evaluation[pp] = match move_result {
                 Result::Defeat | Result::IllegalMove => DEFEAT,
                 Result::Victory => VICTORY,
                 Result::Draw | Result::Undecided => DRAW,
             };
-            board[pp] = old_board_val;
+            temporary_board[pp] = *old_board_val;
         }
-        evaluations
+        evaluation
     }
 
     fn get_evaluations_n(
         &mut self,
-        board: &mut GameState,
+        board: &GameState,
         args: &GetEvaluationsArgs,
-    ) -> Evaluation<N> {
-        let mut evaluations = [[DEFEAT; N]; N];
+    ) -> Evaluation {
+        let mut evaluation = Evaluation::new(
+            board.get_number_of_rows(),
+            board.get_number_of_columns(),
+            DEFEAT,
+        );
+        let mut temporary_board = board.clone();
         let pass_down_args = GetEvaluationsArgs {
             other_id: args.self_id,
             self_id: args.other_id,
             max_depth: args.max_depth - 1,
         };
-        let flattened: Vec<_> = joint_iter_2d_arrays(
-            iter_mut_2d_array(&mut evaluations),
-            board
-                .clone()
-                .into_iter_2d()
-                .map(|(pp, elem)| (pp.row, pp.column, elem)),
-        )
-        .collect();
 
-        for (row, column, cur_evaluation, old_board_val) in flattened {
-            let pp = PointPlacement { row, column };
-            let move_result = self.referee.receive_move(board, pp, args.self_id);
-            *cur_evaluation = match move_result {
+        for (pp, old_board_val) in board.iter_2d() {
+            let move_result =
+                self.referee
+                    .receive_move(&mut temporary_board, pp, args.self_id);
+            evaluation[pp] = match move_result {
                 Result::Defeat | Result::IllegalMove => DEFEAT,
                 Result::Victory => VICTORY,
                 Result::Draw => DRAW,
                 Result::Undecided => {
-                    let pp_evaluations = self.get_evaluations(board, &pass_down_args);
+                    let pp_evaluations =
+                        self.get_evaluations(&mut temporary_board, &pass_down_args);
                     -get_maximum(&pp_evaluations)
                 }
             };
-            board[pp] = old_board_val;
+            temporary_board[pp] = *old_board_val;
         }
 
         if args.max_depth == self.max_depth {
-            println!("{evaluations:?}");
+            println!("{evaluation:?}");
         }
-        evaluations
+        evaluation
     }
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for MinMaxPlayer<'_, N, K> {
-    fn do_move(&mut self, board: &GameState) -> Placement<N> {
+impl<const K: WinLengthT> Player<K> for MinMaxPlayer<'_, K> {
+    fn do_move(&mut self, board: &GameState) -> Placement {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
             self_id: self.self_id,
@@ -197,13 +198,13 @@ mod tests {
             [None, Some(1), None, None, Some(1)],
         ]
     ).unwrap(),
-        [
+        Placement::new_with_values([
             [1.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [0.0, 1.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [1.0, 0.0, 0.0, 0.0, 0.0],
-        ],
+        ]).unwrap(),
         1
     )]
     // indirect winning moves
@@ -216,17 +217,17 @@ mod tests {
             ],
 
         ).unwrap(),
-        [
+        Placement::new_with_values([
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
-        ],
+        ]).unwrap(),
         3
     )]
-    fn correct_moves_are_found<const N: BoardSizeT>(
+    fn correct_moves_are_found(
         #[case] board: GameState,
-        #[case] expected: Placement<N>,
+        #[case] expected: Placement,
         #[case] lookahead: u32,
     ) {
         const K: WinLengthT = 3;
@@ -235,7 +236,7 @@ mod tests {
         let mut game_state_storage = NaiveGameStateStorage::<_, _>::new();
 
         let mut referee = NaiveReferee::<K> {};
-        let mut player = MinMaxPlayer::<N, K> {
+        let mut player = MinMaxPlayer::<K> {
             max_depth: lookahead,
             self_id,
             other_id,
@@ -247,7 +248,7 @@ mod tests {
         let result_from_storage =
             game_state_storage.get_payload(&board, lookahead).unwrap();
         let placement_from_storage =
-            MinMaxPlayer::<N, K>::to_placement(result_from_storage);
+            MinMaxPlayer::<K>::to_placement(result_from_storage);
         assert_eq!(placement_from_storage, expected);
         assert_eq!(result, expected);
     }

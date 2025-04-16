@@ -1,27 +1,26 @@
 use crate::arena::exploring::ExploringTicTacToeArena;
+use crate::board::Board;
 use crate::interfaces::{
-    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, Result,
-    TicTacToeArena, TicTacToeReferee, WinLengthT,
+    GameState, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
+    TicTacToeReferee, WinLengthT,
 };
 
 type NSamplesT = u16;
 
-pub struct CountBoundMCTSPlayer<'player, const N: BoardSizeT, const K: WinLengthT> {
+pub struct CountBoundMCTSPlayer<'player, const K: WinLengthT> {
     id: PlayerID,
     nsamples: NSamplesT,
-    player0: &'player mut dyn Player<N, K>,
-    player1: &'player mut dyn Player<N, K>,
+    player0: &'player mut dyn Player<K>,
+    player1: &'player mut dyn Player<K>,
     referee: &'player mut dyn TicTacToeReferee<K>,
 }
-impl<'player, const N: BoardSizeT, const K: WinLengthT>
-    CountBoundMCTSPlayer<'player, N, K>
-{
+impl<'player, const K: WinLengthT> CountBoundMCTSPlayer<'player, K> {
     #[allow(dead_code)]
     pub fn new(
         id: PlayerID,
         nsamples: NSamplesT,
-        player0: &'player mut dyn Player<N, K>,
-        player1: &'player mut dyn Player<N, K>,
+        player0: &'player mut dyn Player<K>,
+        player1: &'player mut dyn Player<K>,
         referee: &'player mut dyn TicTacToeReferee<K>,
     ) -> Self {
         Self {
@@ -33,17 +32,15 @@ impl<'player, const N: BoardSizeT, const K: WinLengthT>
         }
     }
 }
-impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
-    for CountBoundMCTSPlayer<'_, N, K>
-{
-    fn do_move(&mut self, board: &GameState) -> Placement<N> {
-        let mut tries: [[NSamplesT; N]; N] = [[0; N]; N];
-        let mut wins: [[NSamplesT; N]; N] = [[0; N]; N];
-        let mut draws: [[NSamplesT; N]; N] = [[0; N]; N];
+impl<const K: WinLengthT> Player<K> for CountBoundMCTSPlayer<'_, K> {
+    fn do_move(&mut self, board: &GameState) -> Placement {
+        let mut tries = Board::<NSamplesT>::new_from_existing(board, 0 as NSamplesT);
+        let mut wins = tries.clone();
+        let mut draws = tries.clone();
         let mut has_win_prob = false;
 
         for _ in 0..self.nsamples {
-            let mut my_arena = ExploringTicTacToeArena::<N, K>::new(
+            let mut my_arena = ExploringTicTacToeArena::<K>::new(
                 board.clone(),
                 [&mut *self.player0, &mut *self.player1],
                 self.id,
@@ -55,15 +52,14 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
 
             match first_point_placement {
                 Some(pp) => {
-                    tries[pp.row][pp.column] += 1;
+                    tries[pp] += 1;
                     match result {
                         Result::Victory => {
-                            wins[pp.row][pp.column] +=
-                                NSamplesT::from(player_id == self.id);
+                            wins[pp] += NSamplesT::from(player_id == self.id);
                             has_win_prob |= true;
                         }
                         Result::Draw => {
-                            draws[pp.row][pp.column] += 1;
+                            draws[pp] += 1;
                         }
                         _ => {}
                     }
@@ -71,21 +67,27 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
                 None => panic!("No legal move was made!"),
             }
         }
-        let mut placements: Placement<N> = [[0f32; N]; N];
-        let working_arr = if has_win_prob { &wins } else { &draws };
-        for row in 0..N {
-            for column in 0..N {
-                placements[row][column] = if tries[row][column] == 0 {
-                    0.0
-                } else {
-                    f32::from(working_arr[row][column]) / f32::from(tries[row][column])
-                };
-            }
-        }
-
         println!("{wins:?}");
         println!("{draws:?}");
         println!("{tries:?}");
+
+        let working_arr = if has_win_prob { wins } else { draws };
+        let mut placements = Placement::new_from_existing(board, 0.0);
+        let placements_iter =
+            working_arr
+                .joint_into_iter_2d(tries)
+                .map(|(pp, count, total)| {
+                    let chance = if total == 0 {
+                        0.0
+                    } else {
+                        f32::from(count) / f32::from(total)
+                    };
+                    (pp, chance)
+                });
+        for (pp, value) in placements_iter {
+            placements[pp] = value;
+        }
+
         println!("{placements:?}");
         placements
     }
@@ -95,9 +97,9 @@ impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K>
     }
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> CountBoundMCTSPlayer<'_, N, K> {
+impl<const K: WinLengthT> CountBoundMCTSPlayer<'_, K> {
     fn do_one_step_sample(
-        arena: &mut ExploringTicTacToeArena<N, K>,
+        arena: &mut ExploringTicTacToeArena<K>,
     ) -> (Result, PlayerID, Option<PointPlacement>) {
         let (result, first_player_id, first_point_placement) = arena.do_next_move();
         if result != Result::Undecided {
