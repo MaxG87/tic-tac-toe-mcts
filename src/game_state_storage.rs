@@ -71,11 +71,11 @@ mod tests {
 
     #[test]
     fn test_can_store_and_retrieve() {
-        const N: usize = 3;
+        let nrows = 3;
+        let ncolumns = 3;
         let payload = "Some Payload!".to_string();
         let depth = 2;
-        let board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+        let board = GameState::new(nrows, ncolumns, None);
         let mut storage = NaiveGameStateStorage::<_, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth);
@@ -85,13 +85,13 @@ mod tests {
 
     #[test]
     fn test_can_retrieve_states_with_bigger_lookahead() {
-        /// This test tests wether the storage can retrieve states with a bigger lookahead than the
-        /// one it was registered with.
-        const N: usize = 3;
+        // This test tests wether the storage can retrieve states with a bigger lookahead than the
+        // one it was registered with.
+        let nrows = 3;
+        let ncolumns = 3;
         let payload = "Some Payload!".to_string();
         let depth = 2;
-        let board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+        let board = GameState::new(nrows, ncolumns, None);
         let mut storage = NaiveGameStateStorage::<_, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth + 1);
@@ -101,15 +101,14 @@ mod tests {
 
     #[test]
     fn test_nothing_retrived_for_wrong_payload() {
-        /// This test tests wether the storage can retrieve states with a bigger lookahead than the
-        /// one it was registered with.
-        const N: usize = 3;
+        // This test tests wether the storage can retrieve states with a bigger lookahead than the
+        // one it was registered with.
+        let nrows = 3;
+        let ncolumns = 3;
         let payload = "Some Payload!".to_string();
         let depth = 2;
-        let board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
-        let mut new_board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+        let board = GameState::new(nrows, ncolumns, None);
+        let mut new_board = board.clone();
         let mut storage = NaiveGameStateStorage::<_, String>::new();
 
         new_board[PointPlacement { row: 0, column: 0 }] = Some(1).into();
@@ -120,13 +119,13 @@ mod tests {
 
     #[test]
     fn test_nothing_retrived_for_to_deep_depth() {
-        /// This test tests wether the storage can retrieve states with a bigger lookahead than the
-        /// one it was registered with.
-        const N: usize = 7;
+        // This test tests wether the storage can retrieve states with a bigger lookahead than the
+        // one it was registered with.
+        let nrows = 7;
+        let ncolumns = 7;
         let payload = "Some Payload!".to_string();
         let depth = 5;
-        let board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+        let board = GameState::new(nrows, ncolumns, None);
         let mut storage = NaiveGameStateStorage::<_, String>::new();
 
         storage.register_game_state(&board, payload.clone(), depth - 1);
@@ -136,12 +135,12 @@ mod tests {
 
     #[test]
     fn test_registering_deeper_boards_overwrites_shallower_ones() {
-        const N: usize = 7;
+        let nrows = 7;
+        let ncolumns = 7;
         let deep_payload = "Deep Payload!".to_string();
         let shallow_payload = "Shallow Payload!".to_string();
         let depth = 5;
-        let board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+        let board = GameState::new(nrows, ncolumns, None);
         let mut storage = NaiveGameStateStorage::<_, String>::new();
 
         storage.register_game_state(&board, shallow_payload.clone(), depth - 1);
@@ -154,12 +153,12 @@ mod tests {
 
     #[test]
     fn test_registering_shallow_board_does_not_overwrite_deeper_one() {
-        const N: usize = 7;
+        let nrows = 7;
+        let ncolumns = 7;
         let deep_payload = "Deep Payload!".to_string();
         let shallow_payload = "Shallow Payload!".to_string();
         let depth = 5;
-        let board =
-            GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+        let board = GameState::new(nrows, ncolumns, None);
         let mut storage = NaiveGameStateStorage::<_, String>::new();
 
         storage.register_game_state(&board, deep_payload.clone(), depth);
