@@ -1,24 +1,24 @@
 use crate::interfaces::{
     GameState, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
-    TicTacToeReferee, WinLengthT,
+    TicTacToeReferee,
 };
 use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
 use rand::rng;
 
-pub struct ExploringTicTacToeArena<'arena, const K: WinLengthT> {
+pub struct ExploringTicTacToeArena<'arena> {
     active_player: PlayerID,
     board: GameState,
-    players: [&'arena mut (dyn Player<K>); 2],
-    referee: &'arena mut (dyn TicTacToeReferee<K>),
+    players: [&'arena mut (dyn Player); 2],
+    referee: &'arena mut (dyn TicTacToeReferee),
 }
 
-impl<'arena, const K: WinLengthT> ExploringTicTacToeArena<'arena, K> {
+impl<'arena> ExploringTicTacToeArena<'arena> {
     pub fn new(
         board: GameState,
-        players: [&'arena mut dyn Player<K>; 2],
+        players: [&'arena mut dyn Player; 2],
         starting_player: PlayerID,
-        referee: &'arena mut dyn TicTacToeReferee<K>,
+        referee: &'arena mut dyn TicTacToeReferee,
     ) -> Self {
         let matching_players: Vec<PlayerID> = players
             .iter()
@@ -76,15 +76,13 @@ impl<'arena, const K: WinLengthT> ExploringTicTacToeArena<'arena, K> {
     }
 }
 
-impl<const K: WinLengthT> TicTacToeArena<K> for ExploringTicTacToeArena<'_, K> {
+impl TicTacToeArena for ExploringTicTacToeArena<'_> {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
-        let maybe_pp = ExploringTicTacToeArena::<K>::sample_point_placement(
-            &self.board,
-            placements,
-        );
+        let maybe_pp =
+            ExploringTicTacToeArena::sample_point_placement(&self.board, placements);
 
         match maybe_pp {
             Some(pp) => {

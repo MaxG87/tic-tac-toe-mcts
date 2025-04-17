@@ -19,7 +19,7 @@ mod referee;
 fn main() {
     const N: BoardSizeT = 7;
     const K: WinLengthT = 3;
-    let mut mcts_referee = NaiveReferee::<K> {};
+    let mut mcts_referee = NaiveReferee::new(K);
     let mut game_state_storage = NaiveGameStateStorage::<_, Evaluation>::new();
 
     // let mut mcts_base_player0 = OneLookaheadPlayer::new(1, Box::new(NaiveReferee::<K> {}), 0);
@@ -32,13 +32,13 @@ fn main() {
     //     &mut mcts_referee,
     // );
     let mut player0 =
-        MinMaxPlayer::<K>::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
-    let mut player1 = CLIPlayer::<K> { id: 1 };
-    let mut referee = NaiveReferee::<K> {};
+        MinMaxPlayer::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
+    let mut player1 = CLIPlayer { id: 1 };
+    let mut referee = NaiveReferee::new(K);
     let board =
         GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
     let mut arena =
-        ExploitingArena::<K>::new(0, board, [&mut player1, &mut player0], &mut referee);
+        ExploitingArena::new(0, board, [&mut player1, &mut player0], &mut referee);
     loop {
         let (result, player_id, maybe_point_placement) = arena.do_next_move();
         println!(

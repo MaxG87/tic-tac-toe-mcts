@@ -1,12 +1,12 @@
-use crate::interfaces::{GameState, Placement, Player, PlayerID, WinLengthT};
+use crate::interfaces::{GameState, Placement, Player, PlayerID};
 
-pub struct GuessingPlayer<const K: WinLengthT> {
+pub struct GuessingPlayer {
     pub id: PlayerID,
 }
 
-impl<const K: WinLengthT> GuessingPlayer<K> {}
+impl GuessingPlayer {}
 
-impl<const K: WinLengthT> Player<K> for GuessingPlayer<K> {
+impl Player for GuessingPlayer {
     fn do_move(&mut self, board: &GameState) -> Placement {
         Placement::new_from_existing(board, 1.0)
     }
@@ -24,9 +24,8 @@ mod tests {
     #[test]
     fn test_guessing_player_uses_constant_probabilities() {
         const N: u16 = 10;
-        const K: WinLengthT = 3;
         const ID: PlayerID = 1;
-        let mut player = GuessingPlayer::<K> { id: ID };
+        let mut player = GuessingPlayer { id: ID };
         let board = GameState::new(N, N, None);
         let placement = player.do_move(&board);
         let values = placement
@@ -39,9 +38,8 @@ mod tests {
 
     #[test]
     fn test_get_id() {
-        const K: WinLengthT = 3;
         const ID: PlayerID = 1;
-        let player = GuessingPlayer::<K> { id: ID };
+        let player = GuessingPlayer { id: ID };
         assert_eq!(player.id, ID);
     }
 }

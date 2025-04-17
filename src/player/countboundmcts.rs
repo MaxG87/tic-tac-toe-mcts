@@ -2,26 +2,26 @@ use crate::arena::exploring::ExploringTicTacToeArena;
 use crate::board::Board;
 use crate::interfaces::{
     GameState, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
-    TicTacToeReferee, WinLengthT,
+    TicTacToeReferee,
 };
 
 type NSamplesT = u16;
 
-pub struct CountBoundMCTSPlayer<'player, const K: WinLengthT> {
+pub struct CountBoundMCTSPlayer<'player> {
     id: PlayerID,
     nsamples: NSamplesT,
-    player0: &'player mut dyn Player<K>,
-    player1: &'player mut dyn Player<K>,
-    referee: &'player mut dyn TicTacToeReferee<K>,
+    player0: &'player mut dyn Player,
+    player1: &'player mut dyn Player,
+    referee: &'player mut dyn TicTacToeReferee,
 }
-impl<'player, const K: WinLengthT> CountBoundMCTSPlayer<'player, K> {
+impl<'player> CountBoundMCTSPlayer<'player> {
     #[allow(dead_code)]
     pub fn new(
         id: PlayerID,
         nsamples: NSamplesT,
-        player0: &'player mut dyn Player<K>,
-        player1: &'player mut dyn Player<K>,
-        referee: &'player mut dyn TicTacToeReferee<K>,
+        player0: &'player mut dyn Player,
+        player1: &'player mut dyn Player,
+        referee: &'player mut dyn TicTacToeReferee,
     ) -> Self {
         Self {
             id,
@@ -32,7 +32,7 @@ impl<'player, const K: WinLengthT> CountBoundMCTSPlayer<'player, K> {
         }
     }
 }
-impl<const K: WinLengthT> Player<K> for CountBoundMCTSPlayer<'_, K> {
+impl Player for CountBoundMCTSPlayer<'_> {
     fn do_move(&mut self, board: &GameState) -> Placement {
         let mut tries = Board::<NSamplesT>::new_from_existing(board, 0 as NSamplesT);
         let mut wins = tries.clone();
@@ -40,7 +40,7 @@ impl<const K: WinLengthT> Player<K> for CountBoundMCTSPlayer<'_, K> {
         let mut has_win_prob = false;
 
         for _ in 0..self.nsamples {
-            let mut my_arena = ExploringTicTacToeArena::<K>::new(
+            let mut my_arena = ExploringTicTacToeArena::new(
                 board.clone(),
                 [&mut *self.player0, &mut *self.player1],
                 self.id,
@@ -97,9 +97,9 @@ impl<const K: WinLengthT> Player<K> for CountBoundMCTSPlayer<'_, K> {
     }
 }
 
-impl<const K: WinLengthT> CountBoundMCTSPlayer<'_, K> {
+impl CountBoundMCTSPlayer<'_> {
     fn do_one_step_sample(
-        arena: &mut ExploringTicTacToeArena<K>,
+        arena: &mut ExploringTicTacToeArena,
     ) -> (Result, PlayerID, Option<PointPlacement>) {
         let (result, first_player_id, first_point_placement) = arena.do_next_move();
         if result != Result::Undecided {

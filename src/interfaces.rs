@@ -70,7 +70,7 @@ impl fmt::Display for Result {
     }
 }
 
-pub trait TicTacToeReferee<const K: WinLengthT> {
+pub trait TicTacToeReferee {
     fn receive_move(
         &mut self,
         board: &mut GameState,
@@ -79,12 +79,12 @@ pub trait TicTacToeReferee<const K: WinLengthT> {
     ) -> Result;
 }
 
-pub trait Player<const K: WinLengthT> {
+pub trait Player {
     fn do_move(&mut self, board: &GameState) -> Placement;
     fn get_id(&self) -> PlayerID;
 }
 
-pub trait TicTacToeArena<const K: WinLengthT> {
+pub trait TicTacToeArena {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>);
     fn get_board(&self) -> GameState;
 }

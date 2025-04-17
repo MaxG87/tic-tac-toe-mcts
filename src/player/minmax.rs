@@ -1,7 +1,6 @@
 use crate::game_state_storage::GameStateStorage;
 use crate::interfaces::{
     Evaluation, GameState, Placement, Player, PlayerID, Result, TicTacToeReferee,
-    WinLengthT,
 };
 use std::iter::Iterator;
 
@@ -16,11 +15,11 @@ struct GetEvaluationsArgs {
     max_depth: u32,
 }
 
-pub struct MinMaxPlayer<'player, const K: WinLengthT> {
+pub struct MinMaxPlayer<'player> {
     max_depth: u32,
     other_id: PlayerID,
     game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
-    referee: &'player mut dyn TicTacToeReferee<K>,
+    referee: &'player mut dyn TicTacToeReferee,
     self_id: PlayerID,
 }
 
@@ -33,12 +32,12 @@ fn get_maximum(evaluations: &Evaluation) -> f32 {
     *max
 }
 
-impl<'player, const K: WinLengthT> MinMaxPlayer<'player, K> {
+impl<'player> MinMaxPlayer<'player> {
     pub fn new(
         max_depth: u32,
         other_id: PlayerID,
         game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
-        referee: &'player mut dyn TicTacToeReferee<K>,
+        referee: &'player mut dyn TicTacToeReferee,
         self_id: PlayerID,
     ) -> Self {
         Self {
@@ -163,7 +162,7 @@ impl<'player, const K: WinLengthT> MinMaxPlayer<'player, K> {
     }
 }
 
-impl<const K: WinLengthT> Player<K> for MinMaxPlayer<'_, K> {
+impl Player for MinMaxPlayer<'_> {
     fn do_move(&mut self, board: &GameState) -> Placement {
         let mut board = board.clone();
         let args = GetEvaluationsArgs {
@@ -230,13 +229,13 @@ mod tests {
         #[case] expected: Placement,
         #[case] lookahead: u32,
     ) {
-        const K: WinLengthT = 3;
+        let winning_length = 3;
         let other_id = 1;
         let self_id = 0;
         let mut game_state_storage = NaiveGameStateStorage::<_, _>::new();
 
-        let mut referee = NaiveReferee::<K> {};
-        let mut player = MinMaxPlayer::<K> {
+        let mut referee = NaiveReferee::new(winning_length);
+        let mut player = MinMaxPlayer {
             max_depth: lookahead,
             self_id,
             other_id,
@@ -247,8 +246,7 @@ mod tests {
         let result = player.do_move(&board);
         let result_from_storage =
             game_state_storage.get_payload(&board, lookahead).unwrap();
-        let placement_from_storage =
-            MinMaxPlayer::<K>::to_placement(result_from_storage);
+        let placement_from_storage = MinMaxPlayer::to_placement(result_from_storage);
         assert_eq!(placement_from_storage, expected);
         assert_eq!(result, expected);
     }

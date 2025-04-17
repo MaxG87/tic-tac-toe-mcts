@@ -1,18 +1,18 @@
 use crate::interfaces::{
-    GameState, Placement, Player, PlayerID, Result, TicTacToeReferee, WinLengthT,
+    GameState, Placement, Player, PlayerID, Result, TicTacToeReferee,
 };
 
-pub struct OneLookaheadPlayer<const K: WinLengthT> {
+pub struct OneLookaheadPlayer {
     other_id: PlayerID,
-    referee: Box<dyn TicTacToeReferee<K>>,
+    referee: Box<dyn TicTacToeReferee>,
     self_id: PlayerID,
 }
 
-impl<const K: WinLengthT> OneLookaheadPlayer<K> {
+impl OneLookaheadPlayer {
     #[allow(dead_code)]
     pub fn new(
         other_id: PlayerID,
-        referee: Box<dyn TicTacToeReferee<K>>,
+        referee: Box<dyn TicTacToeReferee>,
         self_id: PlayerID,
     ) -> Self {
         Self {
@@ -65,7 +65,7 @@ impl<const K: WinLengthT> OneLookaheadPlayer<K> {
     }
 }
 
-impl<const K: WinLengthT> Player<K> for OneLookaheadPlayer<K> {
+impl Player for OneLookaheadPlayer {
     fn do_move(&mut self, board: &GameState) -> Placement {
         let (has_winning_move, placements) = self.get_winning_moves(board);
         if has_winning_move {
