@@ -1,11 +1,11 @@
-use crate::board::Board;
 use crate::interfaces::{
-    BoardSizeT, PlayerID, PointPlacement, Result, TicTacToeReferee, WinLengthT,
+    BoardSizeT, GameState, PlayerID, PointPlacement, Result, TicTacToeReferee,
+    WinLengthT,
 };
 
 pub struct NaiveReferee<const K: WinLengthT> {}
 
-fn evaluate_board<const K: WinLengthT>(board: &Board, player: PlayerID) -> Result {
+fn evaluate_board<const K: WinLengthT>(board: &GameState, player: PlayerID) -> Result {
     let mut has_free_cells = false;
     let deltas = [
         (0, 1),  // horizontal
@@ -15,7 +15,7 @@ fn evaluate_board<const K: WinLengthT>(board: &Board, player: PlayerID) -> Resul
     ];
 
     for (pp, value) in board.iter_2d() {
-        has_free_cells |= value.is_none();
+        has_free_cells |= value.is_free();
         for cur in deltas {
             if has_winning_state_in_direction::<K>(
                 cur, pp.row, pp.column, board, player,
@@ -34,7 +34,7 @@ fn has_winning_state_in_direction<const K: WinLengthT>(
     delta: (i32, i32),
     start_row: BoardSizeT,
     start_column: BoardSizeT,
-    board: &Board,
+    board: &GameState,
     player: PlayerID,
 ) -> bool {
     let nrows = board.get_number_of_rows();
@@ -51,7 +51,7 @@ fn has_winning_state_in_direction<const K: WinLengthT>(
         let row = (start_row as i32 + dx * i32::from(k)) as BoardSizeT;
         let column = (start_column as i32 + dy * i32::from(k)) as BoardSizeT;
         let pp = PointPlacement { row, column };
-        has_won &= board[pp] == Some(player);
+        has_won &= board[pp] == Some(player).into();
     }
 
     has_won
@@ -60,14 +60,15 @@ fn has_winning_state_in_direction<const K: WinLengthT>(
 impl<const K: WinLengthT> TicTacToeReferee<K> for NaiveReferee<K> {
     fn receive_move(
         &mut self,
-        board: &mut Board,
+        board: &mut GameState,
         placement: PointPlacement,
         player_id: PlayerID,
     ) -> Result {
-        if board.has_placement_at(placement) {
+        if board[placement].is_taken() {
+            // There is already a player on this cell.
             Result::IllegalMove
         } else {
-            board[placement] = Some(player_id);
+            board[placement] = Some(player_id).into();
             evaluate_board::<K>(board, player_id)
         }
     }

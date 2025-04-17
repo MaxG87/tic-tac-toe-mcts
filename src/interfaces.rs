@@ -4,10 +4,39 @@ use std::fmt;
 pub type BoardSizeT = usize;
 pub type WinLengthT = u16;
 pub type PlayerID = usize;
-pub type BoardStateEntry = Option<PlayerID>;
 // TODO: Apply NewType idiom for Evaluation and Placement
-pub type Evaluation<const N: BoardSizeT> = [[f32; N]; N];
-pub type Placement<const N: BoardSizeT> = [[f32; N]; N];
+
+pub type Evaluation = Board<f32>;
+pub type Placement = Board<f32>;
+pub type GameState = Board<BoardStateEntry>;
+
+#[derive(PartialEq, Hash, Eq, Copy, Clone, Debug)]
+pub struct BoardStateEntry(Option<PlayerID>);
+
+impl BoardStateEntry {
+    pub fn is_taken(&self) -> bool {
+        self.0.is_some()
+    }
+
+    pub fn is_free(&self) -> bool {
+        !self.is_taken()
+    }
+}
+
+impl fmt::Display for BoardStateEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0 {
+            Some(player_id) => write!(f, "{}", player_id),
+            None => write!(f, "."),
+        }
+    }
+}
+
+impl From<Option<PlayerID>> for BoardStateEntry {
+    fn from(value: Option<PlayerID>) -> Self {
+        BoardStateEntry(value)
+    }
+}
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct PointPlacement {
@@ -44,18 +73,18 @@ impl fmt::Display for Result {
 pub trait TicTacToeReferee<const K: WinLengthT> {
     fn receive_move(
         &mut self,
-        board: &mut Board,
+        board: &mut GameState,
         placement: PointPlacement,
         player: PlayerID,
     ) -> Result;
 }
 
-pub trait Player<const N: usize, const K: WinLengthT> {
-    fn do_move(&mut self, board: &Board) -> Placement<N>;
+pub trait Player<const K: WinLengthT> {
+    fn do_move(&mut self, board: &GameState) -> Placement;
     fn get_id(&self) -> PlayerID;
 }
 
-pub trait TicTacToeArena<const N: usize, const K: WinLengthT> {
+pub trait TicTacToeArena<const K: WinLengthT> {
     fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>);
-    fn get_board(&self) -> Board;
+    fn get_board(&self) -> GameState;
 }

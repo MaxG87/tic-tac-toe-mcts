@@ -1,16 +1,17 @@
-use crate::board::Board;
 use crate::interfaces::{
-    BoardSizeT, Placement, Player, PlayerID, PointPlacement, WinLengthT,
+    BoardSizeT, GameState, Placement, Player, PlayerID, PointPlacement, WinLengthT,
 };
 use std::io;
 
-pub struct CLIPlayer<const N: BoardSizeT, const K: WinLengthT> {
+pub struct CLIPlayer<const K: WinLengthT> {
     pub id: PlayerID,
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> CLIPlayer<N, K> {
-    fn get_point_placement(&self) -> PointPlacement {
+impl<const K: WinLengthT> CLIPlayer<K> {
+    fn get_point_placement(&self, board: &GameState) -> PointPlacement {
         let _ = self; // self is not needed here.
+        let nrows = board.get_number_of_rows().into();
+        let ncolumns = board.get_number_of_columns().into();
         loop {
             let mut buffer = String::new();
             io::stdin().read_line(&mut buffer).unwrap();
@@ -25,18 +26,18 @@ impl<const N: BoardSizeT, const K: WinLengthT> CLIPlayer<N, K> {
                 (Ok(row), Ok(column)) => PointPlacement { row, column },
                 _ => continue,
             };
-            if point_placement.row < N && point_placement.column < N {
+            if point_placement.row < nrows && point_placement.column < ncolumns {
                 return point_placement;
             }
         }
     }
 }
 
-impl<const N: BoardSizeT, const K: WinLengthT> Player<N, K> for CLIPlayer<N, K> {
-    fn do_move(&mut self, _: &Board) -> Placement<N> {
-        let point_placement = self.get_point_placement();
-        let mut placements: Placement<N> = [[0.0; N]; N];
-        placements[point_placement.row][point_placement.column] = 1.0;
+impl<const K: WinLengthT> Player<K> for CLIPlayer<K> {
+    fn do_move(&mut self, board: &GameState) -> Placement {
+        let point_placement = self.get_point_placement(board);
+        let mut placements = Placement::new_from_existing(board, 0.0);
+        placements[point_placement] = 1.0;
         placements
     }
     fn get_id(&self) -> PlayerID {
