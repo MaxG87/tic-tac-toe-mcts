@@ -48,16 +48,21 @@ impl NaiveReferee {
         let nrows = board.get_number_of_rows();
         let ncolumns = board.get_number_of_columns();
         let (dx, dy) = delta;
-        let end_x: i32 = dx * i32::from(self.winning_length - 1) + start_row as i32;
-        let end_y: i32 = dy * i32::from(self.winning_length - 1) + start_column as i32;
-        if end_x < 0 || end_x >= ncolumns as i32 || end_y < 0 || end_y >= nrows as i32 {
+        let end_x: i32 = dx * i32::from(self.winning_length - 1) + i32::from(start_row);
+        let end_y: i32 =
+            dy * i32::from(self.winning_length - 1) + i32::from(start_column);
+        if end_x < 0
+            || end_x >= i32::from(ncolumns)
+            || end_y < 0
+            || end_y >= i32::from(nrows)
+        {
             return false;
         }
 
         let mut has_won = true;
         for k in 0..self.winning_length {
-            let row = (start_row as i32 + dx * i32::from(k)) as BoardSizeT;
-            let column = (start_column as i32 + dy * i32::from(k)) as BoardSizeT;
+            let row = (i32::from(start_row) + dx * i32::from(k)) as BoardSizeT;
+            let column = (i32::from(start_column) + dy * i32::from(k)) as BoardSizeT;
             let pp = PointPlacement { row, column };
             has_won &= board[pp] == Some(player).into();
         }

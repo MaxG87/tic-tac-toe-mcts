@@ -35,8 +35,7 @@ fn main() {
         MinMaxPlayer::new(5, 1, &mut game_state_storage, &mut mcts_referee, 0);
     let mut player1 = CLIPlayer { id: 1 };
     let mut referee = NaiveReferee::new(K);
-    let board =
-        GameState::new(u16::try_from(N).unwrap(), u16::try_from(N).unwrap(), None);
+    let board = GameState::new(N, N, None);
     let mut arena =
         ExploitingArena::new(0, board, [&mut player1, &mut player0], &mut referee);
     loop {

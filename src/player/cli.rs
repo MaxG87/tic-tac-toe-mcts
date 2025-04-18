@@ -10,8 +10,8 @@ pub struct CLIPlayer {
 impl CLIPlayer {
     fn get_point_placement(&self, board: &GameState) -> PointPlacement {
         let _ = self; // self is not needed here.
-        let nrows = board.get_number_of_rows().into();
-        let ncolumns = board.get_number_of_columns().into();
+        let nrows = board.get_number_of_rows();
+        let ncolumns = board.get_number_of_columns();
         loop {
             let mut buffer = String::new();
             io::stdin().read_line(&mut buffer).unwrap();

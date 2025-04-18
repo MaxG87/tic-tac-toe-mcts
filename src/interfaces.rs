@@ -1,9 +1,9 @@
 use crate::board::Board;
 use std::fmt;
 
-pub type BoardSizeT = usize;
+pub type BoardSizeT = u16;
 pub type WinLengthT = u16;
-pub type PlayerID = usize;
+pub type PlayerID = u16;
 // TODO: Apply NewType idiom for Evaluation and Placement
 
 pub type Evaluation = Board<f32>;
@@ -26,7 +26,7 @@ impl BoardStateEntry {
 impl fmt::Display for BoardStateEntry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.0 {
-            Some(player_id) => write!(f, "{}", player_id),
+            Some(player_id) => write!(f, "{player_id}"),
             None => write!(f, "."),
         }
     }
