@@ -1,4 +1,5 @@
 use crate::board::Board;
+use std::collections::HashSet;
 use std::fmt;
 
 pub type BoardSizeT = u16;
@@ -42,6 +43,36 @@ impl From<Option<PlayerID>> for BoardStateEntry {
 pub struct PointPlacement {
     pub row: BoardSizeT,
     pub column: BoardSizeT,
+}
+
+impl PointPlacement {
+    pub fn get_lower_neighbours(
+        &self,
+        nrows: BoardSizeT,
+        ncolumns: BoardSizeT,
+    ) -> impl Iterator<Item = PointPlacement> {
+        let mut result = HashSet::new();
+        let directions = [
+            (0, -1),  // horizontal
+            (-1, 0),  // vertical
+            (-1, -1), // backslash diagonal
+            (-1, 1),  // diagonal
+        ];
+        for (dx, dy) in directions {
+            let new_row = self.row.saturating_add
+            let new_column = self.column as i32 + dy;
+            if new_row >= 0 && new_row < nrows as i32 && new_column >= 0
+                && new_column < ncolumns as i32
+            {
+                result.insert(PointPlacement {
+                    row: new_row as BoardSizeT,
+                    column: new_column as BoardSizeT,
+                });
+            }
+
+        }
+        result.into_iter()
+    }
 }
 
 impl fmt::Display for PointPlacement {
