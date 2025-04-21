@@ -1,5 +1,5 @@
 use crate::interfaces::{
-    GameState, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
+    GameResult, GameState, Placement, Player, PlayerID, PointPlacement, TicTacToeArena,
     TicTacToeReferee,
 };
 use rand::distr::weighted::WeightedIndex;
@@ -77,7 +77,7 @@ impl<'arena> ExploringTicTacToeArena<'arena> {
 }
 
 impl TicTacToeArena for ExploringTicTacToeArena<'_> {
-    fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>) {
+    fn do_next_move(&mut self) -> (GameResult, PlayerID, Option<PointPlacement>) {
         let cur_player = &mut self.players[self.active_player % 2];
         self.active_player += 1;
         let placements = cur_player.do_move(&self.board);
@@ -91,7 +91,7 @@ impl TicTacToeArena for ExploringTicTacToeArena<'_> {
                         .receive_move(&mut self.board, pp, cur_player.get_id());
                 (result, cur_player.get_id(), Some(pp))
             }
-            None => (Result::Defeat, cur_player.get_id(), None),
+            None => (GameResult::Defeat, cur_player.get_id(), None),
         }
     }
 

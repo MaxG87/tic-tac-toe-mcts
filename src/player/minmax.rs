@@ -1,6 +1,6 @@
 use crate::game_state_storage::GameStateStorage;
 use crate::interfaces::{
-    Evaluation, GameState, Placement, Player, PlayerID, Result, TicTacToeReferee,
+    Evaluation, GameResult, GameState, Placement, Player, PlayerID, TicTacToeReferee,
 };
 use std::iter::Iterator;
 
@@ -112,9 +112,9 @@ impl<'player> MinMaxPlayer<'player> {
                 self.referee
                     .receive_move(&mut temporary_board, pp, args.self_id);
             evaluation[pp] = match move_result {
-                Result::Defeat | Result::IllegalMove => DEFEAT,
-                Result::Victory => VICTORY,
-                Result::Draw | Result::Undecided => DRAW,
+                GameResult::Defeat | GameResult::IllegalMove => DEFEAT,
+                GameResult::Victory => VICTORY,
+                GameResult::Draw | GameResult::Undecided => DRAW,
             };
             temporary_board[pp] = *old_board_val;
         }
@@ -143,10 +143,10 @@ impl<'player> MinMaxPlayer<'player> {
                 self.referee
                     .receive_move(&mut temporary_board, pp, args.self_id);
             evaluation[pp] = match move_result {
-                Result::Defeat | Result::IllegalMove => DEFEAT,
-                Result::Victory => VICTORY,
-                Result::Draw => DRAW,
-                Result::Undecided => {
+                GameResult::Defeat | GameResult::IllegalMove => DEFEAT,
+                GameResult::Victory => VICTORY,
+                GameResult::Draw => DRAW,
+                GameResult::Undecided => {
                     let pp_evaluations =
                         self.get_evaluations(&mut temporary_board, &pass_down_args);
                     -get_maximum(&pp_evaluations)

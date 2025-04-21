@@ -1,5 +1,5 @@
 use crate::interfaces::{
-    BoardSizeT, GameState, PlayerID, PointPlacement, Result, TicTacToeReferee,
+    BoardSizeT, GameResult, GameState, PlayerID, PointPlacement, TicTacToeReferee,
     WinLengthT,
 };
 
@@ -12,7 +12,7 @@ impl NaiveReferee {
         NaiveReferee { winning_length }
     }
 
-    fn evaluate_board(&self, board: &GameState, player: PlayerID) -> Result {
+    fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
         let mut has_free_cells = false;
         let deltas = [
             (0, 1),  // horizontal
@@ -27,14 +27,14 @@ impl NaiveReferee {
                 if self.has_winning_state_in_direction(
                     cur, pp.row, pp.column, board, player,
                 ) {
-                    return Result::Victory;
+                    return GameResult::Victory;
                 }
             }
         }
         if !has_free_cells {
-            return Result::Draw;
+            return GameResult::Draw;
         }
-        Result::Undecided
+        GameResult::Undecided
     }
 
     fn has_winning_state_in_direction(
@@ -77,10 +77,10 @@ impl TicTacToeReferee for NaiveReferee {
         board: &mut GameState,
         placement: PointPlacement,
         player_id: PlayerID,
-    ) -> Result {
+    ) -> GameResult {
         if board[placement].is_taken() {
             // There is already a player on this cell.
-            Result::IllegalMove
+            GameResult::IllegalMove
         } else {
             board[placement] = Some(player_id).into();
             self.evaluate_board(board, player_id)

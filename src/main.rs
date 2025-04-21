@@ -3,7 +3,7 @@
 use crate::game_state_storage::NaiveGameStateStorage;
 use arena::exploiting::ExploitingArena;
 use interfaces::{
-    BoardSizeT, Evaluation, GameState, Result, TicTacToeArena, WinLengthT,
+    BoardSizeT, Evaluation, GameResult, GameState, TicTacToeArena, WinLengthT,
 };
 use player::cli::CLIPlayer;
 use player::minmax::MinMaxPlayer;
@@ -50,13 +50,13 @@ fn main() {
         let board = arena.get_board();
         println!("{board}");
         let maybe_result_msg: Option<String> = match result {
-            Result::Defeat => Some(format!("Player {player_id} lost.")),
-            Result::Victory => Some(format!("Player {player_id} won.")),
-            Result::Draw => Some("The game ended draw!".to_string()),
-            Result::IllegalMove => {
+            GameResult::Defeat => Some(format!("Player {player_id} lost.")),
+            GameResult::Victory => Some(format!("Player {player_id} won.")),
+            GameResult::Draw => Some("The game ended draw!".to_string()),
+            GameResult::IllegalMove => {
                 Some(format!("Player {player_id} made an illegal move."))
             }
-            Result::Undecided => None,
+            GameResult::Undecided => None,
         };
         if maybe_result_msg.is_some() {
             println!("{}", maybe_result_msg.unwrap());

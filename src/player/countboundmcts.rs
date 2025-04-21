@@ -1,7 +1,7 @@
 use crate::arena::exploring::ExploringTicTacToeArena;
 use crate::board::Board;
 use crate::interfaces::{
-    GameState, Placement, Player, PlayerID, PointPlacement, Result, TicTacToeArena,
+    GameResult, GameState, Placement, Player, PlayerID, PointPlacement, TicTacToeArena,
     TicTacToeReferee,
 };
 
@@ -54,11 +54,11 @@ impl Player for CountBoundMCTSPlayer<'_> {
                 Some(pp) => {
                     tries[pp] += 1;
                     match result {
-                        Result::Victory => {
+                        GameResult::Victory => {
                             wins[pp] += NSamplesT::from(player_id == self.id);
                             has_win_prob |= true;
                         }
-                        Result::Draw => {
+                        GameResult::Draw => {
                             draws[pp] += 1;
                         }
                         _ => {}
@@ -100,14 +100,14 @@ impl Player for CountBoundMCTSPlayer<'_> {
 impl CountBoundMCTSPlayer<'_> {
     fn do_one_step_sample(
         arena: &mut ExploringTicTacToeArena,
-    ) -> (Result, PlayerID, Option<PointPlacement>) {
+    ) -> (GameResult, PlayerID, Option<PointPlacement>) {
         let (result, first_player_id, first_point_placement) = arena.do_next_move();
-        if result != Result::Undecided {
+        if result != GameResult::Undecided {
             return (result, first_player_id, first_point_placement);
         }
         loop {
             match arena.do_next_move() {
-                (Result::Undecided, _, _) => {}
+                (GameResult::Undecided, _, _) => {}
                 (result, player_id, _) => {
                     return (result, player_id, first_point_placement);
                 }

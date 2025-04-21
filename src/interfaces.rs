@@ -51,21 +51,21 @@ impl fmt::Display for PointPlacement {
 }
 
 #[derive(PartialEq, Eq)]
-pub enum Result {
+pub enum GameResult {
     Defeat,
     Draw,
     IllegalMove,
     Victory,
     Undecided,
 }
-impl fmt::Display for Result {
+impl fmt::Display for GameResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Result::Defeat => write!(f, "Defeat"),
-            Result::Draw => write!(f, "Draw"),
-            Result::IllegalMove => write!(f, "IllegalMove"),
-            Result::Undecided => write!(f, "Undecided"),
-            Result::Victory => write!(f, "Victory"),
+            GameResult::Defeat => write!(f, "Defeat"),
+            GameResult::Draw => write!(f, "Draw"),
+            GameResult::IllegalMove => write!(f, "IllegalMove"),
+            GameResult::Undecided => write!(f, "Undecided"),
+            GameResult::Victory => write!(f, "Victory"),
         }
     }
 }
@@ -76,7 +76,7 @@ pub trait TicTacToeReferee {
         board: &mut GameState,
         placement: PointPlacement,
         player: PlayerID,
-    ) -> Result;
+    ) -> GameResult;
 }
 
 pub trait Player {
@@ -85,6 +85,6 @@ pub trait Player {
 }
 
 pub trait TicTacToeArena {
-    fn do_next_move(&mut self) -> (Result, PlayerID, Option<PointPlacement>);
+    fn do_next_move(&mut self) -> (GameResult, PlayerID, Option<PointPlacement>);
     fn get_board(&self) -> GameState;
 }
