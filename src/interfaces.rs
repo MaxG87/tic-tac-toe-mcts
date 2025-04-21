@@ -90,7 +90,7 @@ impl fmt::Display for PointPlacement {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum GameResult {
     Defeat,
     Draw,

@@ -47,6 +47,7 @@ impl<T: std::marker::Copy> Board<T> {
         Matrix: AsRef<[Row]>,
         Row: AsRef<[U]>,
     {
+        // TODO: Detect and reject inconsistent row sizes
         let board = values
             .as_ref()
             .iter()
