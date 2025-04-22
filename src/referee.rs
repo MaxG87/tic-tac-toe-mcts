@@ -2,9 +2,26 @@ use crate::interfaces::{
     BoardSizeT, GameResult, GameState, PlayerID, PointPlacement, TicTacToeReferee,
     WinLengthT,
 };
+use anyhow::Context;
 
 pub struct NaiveReferee {
     winning_length: WinLengthT,
+}
+
+#[derive(PartialEq, Eq, Clone, Debug)]
+struct Direction {
+    row_delta: i32,
+    column_delta: i32,
+}
+
+impl Direction {
+    fn try_add(&self, other: PointPlacement) -> anyhow::Result<PointPlacement> {
+        let row = i32::from(other.row) + self.row_delta;
+        let row = BoardSizeT::try_from(row).context("Row out of bounds")?;
+        let column = i32::from(other.column) + self.column_delta;
+        let column = BoardSizeT::try_from(column).context("Column out of bounds")?;
+        Ok(PointPlacement { row, column })
+    }
 }
 
 impl NaiveReferee {
@@ -12,20 +29,62 @@ impl NaiveReferee {
         NaiveReferee { winning_length }
     }
 
+    fn follow_direction(
+        &self,
+        start_pp: PointPlacement,
+        direction: &Direction,
+        max_row: BoardSizeT,
+        max_column: BoardSizeT,
+    ) -> Vec<PointPlacement> {
+        let mut placements = Vec::new();
+        placements.push(start_pp);
+        let mut cur_pp = start_pp;
+        for _ in 1..self.winning_length {
+            let maybe_pp = direction.try_add(cur_pp);
+            match maybe_pp {
+                Ok(pp) => {
+                    if pp.row >= max_row || pp.column >= max_column {
+                        break;
+                    }
+                    placements.push(pp);
+                    cur_pp = pp;
+                }
+                Err(_) => break,
+            }
+        }
+        placements
+    }
+
     fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
         let mut has_free_cells = false;
         let deltas = [
-            (0, 1),  // horizontal
-            (1, 0),  // vertical
-            (1, 1),  // slash diagonal
-            (1, -1), // backslash diagonal
+            Direction {
+                // horizontal
+                row_delta: 0,
+                column_delta: 1,
+            },
+            Direction {
+                // vertical
+                row_delta: 1,
+                column_delta: 0,
+            },
+            Direction {
+                // slash diagonal
+                row_delta: 1,
+                column_delta: 1,
+            },
+            Direction {
+                // backslash diagonal
+                row_delta: 1,
+                column_delta: -1,
+            },
         ];
 
         for (pp, value) in board.iter_2d() {
             has_free_cells |= value.is_free();
-            for cur in deltas {
+            for cur in &deltas {
                 if self.has_winning_state_in_direction(
-                    cur, pp.row, pp.column, board, player,
+                    &cur, pp.row, pp.column, board, player,
                 ) {
                     return GameResult::Victory;
                 }
@@ -39,7 +98,7 @@ impl NaiveReferee {
 
     fn has_winning_state_in_direction(
         &self,
-        delta: (i32, i32),
+        delta: &Direction,
         start_row: BoardSizeT,
         start_column: BoardSizeT,
         board: &GameState,
@@ -47,11 +106,10 @@ impl NaiveReferee {
     ) -> bool {
         let nrows = board.get_number_of_rows();
         let ncolumns = board.get_number_of_columns();
-        let (drow, dcolumn) = delta;
         let end_row: i32 =
-            drow * i32::from(self.winning_length - 1) + i32::from(start_row);
-        let end_column: i32 =
-            dcolumn * i32::from(self.winning_length - 1) + i32::from(start_column);
+            delta.row_delta * i32::from(self.winning_length - 1) + i32::from(start_row);
+        let end_column: i32 = delta.column_delta * i32::from(self.winning_length - 1)
+            + i32::from(start_column);
         if end_row < 0
             || end_row >= i32::from(nrows)
             || end_column < 0
@@ -62,9 +120,10 @@ impl NaiveReferee {
 
         let mut has_won = true;
         for k in 0..self.winning_length {
-            let row = (i32::from(start_row) + drow * i32::from(k)) as BoardSizeT;
-            let column =
-                (i32::from(start_column) + dcolumn * i32::from(k)) as BoardSizeT;
+            let row =
+                (i32::from(start_row) + delta.row_delta * i32::from(k)) as BoardSizeT;
+            let column = (i32::from(start_column) + delta.column_delta * i32::from(k))
+                as BoardSizeT;
             let pp = PointPlacement { row, column };
             has_won &= board[pp] == Some(player).into();
         }
