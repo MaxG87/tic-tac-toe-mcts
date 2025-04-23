@@ -4,6 +4,7 @@ use crate::interfaces::{
 };
 use anyhow::Context;
 
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct NaiveReferee {
     winning_length: WinLengthT,
 }
@@ -83,9 +84,7 @@ impl NaiveReferee {
         for (pp, value) in board.iter_2d() {
             has_free_cells |= value.is_free();
             for cur in &deltas {
-                if self.has_winning_state_in_direction(
-                    &cur, pp.row, pp.column, board, player,
-                ) {
+                if self.has_winning_state_in_direction(cur, pp, board, player) {
                     return GameResult::Victory;
                 }
             }
@@ -98,34 +97,23 @@ impl NaiveReferee {
 
     fn has_winning_state_in_direction(
         &self,
-        delta: &Direction,
-        start_row: BoardSizeT,
-        start_column: BoardSizeT,
+        direction: &Direction,
+        start_pp: PointPlacement,
         board: &GameState,
         player: PlayerID,
     ) -> bool {
-        let nrows = board.get_number_of_rows();
-        let ncolumns = board.get_number_of_columns();
-        let end_row: i32 =
-            delta.row_delta * i32::from(self.winning_length - 1) + i32::from(start_row);
-        let end_column: i32 = delta.column_delta * i32::from(self.winning_length - 1)
-            + i32::from(start_column);
-        if end_row < 0
-            || end_row >= i32::from(nrows)
-            || end_column < 0
-            || end_column >= i32::from(ncolumns)
-        {
+        let relevant_placements = self.follow_direction(
+            start_pp,
+            direction,
+            board.get_number_of_rows(),
+            board.get_number_of_columns(),
+        );
+        if relevant_placements.len() < self.winning_length.into() {
             return false;
         }
-
         let mut has_won = true;
-        for k in 0..self.winning_length {
-            let row =
-                (i32::from(start_row) + delta.row_delta * i32::from(k)) as BoardSizeT;
-            let column = (i32::from(start_column) + delta.column_delta * i32::from(k))
-                as BoardSizeT;
-            let pp = PointPlacement { row, column };
-            has_won &= board[pp] == Some(player).into();
+        for cur in relevant_placements {
+            has_won &= board[cur] == Some(player).into();
         }
 
         has_won
