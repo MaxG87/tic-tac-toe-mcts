@@ -1,5 +1,5 @@
 use crate::interfaces::{
-    GameState, Placement, Player, PlayerID, Result, TicTacToeReferee,
+    GameResult, GameState, Placement, Player, PlayerID, TicTacToeReferee,
 };
 
 pub struct OneLookaheadPlayer {
@@ -31,7 +31,7 @@ impl OneLookaheadPlayer {
         );
         let mut mut_board = board.clone();
         for (pp, old_val) in board.iter_2d() {
-            if Result::Victory
+            if GameResult::Victory
                 == self.referee.receive_move(&mut mut_board, pp, self.other_id)
             {
                 placements[pp] = 1.0;
@@ -52,7 +52,7 @@ impl OneLookaheadPlayer {
             0.0,
         );
         for (pp, old_val) in board.iter_2d() {
-            if Result::Victory
+            if GameResult::Victory
                 == self.referee.receive_move(&mut mut_board, pp, self.get_id())
             {
                 placements[pp] = 1.0;
