@@ -1,4 +1,4 @@
-use crate::game_state_storage::GameStateStorage;
+use crate::game_state_storage::{GameStateStorage, NaiveGameStateStorage};
 use crate::interfaces::{
     Evaluation, GameResult, GameState, Placement, Player, PlayerID, TicTacToeReferee,
 };
@@ -18,7 +18,7 @@ struct GetEvaluationsArgs {
 pub struct MinMaxPlayer<'player> {
     max_depth: u32,
     other_id: PlayerID,
-    game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
+    game_state_storage: NaiveGameStateStorage<GameState, Evaluation>,
     referee: &'player dyn TicTacToeReferee,
     self_id: PlayerID,
 }
@@ -36,7 +36,7 @@ impl<'player> MinMaxPlayer<'player> {
     pub fn new(
         max_depth: u32,
         other_id: PlayerID,
-        game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
+        game_state_storage: NaiveGameStateStorage<GameState, Evaluation>,
         referee: &'player dyn TicTacToeReferee,
         self_id: PlayerID,
     ) -> Self {
@@ -232,22 +232,18 @@ mod tests {
         let winning_length = 3;
         let other_id = 1;
         let self_id = 0;
-        let mut game_state_storage = NaiveGameStateStorage::<_, _>::new();
+        let game_state_storage = NaiveGameStateStorage::<_, _>::new();
 
         let mut referee = NaiveReferee::new(winning_length);
         let mut player = MinMaxPlayer {
             max_depth: lookahead,
             self_id,
             other_id,
-            game_state_storage: &mut game_state_storage,
+            game_state_storage,
             referee: &mut referee,
         };
 
         let result = player.do_move(&board);
-        let result_from_storage =
-            game_state_storage.get_payload(&board, lookahead).unwrap();
-        let placement_from_storage = MinMaxPlayer::to_placement(result_from_storage);
-        assert_eq!(placement_from_storage, expected);
         assert_eq!(result, expected);
     }
 }

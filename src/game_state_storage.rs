@@ -11,6 +11,7 @@ pub trait GameStateStorage<
     fn get_payload(&self, board: &KeyT, depth: DepthT) -> Option<&Payload>;
 }
 
+#[derive(Clone, Debug)]
 pub struct NaiveGameStateStorage<
     KeyT: Clone + Eq + Hash,
     Payload,
