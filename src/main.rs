@@ -18,8 +18,7 @@ mod referee;
 fn main() {
     const N: BoardSizeT = 7;
     const K: WinLengthT = 4;
-    let mut mcts_referee = NaiveReferee::new(K);
-    let mut mcts_referee2 = NaiveReferee::new(K);
+    let referee = NaiveReferee::new(K);
     let mut game_state_storage = NaiveGameStateStorage::<_, Evaluation>::new();
     let mut game_state_storage2 = NaiveGameStateStorage::<_, Evaluation>::new();
 
@@ -32,10 +31,8 @@ fn main() {
     //     &mut mcts_base_player1,
     //     &mut mcts_referee,
     // );
-    let mut player0 =
-        MinMaxPlayer::new(4, 1, &mut game_state_storage, &mut mcts_referee, 0);
-    let mut player1 =
-        MinMaxPlayer::new(4, 0, &mut game_state_storage2, &mut mcts_referee2, 1);
+    let mut player0 = MinMaxPlayer::new(4, 1, &mut game_state_storage, &referee, 0);
+    let mut player1 = MinMaxPlayer::new(4, 0, &mut game_state_storage2, &referee, 1);
     // let mut player1 = CLIPlayer { id: 1 };
     let mut referee = NaiveReferee::new(K);
     let board = GameState::new(N, N, None);

@@ -72,7 +72,7 @@ impl fmt::Display for GameResult {
 
 pub trait TicTacToeReferee {
     fn receive_move(
-        &mut self,
+        &self,
         board: &mut GameState,
         placement: PointPlacement,
         player: PlayerID,

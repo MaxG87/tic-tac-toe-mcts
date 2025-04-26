@@ -122,7 +122,7 @@ impl NaiveReferee {
 
 impl TicTacToeReferee for NaiveReferee {
     fn receive_move(
-        &mut self,
+        &self,
         board: &mut GameState,
         placement: PointPlacement,
         player_id: PlayerID,
@@ -251,7 +251,7 @@ mod tests {
         #[case] player: PlayerID,
         #[case] expected: GameResult,
     ) {
-        let mut referee = NaiveReferee::new(winning_length);
+        let referee = NaiveReferee::new(winning_length);
         let result = referee.receive_move(&mut board, next_move, player);
         assert_eq!(result, expected);
     }

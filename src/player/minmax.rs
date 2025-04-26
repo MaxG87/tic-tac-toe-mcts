@@ -19,7 +19,7 @@ pub struct MinMaxPlayer<'player> {
     max_depth: u32,
     other_id: PlayerID,
     game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
-    referee: &'player mut dyn TicTacToeReferee,
+    referee: &'player dyn TicTacToeReferee,
     self_id: PlayerID,
 }
 
@@ -37,7 +37,7 @@ impl<'player> MinMaxPlayer<'player> {
         max_depth: u32,
         other_id: PlayerID,
         game_state_storage: &'player mut dyn GameStateStorage<GameState, Evaluation>,
-        referee: &'player mut dyn TicTacToeReferee,
+        referee: &'player dyn TicTacToeReferee,
         self_id: PlayerID,
     ) -> Self {
         Self {
