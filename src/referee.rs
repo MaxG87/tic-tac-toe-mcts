@@ -26,6 +26,7 @@ impl Direction {
 }
 
 impl NaiveReferee {
+    #[must_use]
     pub fn new(winning_length: u16) -> Self {
         NaiveReferee { winning_length }
     }

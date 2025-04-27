@@ -139,10 +139,12 @@ impl<T: std::marker::Copy> Board<T> {
         })
     }
 
+    #[must_use]
     pub fn get_number_of_rows(&self) -> u16 {
         self.nrows
     }
 
+    #[must_use]
     pub fn get_number_of_columns(&self) -> u16 {
         self.ncolumns
     }
