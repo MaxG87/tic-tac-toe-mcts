@@ -1,17 +1,40 @@
-use criterion::{Criterion, criterion_group, criterion_main};
-use std::hint::black_box;
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 
-fn fibonacci(n: u64) -> u64 {
-    let mut fib = 1;
-    for n in 1..=n {
-        fib += n;
+fn fibonacci_slow(n: u64) -> u64 {
+    match n {
+        0 | 1 => 1,
+        n => fibonacci_slow(n - 1) + fibonacci_slow(n - 2),
     }
-    fib
 }
 
-fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("fib 20", |b| b.iter(|| fibonacci(black_box(20))));
+fn fibonacci_fast(n: u64) -> u64 {
+    let mut a = 0;
+    let mut b = 1;
+
+    if n == 0 {
+        b
+    } else {
+        for _ in 0..n {
+            let c = a + b;
+            a = b;
+            b = c;
+        }
+        b
+    }
 }
 
-criterion_group!(benches, criterion_benchmark);
+fn bench_fibs(c: &mut Criterion) {
+    let mut group = c.benchmark_group("Fibonacci");
+    for i in &[20u64, 21u64] {
+        group.bench_with_input(BenchmarkId::new("Recursive", i), i, |b, i| {
+            b.iter(|| fibonacci_slow(*i));
+        });
+        group.bench_with_input(BenchmarkId::new("Iterative", i), i, |b, i| {
+            b.iter(|| fibonacci_fast(*i));
+        });
+    }
+    group.finish();
+}
+
+criterion_group!(benches, bench_fibs);
 criterion_main!(benches);
