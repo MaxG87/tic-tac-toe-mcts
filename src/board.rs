@@ -1,5 +1,6 @@
 use crate::interfaces::{BoardSizeT, PointPlacement};
 use anyhow::Context;
+use std::collections::HashSet;
 use std::ops::IndexMut;
 use std::{
     iter::{Iterator, zip},
@@ -47,7 +48,23 @@ impl<T: std::marker::Copy> Board<T> {
         Matrix: AsRef<[Row]>,
         Row: AsRef<[U]>,
     {
-        // TODO: Detect and reject inconsistent row sizes
+        let ncolumns = values
+            .as_ref()
+            .iter()
+            .map(|row| row.as_ref().len())
+            .collect::<HashSet<_>>();
+
+        if ncolumns.contains(&0) {
+            anyhow::bail!("All rows must be bigger than 0!")
+        } else if ncolumns.len() > 1 {
+            anyhow::bail!("Not all rows are of same length!")
+        }
+        let ncolumns = match ncolumns.into_iter().next() {
+            None => anyhow::bail!("Provided values matrix has no rows!"),
+            Some(val) => u16::try_from(val)
+                .context("Number of columns too big. Must fit in u16!")?,
+        };
+
         let board = values
             .as_ref()
             .iter()
@@ -60,8 +77,6 @@ impl<T: std::marker::Copy> Board<T> {
         if nrows == 0 {
             anyhow::bail!("Number of rows must be greater than 0!");
         }
-        let ncolumns = u16::try_from(board.len() / usize::from(nrows))
-            .context("Number of columns too big. Must fit in u16!")?;
         Board::new_with_board(nrows, ncolumns, board)
     }
 
@@ -205,6 +220,17 @@ mod tests {
         board[pp_max] = Some(1).into();
         assert!(board[pp_min].is_taken());
         assert!(board[pp_max].is_taken());
+    }
+
+    #[rstest]
+    #[case(vec![vec![Some(0), Some(0), Some(0)], vec![Some(1), Some(1), Some(1), Some(1)]])]
+    #[case(vec![])]
+    #[case(vec![vec![], vec![]])]
+    fn test_new_with_values_rejects_invalid_input(
+        #[case] values: Vec<Vec<Option<u16>>>,
+    ) {
+        let result = GameState::new_with_values(values);
+        assert!(result.is_err());
     }
 
     #[rstest]
