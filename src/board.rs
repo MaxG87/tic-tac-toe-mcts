@@ -41,6 +41,26 @@ impl<T: std::marker::Copy> Board<T> {
         }
     }
 
+    /// Creates a new `Board` from a rectangular matrix of values.
+    ///
+    /// Each element is converted into the internal type `T` via `Into<T>`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Any row is empty.
+    /// - Rows have differing lengths.
+    /// - The number of rows or columns exceeds `u16::MAX`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let values = vec![
+    ///     vec![1, 2],
+    ///     vec![3, 4],
+    /// ];
+    /// let board = Board::<i32>::new_with_values(values)?;
+    /// ```
     #[allow(dead_code)]
     pub fn new_with_values<Matrix, Row, U>(values: Matrix) -> anyhow::Result<Self>
     where
@@ -80,6 +100,24 @@ impl<T: std::marker::Copy> Board<T> {
         Board::new_with_board(nrows, ncolumns, board)
     }
 
+    /// Creates a new `Board` from given dimensions and a flat list of values.
+    ///
+    /// # Arguments
+    ///
+    /// * `nrows` - Number of rows.
+    /// * `ncolumns` - Number of columns.
+    /// * `board` - Flattened vector of board values, row-major order.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the number of elements in `board` does not match `nrows × ncolumns`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let board = vec![1, 2, 3, 4];
+    /// let board = Board::<i32>::new_with_board(2, 2, board)?;
+    /// ```
     #[allow(dead_code)]
     pub fn new_with_board(
         nrows: u16,
