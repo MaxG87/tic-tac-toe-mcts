@@ -122,8 +122,9 @@ impl<T: std::marker::Copy> Board<T> {
     pub fn new_with_board(
         nrows: u16,
         ncolumns: u16,
-        board: Vec<T>,
+        board: impl Into<Vec<T>>,
     ) -> anyhow::Result<Self> {
+        let board = board.into();
         let expected_size = usize::from(nrows) * usize::from(ncolumns);
         if board.len() != expected_size {
             anyhow::bail!(
