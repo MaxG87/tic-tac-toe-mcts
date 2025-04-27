@@ -120,8 +120,8 @@ impl<T: std::marker::Copy> Board<T> {
     /// ```
     #[allow(dead_code)]
     pub fn new_with_board(
-        nrows: u16,
-        ncolumns: u16,
+        nrows: BoardSizeT,
+        ncolumns: BoardSizeT,
         board: impl Into<Vec<T>>,
     ) -> anyhow::Result<Self> {
         let board = board.into();
@@ -140,25 +140,35 @@ impl<T: std::marker::Copy> Board<T> {
     }
 
     #[must_use]
-    pub fn get_number_of_rows(&self) -> u16 {
+    pub fn get_number_of_rows(&self) -> BoardSizeT {
         self.nrows
     }
 
     #[must_use]
-    pub fn get_number_of_columns(&self) -> u16 {
+    pub fn get_number_of_columns(&self) -> BoardSizeT {
         self.ncolumns
     }
 
     pub fn iter_2d(&self) -> impl Iterator<Item = (PointPlacement, &T)> {
-        // The constructors guarantee that the board has less than u16 rows and columns.
-        self.board.iter().enumerate().map(|(index, val)| {
-            let row = index / usize::from(self.ncolumns);
-            let row = BoardSizeT::try_from(row)
-                .expect("Number of rows too big. Must fit in u16!");
-            let column = index % usize::from(self.ncolumns);
-            let column = BoardSizeT::try_from(column)
-                .expect("Number of columns too big. Must fit in u16!");
-            let pp = PointPlacement { row, column };
+        let ncolumns = usize::from(self.ncolumns);
+        self.board.iter().enumerate().map(move |(index, val)| {
+            let row = index / ncolumns;
+            let column = index % ncolumns;
+
+            debug_assert!(
+                BoardSizeT::try_from(row).is_ok(),
+                "Row index {row} too large to fit into BoardSizeT"
+            );
+            debug_assert!(
+                BoardSizeT::try_from(column).is_ok(),
+                "Column index {column} too large to fit into BoardSizeT"
+            );
+
+            #[allow(clippy::cast_possible_truncation)]
+            let pp = PointPlacement {
+                row: row as BoardSizeT,
+                column: column as BoardSizeT,
+            };
             (pp, val)
         })
     }
