@@ -172,17 +172,26 @@ impl<T: std::marker::Copy> Board<T> {
             (pp, val)
         })
     }
-
     pub fn into_iter_2d(self) -> impl Iterator<Item = (PointPlacement, T)> {
-        // The constructors guarantee that the board has less than u16 rows and columns.
+        let ncolumns = usize::from(self.ncolumns);
         self.board.into_iter().enumerate().map(move |(index, val)| {
-            let row = index / usize::from(self.ncolumns);
-            let row = BoardSizeT::try_from(row)
-                .expect("Number of rows too big. Must fit in u16!");
-            let column = index % usize::from(self.ncolumns);
-            let column = BoardSizeT::try_from(column)
-                .expect("Number of columns too big. Must fit in u16!");
-            let pp = PointPlacement { row, column };
+            let row = index / ncolumns;
+            let column = index % ncolumns;
+
+            debug_assert!(
+                BoardSizeT::try_from(row).is_ok(),
+                "Row index {row} too large to fit into BoardSizeT"
+            );
+            debug_assert!(
+                BoardSizeT::try_from(column).is_ok(),
+                "Column index {column} too large to fit into BoardSizeT"
+            );
+
+            #[allow(clippy::cast_possible_truncation)]
+            let pp = PointPlacement {
+                row: row as BoardSizeT,
+                column: column as BoardSizeT,
+            };
             (pp, val)
         })
     }
