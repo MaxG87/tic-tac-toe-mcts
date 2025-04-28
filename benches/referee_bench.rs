@@ -1,36 +1,32 @@
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
-
-fn fibonacci_slow(n: u64) -> u64 {
-    match n {
-        0 | 1 => 1,
-        n => fibonacci_slow(n - 1) + fibonacci_slow(n - 2),
-    }
-}
-
-fn fibonacci_fast(n: u64) -> u64 {
-    let mut a = 0;
-    let mut b = 1;
-
-    if n == 0 {
-        b
-    } else {
-        for _ in 0..n {
-            let c = a + b;
-            a = b;
-            b = c;
-        }
-        b
-    }
-}
+use tic_tac_toe_mcts::interfaces::{GameState, PointPlacement, TicTacToeReferee};
+use tic_tac_toe_mcts::referee::NaiveReferee;
 
 fn bench_fibs(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Fibonacci");
-    for i in &[20u64, 21u64] {
-        group.bench_with_input(BenchmarkId::new("Recursive", i), i, |b, i| {
-            b.iter(|| fibonacci_slow(*i));
+    let board = [[None; 7]; 7];
+    let board = GameState::new_with_values(board).unwrap();
+    let placements = [
+        PointPlacement { row: 3, column: 3 },
+        PointPlacement { row: 0, column: 0 },
+    ];
+    let winning_length = 4;
+
+    let referee_v1 = NaiveReferee::new(winning_length);
+    let referee_v2 = NaiveReferee::new(winning_length);
+
+    let mut group = c.benchmark_group("TicTacToe Referee (empty board)");
+    for cur in &placements {
+        group.bench_with_input(BenchmarkId::new("Referee v1", cur), cur, |b, pp| {
+            b.iter(|| {
+                let mut board = board.clone();
+                referee_v1.receive_move(&mut board, *pp, 0);
+            });
         });
-        group.bench_with_input(BenchmarkId::new("Iterative", i), i, |b, i| {
-            b.iter(|| fibonacci_fast(*i));
+        group.bench_with_input(BenchmarkId::new("Referee v2", cur), cur, |b, pp| {
+            b.iter(|| {
+                let mut board = board.clone();
+                referee_v2.receive_move(&mut board, *pp, 0);
+            });
         });
     }
     group.finish();
