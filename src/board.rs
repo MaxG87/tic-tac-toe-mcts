@@ -1,5 +1,6 @@
 use crate::interfaces::{BoardSizeT, PointPlacement};
 use anyhow::Context;
+use std::collections::HashSet;
 use std::ops::IndexMut;
 use std::{
     iter::{Iterator, zip},
@@ -40,6 +41,26 @@ impl<T: std::marker::Copy> Board<T> {
         }
     }
 
+    /// Creates a new `Board` from a rectangular matrix of values.
+    ///
+    /// Each element is converted into the internal type `T` via `Into<T>`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Any row is empty.
+    /// - Rows have differing lengths.
+    /// - The number of rows or columns exceeds `u16::MAX`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let values = vec![
+    ///     vec![1, 2],
+    ///     vec![3, 4],
+    /// ];
+    /// let board = Board::<i32>::new_with_values(values)?;
+    /// ```
     #[allow(dead_code)]
     pub fn new_with_values<Matrix, Row, U>(values: Matrix) -> anyhow::Result<Self>
     where
@@ -47,7 +68,23 @@ impl<T: std::marker::Copy> Board<T> {
         Matrix: AsRef<[Row]>,
         Row: AsRef<[U]>,
     {
-        // TODO: Detect and reject inconsistent row sizes
+        let ncolumns = values
+            .as_ref()
+            .iter()
+            .map(|row| row.as_ref().len())
+            .collect::<HashSet<_>>();
+
+        if ncolumns.contains(&0) {
+            anyhow::bail!("All rows must be bigger than 0!")
+        } else if ncolumns.len() > 1 {
+            anyhow::bail!("Not all rows are of same length!")
+        }
+        let ncolumns = match ncolumns.into_iter().next() {
+            None => anyhow::bail!("Provided values matrix has no rows!"),
+            Some(val) => u16::try_from(val)
+                .context("Number of columns too big. Must fit in u16!")?,
+        };
+
         let board = values
             .as_ref()
             .iter()
@@ -60,17 +97,34 @@ impl<T: std::marker::Copy> Board<T> {
         if nrows == 0 {
             anyhow::bail!("Number of rows must be greater than 0!");
         }
-        let ncolumns = u16::try_from(board.len() / usize::from(nrows))
-            .context("Number of columns too big. Must fit in u16!")?;
         Board::new_with_board(nrows, ncolumns, board)
     }
 
+    /// Creates a new `Board` from given dimensions and a flat list of values.
+    ///
+    /// # Arguments
+    ///
+    /// * `nrows` - Number of rows.
+    /// * `ncolumns` - Number of columns.
+    /// * `board` - Flattened vector of board values, row-major order.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the number of elements in `board` does not match `nrows × ncolumns`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let board = vec![1, 2, 3, 4];
+    /// let board = Board::<i32>::new_with_board(2, 2, board)?;
+    /// ```
     #[allow(dead_code)]
     pub fn new_with_board(
-        nrows: u16,
-        ncolumns: u16,
-        board: Vec<T>,
+        nrows: BoardSizeT,
+        ncolumns: BoardSizeT,
+        board: impl Into<Vec<T>>,
     ) -> anyhow::Result<Self> {
+        let board = board.into();
         let expected_size = usize::from(nrows) * usize::from(ncolumns);
         if board.len() != expected_size {
             anyhow::bail!(
@@ -85,38 +139,59 @@ impl<T: std::marker::Copy> Board<T> {
         })
     }
 
-    pub fn get_number_of_rows(&self) -> u16 {
+    #[must_use]
+    pub fn get_number_of_rows(&self) -> BoardSizeT {
         self.nrows
     }
 
-    pub fn get_number_of_columns(&self) -> u16 {
+    #[must_use]
+    pub fn get_number_of_columns(&self) -> BoardSizeT {
         self.ncolumns
     }
 
     pub fn iter_2d(&self) -> impl Iterator<Item = (PointPlacement, &T)> {
-        // The constructors guarantee that the board has less than u16 rows and columns.
-        self.board.iter().enumerate().map(|(index, val)| {
-            let row = index / usize::from(self.ncolumns);
-            let row = BoardSizeT::try_from(row)
-                .expect("Number of rows too big. Must fit in u16!");
-            let column = index % usize::from(self.ncolumns);
-            let column = BoardSizeT::try_from(column)
-                .expect("Number of columns too big. Must fit in u16!");
-            let pp = PointPlacement { row, column };
+        let ncolumns = usize::from(self.ncolumns);
+        self.board.iter().enumerate().map(move |(index, val)| {
+            let row = index / ncolumns;
+            let column = index % ncolumns;
+
+            debug_assert!(
+                BoardSizeT::try_from(row).is_ok(),
+                "Row index {row} too large to fit into BoardSizeT"
+            );
+            debug_assert!(
+                BoardSizeT::try_from(column).is_ok(),
+                "Column index {column} too large to fit into BoardSizeT"
+            );
+
+            #[allow(clippy::cast_possible_truncation)]
+            let pp = PointPlacement {
+                row: row as BoardSizeT,
+                column: column as BoardSizeT,
+            };
             (pp, val)
         })
     }
-
     pub fn into_iter_2d(self) -> impl Iterator<Item = (PointPlacement, T)> {
-        // The constructors guarantee that the board has less than u16 rows and columns.
+        let ncolumns = usize::from(self.ncolumns);
         self.board.into_iter().enumerate().map(move |(index, val)| {
-            let row = index / usize::from(self.ncolumns);
-            let row = BoardSizeT::try_from(row)
-                .expect("Number of rows too big. Must fit in u16!");
-            let column = index % usize::from(self.ncolumns);
-            let column = BoardSizeT::try_from(column)
-                .expect("Number of columns too big. Must fit in u16!");
-            let pp = PointPlacement { row, column };
+            let row = index / ncolumns;
+            let column = index % ncolumns;
+
+            debug_assert!(
+                BoardSizeT::try_from(row).is_ok(),
+                "Row index {row} too large to fit into BoardSizeT"
+            );
+            debug_assert!(
+                BoardSizeT::try_from(column).is_ok(),
+                "Column index {column} too large to fit into BoardSizeT"
+            );
+
+            #[allow(clippy::cast_possible_truncation)]
+            let pp = PointPlacement {
+                row: row as BoardSizeT,
+                column: column as BoardSizeT,
+            };
             (pp, val)
         })
     }
@@ -205,6 +280,17 @@ mod tests {
         board[pp_max] = Some(1).into();
         assert!(board[pp_min].is_taken());
         assert!(board[pp_max].is_taken());
+    }
+
+    #[rstest]
+    #[case(vec![vec![Some(0), Some(0), Some(0)], vec![Some(1), Some(1), Some(1), Some(1)]])]
+    #[case(vec![])]
+    #[case(vec![vec![], vec![]])]
+    fn test_new_with_values_rejects_invalid_input(
+        #[case] values: Vec<Vec<Option<u16>>>,
+    ) {
+        let result = GameState::new_with_values(values);
+        assert!(result.is_err());
     }
 
     #[rstest]
