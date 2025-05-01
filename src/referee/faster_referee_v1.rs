@@ -114,12 +114,9 @@ impl FasterRefereeV1 {
         if relevant_placements.len() < self.winning_length.into() {
             return false;
         }
-        let mut has_won = true;
-        for cur in relevant_placements {
-            has_won &= board[cur] == Some(player).into();
-        }
-
-        has_won
+        relevant_placements
+            .into_iter()
+            .all(|pp| board[pp] == Some(player).into())
     }
 }
 
