@@ -55,30 +55,28 @@ impl FasterRefereeV1 {
         FasterRefereeV1 { winning_length }
     }
 
+    #[inline]
     fn follow_direction(
         &self,
         start_pp: PointPlacement,
         direction: &Direction,
         max_row: BoardSizeT,
         max_column: BoardSizeT,
-    ) -> Vec<PointPlacement> {
-        let mut placements = Vec::new();
-        placements.push(start_pp);
-        let mut cur_pp = start_pp;
-        for _ in 1..self.winning_length {
-            let maybe_pp = direction.try_add(cur_pp);
-            match maybe_pp {
-                Ok(pp) => {
-                    if pp.row >= max_row || pp.column >= max_column {
-                        break;
+    ) -> impl Iterator<Item = PointPlacement> {
+        let pp_in_direction =
+            (1..self.winning_length).scan(start_pp, move |cur_pp, _| {
+                let maybe_pp = direction.try_add(*cur_pp);
+                match maybe_pp {
+                    Ok(new_pp)
+                        if new_pp.row < max_row && new_pp.column < max_column =>
+                    {
+                        *cur_pp = new_pp;
+                        Some(new_pp)
                     }
-                    placements.push(pp);
-                    cur_pp = pp;
+                    _ => None,
                 }
-                Err(_) => break,
-            }
-        }
-        placements
+            });
+        std::iter::once(start_pp).chain(pp_in_direction)
     }
 
     fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
@@ -111,12 +109,16 @@ impl FasterRefereeV1 {
             board.get_number_of_rows(),
             board.get_number_of_columns(),
         );
-        if relevant_placements.len() < self.winning_length.into() {
-            return false;
+        let mut consecutive_placements = 0;
+        for pp in relevant_placements {
+            consecutive_placements += 1;
+            if board[pp] != Some(player).into() {
+                return false;
+            }
         }
-        relevant_placements
-            .into_iter()
-            .all(|pp| board[pp] == Some(player).into())
+        // relevant_placements might contain less than self.winning_length placements.
+        // Since it is a lazy iterator, this cannot be checked in advance.
+        consecutive_placements == self.winning_length
     }
 }
 
