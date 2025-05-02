@@ -14,11 +14,13 @@ pub type GameState = Board<BoardStateEntry>;
 pub struct BoardStateEntry(Option<PlayerID>);
 
 impl BoardStateEntry {
+    #[inline]
     #[must_use]
     pub fn is_taken(self) -> bool {
         self.0.is_some()
     }
 
+    #[inline]
     #[must_use]
     pub fn is_free(self) -> bool {
         !self.is_taken()
