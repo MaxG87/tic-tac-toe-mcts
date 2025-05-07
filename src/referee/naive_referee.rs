@@ -4,6 +4,29 @@ use crate::interfaces::{
 };
 use anyhow::Context;
 
+const DELTAS: [Direction; 4] = [
+    Direction {
+        // horizontal
+        row_delta: 0,
+        column_delta: 1,
+    },
+    Direction {
+        // vertical
+        row_delta: 1,
+        column_delta: 0,
+    },
+    Direction {
+        // slash diagonal
+        row_delta: 1,
+        column_delta: 1,
+    },
+    Direction {
+        // backslash diagonal
+        row_delta: 1,
+        column_delta: -1,
+    },
+];
+
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct NaiveReferee {
     winning_length: WinLengthT,
@@ -59,32 +82,10 @@ impl NaiveReferee {
 
     fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
         let mut has_free_cells = false;
-        let deltas = [
-            Direction {
-                // horizontal
-                row_delta: 0,
-                column_delta: 1,
-            },
-            Direction {
-                // vertical
-                row_delta: 1,
-                column_delta: 0,
-            },
-            Direction {
-                // slash diagonal
-                row_delta: 1,
-                column_delta: 1,
-            },
-            Direction {
-                // backslash diagonal
-                row_delta: 1,
-                column_delta: -1,
-            },
-        ];
 
         for (pp, value) in board.iter_2d() {
             has_free_cells |= value.is_free();
-            for cur in &deltas {
+            for cur in &DELTAS {
                 if self.has_winning_state_in_direction(cur, pp, board, player) {
                     return GameResult::Victory;
                 }
@@ -112,12 +113,9 @@ impl NaiveReferee {
         if relevant_placements.len() < self.winning_length.into() {
             return false;
         }
-        let mut has_won = true;
-        for cur in relevant_placements {
-            has_won &= board[cur] == Some(player).into();
-        }
-
-        has_won
+        relevant_placements
+            .into_iter()
+            .all(|pp| board[pp] == Some(player).into())
     }
 }
 
