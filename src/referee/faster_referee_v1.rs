@@ -50,7 +50,7 @@ impl Direction {
 impl FasterRefereeV1 {
     #[must_use]
     pub fn new(winning_length: u16) -> Self {
-        FasterRefereeV1 { winning_length }
+        Self { winning_length }
     }
 
     fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
