@@ -2,7 +2,6 @@ use crate::interfaces::{
     BoardSizeT, GameResult, GameState, PlayerID, PointPlacement, TicTacToeReferee,
     WinLengthT,
 };
-use anyhow::Context;
 
 const DELTAS: [Direction; 4] = [
     Direction {
@@ -39,12 +38,11 @@ struct Direction {
 }
 
 impl Direction {
-    fn try_add(&self, other: PointPlacement) -> anyhow::Result<PointPlacement> {
+    #[inline]
+    fn add(&self, other: PointPlacement) -> (i32, i32) {
         let row = i32::from(other.row) + self.row_delta;
-        let row = BoardSizeT::try_from(row).context("Row out of bounds")?;
         let column = i32::from(other.column) + self.column_delta;
-        let column = BoardSizeT::try_from(column).context("Column out of bounds")?;
-        Ok(PointPlacement { row, column })
+        (row, column)
     }
 }
 
@@ -65,13 +63,23 @@ impl FasterRefereeV1 {
     ) -> impl Iterator<Item = PointPlacement> {
         let pp_in_direction =
             (1..self.winning_length).scan(start_pp, move |cur_pp, _| {
-                direction
-                    .try_add(*cur_pp)
-                    .ok()
-                    .filter(|new_pp| new_pp.row < max_row && new_pp.column < max_column)
-                    .inspect(|&new_pp| {
-                        *cur_pp = new_pp;
-                    })
+                let (row, column) = direction.add(*cur_pp);
+                let max_row = i32::from(max_row);
+                let max_column = i32::from(max_column);
+
+                if row < 0 || column < 0 || row >= max_row || column >= max_column {
+                    return None;
+                }
+                #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+                let new_pp = PointPlacement {
+                    // We know that row and column are positive. We also know that they
+                    // are less than max_row and max_column. Thus, we can safely cast
+                    // them to BoardSizeT.
+                    row: row as BoardSizeT,
+                    column: column as BoardSizeT,
+                };
+                *cur_pp = new_pp;
+                Some(new_pp)
             });
         std::iter::once(start_pp).chain(pp_in_direction)
     }
