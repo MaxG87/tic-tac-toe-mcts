@@ -64,16 +64,13 @@ impl NaiveReferee {
     ) -> impl Iterator<Item = PointPlacement> {
         let pp_in_direction =
             (1..self.winning_length).scan(start_pp, move |cur_pp, _| {
-                let maybe_pp = direction.try_add(*cur_pp);
-                match maybe_pp {
-                    Ok(new_pp)
-                        if new_pp.row < max_row && new_pp.column < max_column =>
-                    {
+                direction
+                    .try_add(*cur_pp)
+                    .ok()
+                    .filter(|new_pp| new_pp.row < max_row && new_pp.column < max_column)
+                    .inspect(|&new_pp| {
                         *cur_pp = new_pp;
-                        Some(new_pp)
-                    }
-                    _ => None,
-                }
+                    })
             });
         std::iter::once(start_pp).chain(pp_in_direction)
     }
