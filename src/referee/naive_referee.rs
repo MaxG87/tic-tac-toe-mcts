@@ -2,7 +2,6 @@ use crate::interfaces::{
     BoardSizeT, GameResult, GameState, PlayerID, PointPlacement, TicTacToeReferee,
     WinLengthT,
 };
-use anyhow::Context;
 
 const DELTAS: [Direction; 4] = [
     Direction {
@@ -39,43 +38,18 @@ struct Direction {
 }
 
 impl Direction {
-    fn try_add(&self, other: PointPlacement) -> anyhow::Result<PointPlacement> {
+    #[inline]
+    fn add(&self, other: PointPlacement) -> (i32, i32) {
         let row = i32::from(other.row) + self.row_delta;
-        let row = BoardSizeT::try_from(row).context("Row out of bounds")?;
         let column = i32::from(other.column) + self.column_delta;
-        let column = BoardSizeT::try_from(column).context("Column out of bounds")?;
-        Ok(PointPlacement { row, column })
+        (row, column)
     }
 }
 
 impl NaiveReferee {
     #[must_use]
     pub fn new(winning_length: u16) -> Self {
-        NaiveReferee { winning_length }
-    }
-
-    #[inline]
-    fn follow_direction(
-        &self,
-        start_pp: PointPlacement,
-        direction: &Direction,
-        max_row: BoardSizeT,
-        max_column: BoardSizeT,
-    ) -> impl Iterator<Item = PointPlacement> {
-        let pp_in_direction =
-            (1..self.winning_length).scan(start_pp, move |cur_pp, _| {
-                let maybe_pp = direction.try_add(*cur_pp);
-                match maybe_pp {
-                    Ok(new_pp)
-                        if new_pp.row < max_row && new_pp.column < max_column =>
-                    {
-                        *cur_pp = new_pp;
-                        Some(new_pp)
-                    }
-                    _ => None,
-                }
-            });
-        std::iter::once(start_pp).chain(pp_in_direction)
+        Self { winning_length }
     }
 
     fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
@@ -102,22 +76,31 @@ impl NaiveReferee {
         board: &GameState,
         player: PlayerID,
     ) -> bool {
-        let relevant_placements = self.follow_direction(
-            start_pp,
-            direction,
-            board.get_number_of_rows(),
-            board.get_number_of_columns(),
-        );
-        let mut consecutive_placements = 0;
-        for pp in relevant_placements {
-            consecutive_placements += 1;
-            if board[pp] != Some(player).into() {
+        if board[start_pp] != Some(player).into() {
+            return false;
+        }
+        let max_row = i32::from(board.get_number_of_rows());
+        let max_column = i32::from(board.get_number_of_columns());
+        let mut cur_pp = start_pp;
+        for _ in 1..self.winning_length {
+            let (row, column) = direction.add(cur_pp);
+            if row < 0 || column < 0 || row >= max_row || column >= max_column {
                 return false;
             }
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            let new_pp = PointPlacement {
+                // We know that row and column are positive. We also know that they
+                // are less than max_row and max_column. Thus, we can safely cast
+                // them to BoardSizeT.
+                row: row as BoardSizeT,
+                column: column as BoardSizeT,
+            };
+            if board[new_pp] != Some(player).into() {
+                return false;
+            }
+            cur_pp = new_pp;
         }
-        // relevant_placements might contain less than self.winning_length placements.
-        // Since it is a lazy iterator, this cannot be checked in advance.
-        consecutive_placements == self.winning_length
+        true
     }
 }
 

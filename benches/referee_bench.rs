@@ -4,7 +4,7 @@ use tic_tac_toe_mcts::referee::{FasterRefereeV1, NaiveReferee};
 
 fn bench_fibs(c: &mut Criterion) {
     let board = [[None; 7]; 7];
-    let board = GameState::new_with_values(board).unwrap();
+    let mut board = GameState::new_with_values(board).unwrap();
     let placements = [
         PointPlacement { row: 3, column: 3 },
         PointPlacement { row: 0, column: 0 },
@@ -16,19 +16,19 @@ fn bench_fibs(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("TicTacToe Referee (empty board)");
     for cur in &placements {
-        group.bench_with_input(BenchmarkId::new("NaiveReferee", cur), cur, |b, pp| {
+        group.bench_with_input(BenchmarkId::new("NaiveReferee", cur), cur, |b, &pp| {
             b.iter(|| {
-                let mut board = board.clone();
-                naive_referee.receive_move(&mut board, *pp, 0);
+                naive_referee.receive_move(&mut board, pp, 0);
+                board[pp] = None.into();
             });
         });
         group.bench_with_input(
             BenchmarkId::new("FasterRefereeV1", cur),
             cur,
-            |b, pp| {
+            |b, &pp| {
                 b.iter(|| {
-                    let mut board = board.clone();
-                    faster_referee.receive_move(&mut board, *pp, 0);
+                    faster_referee.receive_move(&mut board, pp, 0);
+                    board[pp] = None.into();
                 });
             },
         );
