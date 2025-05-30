@@ -37,15 +37,6 @@ struct Direction {
     column_delta: i32,
 }
 
-impl Direction {
-    #[inline]
-    fn add(&self, other: PointPlacement) -> (i32, i32) {
-        let row = i32::from(other.row) + self.row_delta;
-        let column = i32::from(other.column) + self.column_delta;
-        (row, column)
-    }
-}
-
 #[allow(dead_code)]
 impl FasterRefereeV1 {
     #[must_use]
@@ -61,27 +52,24 @@ impl FasterRefereeV1 {
         max_row: BoardSizeT,
         max_column: BoardSizeT,
     ) -> impl Iterator<Item = PointPlacement> {
-        let pp_in_direction =
-            (1..self.winning_length).scan(start_pp, move |cur_pp, _| {
-                let (row, column) = direction.add(*cur_pp);
-                let max_row = i32::from(max_row);
-                let max_column = i32::from(max_column);
+        (0..i32::from(self.winning_length)).map_while(move |step| {
+            let row = i32::from(start_pp.row) + direction.row_delta * step;
+            let column = i32::from(start_pp.column) + direction.column_delta * step;
 
-                if row < 0 || column < 0 || row >= max_row || column >= max_column {
-                    return None;
-                }
+            if row < 0
+                || column < 0
+                || row >= i32::from(max_row)
+                || column >= i32::from(max_column)
+            {
+                None
+            } else {
                 #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
-                let new_pp = PointPlacement {
-                    // We know that row and column are positive. We also know that they
-                    // are less than max_row and max_column. Thus, we can safely cast
-                    // them to BoardSizeT.
+                Some(PointPlacement {
                     row: row as BoardSizeT,
                     column: column as BoardSizeT,
-                };
-                *cur_pp = new_pp;
-                Some(new_pp)
-            });
-        std::iter::once(start_pp).chain(pp_in_direction)
+                })
+            }
+        })
     }
 
     fn evaluate_board(&self, board: &GameState, player: PlayerID) -> GameResult {
