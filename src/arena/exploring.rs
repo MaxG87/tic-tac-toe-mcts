@@ -9,8 +9,8 @@ use rand::rng;
 pub struct ExploringTicTacToeArena<'arena> {
     active_player: usize,
     board: GameState,
-    players: [&'arena mut (dyn Player); 2],
-    referee: &'arena mut (dyn TicTacToeReferee),
+    players: [&'arena mut dyn Player; 2],
+    referee: &'arena mut dyn TicTacToeReferee,
 }
 
 impl<'arena> ExploringTicTacToeArena<'arena> {
