@@ -68,8 +68,8 @@ fn main() {
             }
             GameResult::Undecided => None,
         };
-        if maybe_result_msg.is_some() {
-            println!("{}", maybe_result_msg.unwrap());
+        if let Some(val) = maybe_result_msg {
+            println!("{val}");
             break;
         }
     }
