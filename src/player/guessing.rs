@@ -8,7 +8,7 @@ impl GuessingPlayer {}
 
 impl Player for GuessingPlayer {
     fn do_move(&mut self, board: &GameState) -> Placement {
-        Placement::new_from_existing(board, 1.0)
+        Placement::new_from_existing(board, 1.0_f32)
     }
 
     fn get_id(&self) -> PlayerID {

@@ -79,11 +79,11 @@ impl<'player> MinMaxPlayer<'player> {
             return Placement::new(
                 evaluations.get_number_of_rows(),
                 evaluations.get_number_of_columns(),
-                1.0,
+                1.0_f32,
             );
         }
 
-        let mut placements = Placement::new_from_existing(evaluations, 0.0);
+        let mut placements = Placement::new_from_existing(evaluations, 0.0_f32);
         for (pp, eval) in evaluations.iter_2d() {
             // Direct comparsion is fine as float value was taken from the
             // evaluations array.

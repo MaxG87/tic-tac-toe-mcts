@@ -72,7 +72,7 @@ impl Player for CountBoundMCTSPlayer<'_> {
         println!("{tries:?}");
 
         let working_arr = if has_win_prob { wins } else { draws };
-        let mut placements = Placement::new_from_existing(board, 0.0);
+        let mut placements = Placement::new_from_existing(board, 0.0_f32);
         let placements_iter =
             working_arr
                 .joint_into_iter_2d(tries)

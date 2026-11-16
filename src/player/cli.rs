@@ -36,7 +36,7 @@ impl CLIPlayer {
 impl Player for CLIPlayer {
     fn do_move(&mut self, board: &GameState) -> Placement {
         let point_placement = self.get_point_placement(board);
-        let mut placements = Placement::new_from_existing(board, 0.0);
+        let mut placements = Placement::new_from_existing(board, 0.0_f32);
         placements[point_placement] = 1.0;
         placements
     }

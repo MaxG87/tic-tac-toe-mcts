@@ -27,7 +27,7 @@ impl OneLookaheadPlayer {
         let mut placements = Placement::new(
             board.get_number_of_rows(),
             board.get_number_of_columns(),
-            1.0,
+            1.0_f32,
         );
         let mut mut_board = board.clone();
         for (pp, old_val) in board.iter_2d() {
@@ -49,7 +49,7 @@ impl OneLookaheadPlayer {
         let mut placements = Placement::new(
             board.get_number_of_rows(),
             board.get_number_of_columns(),
-            0.0,
+            0.0_f32,
         );
         for (pp, old_val) in board.iter_2d() {
             if GameResult::Victory
@@ -80,7 +80,7 @@ impl Player for OneLookaheadPlayer {
         Placement::new(
             board.get_number_of_rows(),
             board.get_number_of_columns(),
-            1.0,
+            1.0_f32,
         )
     }
 
