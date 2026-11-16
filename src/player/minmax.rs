@@ -15,6 +15,7 @@ struct GetEvaluationsArgs {
     max_depth: u32,
 }
 
+#[allow(dead_code)]
 pub struct MinMaxPlayer<'player> {
     max_depth: u32,
     other_id: PlayerID,

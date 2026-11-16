@@ -1,5 +1,6 @@
 use crate::interfaces::{GameState, Placement, Player, PlayerID};
 
+#[allow(dead_code)]
 pub struct GuessingPlayer {
     pub id: PlayerID,
 }

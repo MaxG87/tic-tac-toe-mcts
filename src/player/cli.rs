@@ -3,10 +3,12 @@ use crate::interfaces::{
 };
 use std::io;
 
+#[allow(dead_code)]
 pub struct CLIPlayer {
     pub id: PlayerID,
 }
 
+#[allow(dead_code)]
 impl CLIPlayer {
     fn get_point_placement(&self, board: &GameState) -> PointPlacement {
         let _ = self; // self is not needed here.
