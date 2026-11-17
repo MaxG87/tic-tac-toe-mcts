@@ -20,24 +20,25 @@ impl Player for GuessingPlayer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn guessing_player_assigns_one_to_every_cell() {
-        const N: u16 = 10;
-        const ID: PlayerID = 1;
-        let mut player = GuessingPlayer { id: ID };
-        let board = GameState::new(N, N, None);
+    #[rstest]
+    #[case(1, 1, 1, Some(0))]
+    #[case(0, 3, 3, None)]
+    #[case(1, 10, 10, None)]
+    #[case(5, 2, 7, Some(1))]
+    fn assigns_one_to_every_cell_and_reports_id(
+        #[case] id: PlayerID,
+        #[case] nrows: u16,
+        #[case] ncolumns: u16,
+        #[case] occupant: Option<PlayerID>,
+    ) {
+        let mut player = GuessingPlayer { id };
+        let board = GameState::new(nrows, ncolumns, occupant);
+
         let placement = player.do_move(&board);
 
-        assert_eq!(placement.get_number_of_rows(), N);
-        assert_eq!(placement.get_number_of_columns(), N);
-        assert!(placement.iter_2d().all(|(_, val)| *val == 1.0));
-    }
-
-    #[test]
-    fn test_get_id() {
-        const ID: PlayerID = 1;
-        let player = GuessingPlayer { id: ID };
-        assert_eq!(player.get_id(), ID);
+        assert_eq!(player.get_id(), id);
+        assert_eq!(placement, Placement::new(nrows, ncolumns, 1.0_f32));
     }
 }
