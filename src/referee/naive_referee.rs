@@ -228,6 +228,44 @@ mod tests {
         1,
         GameResult::Undecided,
     )]
+    // draw - last free cell is taken without completing a line
+    #[case(GameState::new_with_values(
+        [
+            [Some(0), Some(1), Some(0)],
+            [Some(0), Some(1), Some(1)],
+            [Some(1), Some(0), None],
+        ]
+    ).unwrap(),
+        PointPlacement{row: 2, column: 2},
+        3,
+        0,
+        GameResult::Draw,
+    )]
+    // illegal move - out of bounds in column direction
+    #[case(GameState::new_with_values(
+        [
+            [Some(0), None],
+            [None, None]
+        ]
+    ).unwrap(),
+        PointPlacement{row: 0, column: 2},
+        2,
+        1,
+        GameResult::IllegalMove,
+    )]
+    // an existing line of the opponent is not a victory for the mover
+    #[case(GameState::new_with_values(
+        [
+            [Some(1), Some(1), None],
+            [Some(0), None, None],
+            [None, None, None],
+        ]
+    ).unwrap(),
+        PointPlacement{row: 2, column: 2},
+        2,
+        0,
+        GameResult::Undecided,
+    )]
     fn referee_judges_board_correctly(
         #[case] mut board: GameState,
         #[case] next_move: PointPlacement,
@@ -236,57 +274,13 @@ mod tests {
         #[case] expected: GameResult,
     ) {
         let referee = NaiveReferee::new(winning_length);
+        let before = board.clone();
         let result = referee.receive_move(&mut board, next_move, player);
         assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn final_non_winning_move_is_a_draw() {
-        let mut board = GameState::new_with_values([
-            [Some(0), Some(1), Some(0)],
-            [Some(0), Some(1), Some(1)],
-            [Some(1), Some(0), None],
-        ])
-        .unwrap();
-        let result = NaiveReferee::new(3).receive_move(
-            &mut board,
-            PointPlacement { row: 2, column: 2 },
-            0,
-        );
-
-        assert_eq!(result, GameResult::Draw);
-        assert_eq!(board[PointPlacement { row: 2, column: 2 }], Some(0).into());
-    }
-
-    #[rstest]
-    #[case(PointPlacement { row: 2, column: 0 })]
-    #[case(PointPlacement { row: 0, column: 2 })]
-    fn illegal_moves_leave_the_board_unchanged(#[case] placement: PointPlacement) {
-        let mut board =
-            GameState::new_with_values([[Some(0), None], [None, None]]).unwrap();
-        let before = board.clone();
-
-        let result = NaiveReferee::new(2).receive_move(&mut board, placement, 1);
-
-        assert_eq!(result, GameResult::IllegalMove);
-        assert_eq!(board, before);
-    }
-
-    #[test]
-    fn an_opponents_existing_line_is_not_a_victory_for_the_mover() {
-        let mut board = GameState::new_with_values([
-            [Some(1), Some(1), None],
-            [Some(0), None, None],
-            [None, None, None],
-        ])
-        .unwrap();
-
-        let result = NaiveReferee::new(2).receive_move(
-            &mut board,
-            PointPlacement { row: 2, column: 2 },
-            0,
-        );
-
-        assert_eq!(result, GameResult::Undecided);
+        if expected == GameResult::IllegalMove {
+            assert_eq!(board, before, "illegal moves must not change the board");
+        } else {
+            assert_eq!(board[next_move], Some(player).into());
+        }
     }
 }
