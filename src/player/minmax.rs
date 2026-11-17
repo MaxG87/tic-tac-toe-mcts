@@ -2,7 +2,12 @@ use crate::game_state_storage::{GameStateStorage, NaiveGameStateStorage};
 use crate::interfaces::{
     Evaluation, GameResult, GameState, Placement, Player, PlayerID, TicTacToeReferee,
 };
+use anyhow;
 use std::iter::Iterator;
+use std::num::NonZero;
+
+type DepthRaw = u8;
+type DepthT = NonZero<DepthRaw>;
 
 const DEFEAT: f32 = -1.0;
 const VICTORY: f32 = 1.0;
@@ -12,14 +17,14 @@ const DRAW: f32 = 0.0;
 struct GetEvaluationsArgs {
     self_id: PlayerID,
     other_id: PlayerID,
-    max_depth: u32,
+    max_depth: DepthT,
 }
 
 #[allow(dead_code)]
 pub struct MinMaxPlayer<'player> {
-    max_depth: u32,
+    max_depth: DepthT,
     other_id: PlayerID,
-    game_state_storage: NaiveGameStateStorage<GameState, Evaluation>,
+    game_state_storage: NaiveGameStateStorage<GameState, Evaluation, DepthT>,
     referee: &'player dyn TicTacToeReferee,
     self_id: PlayerID,
 }
@@ -34,20 +39,29 @@ fn get_maximum(evaluations: &Evaluation) -> f32 {
 }
 
 impl<'player> MinMaxPlayer<'player> {
-    pub fn new(
-        max_depth: u32,
+    pub fn new<T>(
+        max_depth: T,
         other_id: PlayerID,
-        game_state_storage: NaiveGameStateStorage<GameState, Evaluation>,
+        game_state_storage: NaiveGameStateStorage<GameState, Evaluation, DepthT>,
         referee: &'player dyn TicTacToeReferee,
         self_id: PlayerID,
-    ) -> Self {
-        Self {
+    ) -> anyhow::Result<Self>
+    where
+        DepthRaw: TryFrom<T>,
+        T: std::fmt::Display + Clone + Copy,
+    {
+        let max_depth = DepthRaw::try_from(max_depth).ok().and_then(DepthT::new).ok_or_else(|| {
+            anyhow::anyhow!(
+                "Lookahead must be a non-zero value that fits in a u8. Got: {max_depth}"
+            )
+        })?;
+        Ok(Self {
             max_depth,
             other_id,
             game_state_storage,
             referee,
             self_id,
-        }
+        })
     }
 
     fn get_evaluations(
@@ -61,8 +75,7 @@ impl<'player> MinMaxPlayer<'player> {
             return evaluations.to_owned();
         }
         let evaluations = match args.max_depth {
-            0 => panic!("Lookahead must be at least 1!"),
-            1 => self.get_evaluations_1(board, args),
+            DepthT::MIN => self.get_evaluations_1(board, args),
             _ => self.get_evaluations_n(board, args),
         };
         self.game_state_storage.register_game_state(
@@ -205,7 +218,7 @@ mod tests {
             [0.0, 0.0, 0.0, 1.0, 0.0],
             [1.0, 0.0, 0.0, 0.0, 0.0],
         ]).unwrap(),
-        1
+        DepthT::new(1).unwrap()
     )]
     // indirect winning moves
     #[case(GameState::new_with_values(
@@ -223,17 +236,17 @@ mod tests {
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
         ]).unwrap(),
-        3
+        DepthT::new(3).unwrap()
     )]
     fn correct_moves_are_found(
         #[case] board: GameState,
         #[case] expected: Placement,
-        #[case] lookahead: u32,
+        #[case] lookahead: DepthT,
     ) {
         let winning_length = 3;
         let other_id = 1;
         let self_id = 0;
-        let game_state_storage = NaiveGameStateStorage::<_, _>::new();
+        let game_state_storage = NaiveGameStateStorage::new();
 
         let mut referee = NaiveReferee::new(winning_length);
         let mut player = MinMaxPlayer {
