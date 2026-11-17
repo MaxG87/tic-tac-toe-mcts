@@ -99,3 +99,83 @@ impl TicTacToeArena for ExploringTicTacToeArena<'_> {
         self.board.clone()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::referee::NaiveReferee;
+
+    struct FixedPlayer {
+        id: PlayerID,
+        placements: Placement,
+    }
+
+    impl Player for FixedPlayer {
+        fn do_move(&mut self, _board: &GameState) -> Placement {
+            self.placements.clone()
+        }
+
+        fn get_id(&self) -> PlayerID {
+            self.id
+        }
+    }
+
+    #[test]
+    fn samples_the_only_legal_positive_weight() {
+        let board =
+            GameState::new_with_values([[Some(1), None], [None, None]]).unwrap();
+        let mut player0 = FixedPlayer {
+            id: 0,
+            placements: Placement::new_with_values([[100.0_f32, 0.0], [0.0, 1.0]])
+                .unwrap(),
+        };
+        let mut player1 = FixedPlayer {
+            id: 1,
+            placements: Placement::new_with_values([[0.0_f32, 0.0], [0.0, 1.0]])
+                .unwrap(),
+        };
+        let mut referee = NaiveReferee::new(3);
+        let mut arena = ExploringTicTacToeArena::new(
+            board,
+            [&mut player0, &mut player1],
+            0,
+            &mut referee,
+        );
+
+        assert_eq!(
+            arena.do_next_move(),
+            (
+                GameResult::Undecided,
+                0,
+                Some(PointPlacement { row: 1, column: 1 })
+            )
+        );
+        assert_eq!(
+            arena.get_board()[PointPlacement { row: 1, column: 1 }],
+            Some(0).into()
+        );
+    }
+
+    #[test]
+    fn no_legal_positive_weight_results_in_defeat_without_a_move() {
+        let board = GameState::new(2, 2, None);
+        let mut player0 = FixedPlayer {
+            id: 0,
+            placements: Placement::new(2, 2, 0.0_f32),
+        };
+        let mut player1 = FixedPlayer {
+            id: 1,
+            placements: Placement::new(2, 2, 0.0_f32),
+        };
+        let mut referee = NaiveReferee::new(3);
+        let mut arena = ExploringTicTacToeArena::new(
+            board.clone(),
+            [&mut player0, &mut player1],
+            0,
+            &mut referee,
+        );
+
+        assert_eq!(arena.do_next_move(), (GameResult::Defeat, 0, None));
+        assert_eq!(arena.get_board(), board);
+    }
+}
