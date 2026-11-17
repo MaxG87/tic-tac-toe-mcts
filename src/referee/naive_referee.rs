@@ -239,4 +239,54 @@ mod tests {
         let result = referee.receive_move(&mut board, next_move, player);
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn final_non_winning_move_is_a_draw() {
+        let mut board = GameState::new_with_values([
+            [Some(0), Some(1), Some(0)],
+            [Some(0), Some(1), Some(1)],
+            [Some(1), Some(0), None],
+        ])
+        .unwrap();
+        let result = NaiveReferee::new(3).receive_move(
+            &mut board,
+            PointPlacement { row: 2, column: 2 },
+            0,
+        );
+
+        assert_eq!(result, GameResult::Draw);
+        assert_eq!(board[PointPlacement { row: 2, column: 2 }], Some(0).into());
+    }
+
+    #[rstest]
+    #[case(PointPlacement { row: 2, column: 0 })]
+    #[case(PointPlacement { row: 0, column: 2 })]
+    fn illegal_moves_leave_the_board_unchanged(#[case] placement: PointPlacement) {
+        let mut board =
+            GameState::new_with_values([[Some(0), None], [None, None]]).unwrap();
+        let before = board.clone();
+
+        let result = NaiveReferee::new(2).receive_move(&mut board, placement, 1);
+
+        assert_eq!(result, GameResult::IllegalMove);
+        assert_eq!(board, before);
+    }
+
+    #[test]
+    fn an_opponents_existing_line_is_not_a_victory_for_the_mover() {
+        let mut board = GameState::new_with_values([
+            [Some(1), Some(1), None],
+            [Some(0), None, None],
+            [None, None, None],
+        ])
+        .unwrap();
+
+        let result = NaiveReferee::new(2).receive_move(
+            &mut board,
+            PointPlacement { row: 2, column: 2 },
+            0,
+        );
+
+        assert_eq!(result, GameResult::Undecided);
+    }
 }
