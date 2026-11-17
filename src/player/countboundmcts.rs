@@ -56,7 +56,7 @@ impl Player for CountBoundMCTSPlayer<'_> {
                     match result {
                         GameResult::Victory => {
                             wins[pp] += NSamplesT::from(player_id == self.id);
-                            has_win_prob |= true;
+                            has_win_prob |= player_id == self.id;
                         }
                         GameResult::Draw => {
                             draws[pp] += 1;
@@ -71,7 +71,14 @@ impl Player for CountBoundMCTSPlayer<'_> {
         println!("{draws:?}");
         println!("{tries:?}");
 
-        let working_arr = if has_win_prob { wins } else { draws };
+        let has_draw = draws.iter_2d().any(|(_, count)| *count > 0);
+        let working_arr = if has_win_prob {
+            wins
+        } else if has_draw {
+            draws
+        } else {
+            tries.clone()
+        };
         let mut placements = Placement::new_from_existing(board, 0.0_f32);
         let placements_iter =
             working_arr
@@ -105,6 +112,7 @@ impl CountBoundMCTSPlayer<'_> {
         if result != GameResult::Undecided {
             return (result, first_player_id, first_point_placement);
         }
+
         loop {
             match arena.do_next_move() {
                 (GameResult::Undecided, _, _) => {}
@@ -113,5 +121,29 @@ impl CountBoundMCTSPlayer<'_> {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::player::guessing::GuessingPlayer;
+    use crate::referee::NaiveReferee;
+
+    #[test]
+    fn chooses_a_legal_move_when_all_simulations_are_losses() {
+        let board =
+            GameState::new_with_values([[Some(0), None], [None, None]]).unwrap();
+        let mut player0 = GuessingPlayer { id: 0 };
+        let mut player1 = GuessingPlayer { id: 1 };
+        let mut referee = NaiveReferee::new(2);
+        let mut player =
+            CountBoundMCTSPlayer::new(1, 10, &mut player0, &mut player1, &mut referee);
+        let placements = player.do_move(&board);
+        assert!(
+            board
+                .joint_iter_2d(&placements)
+                .any(|(_, cell, weight)| cell.is_free() && *weight > 0.0)
+        );
     }
 }
