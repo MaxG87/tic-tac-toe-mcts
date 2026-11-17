@@ -94,14 +94,16 @@ fn main() {
         config.win_length,
         &search_referee,
         &mut resources0,
-    ).unwrap();
+    )
+    .unwrap();
     let mut player1 = build_player(
         config.players[1],
         1,
         config.win_length,
         &search_referee,
         &mut resources1,
-    ).unwrap();
+    )
+    .unwrap();
     let board = GameState::new(config.size, config.size, None);
     let mut arena =
         ExploitingArena::new(0, board, [&mut *player0, &mut *player1], &mut referee);

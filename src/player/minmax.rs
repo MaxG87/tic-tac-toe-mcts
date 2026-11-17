@@ -146,11 +146,6 @@ impl<'player> MinMaxPlayer<'player> {
             DEFEAT,
         );
         let mut temporary_board = board.clone();
-        let pass_down_args = GetEvaluationsArgs {
-            other_id: args.self_id,
-            self_id: args.other_id,
-            max_depth: args.max_depth - 1,
-        };
 
         for (pp, old_board_val) in board.iter_2d() {
             let move_result =
@@ -161,6 +156,15 @@ impl<'player> MinMaxPlayer<'player> {
                 GameResult::Victory => VICTORY,
                 GameResult::Draw => DRAW,
                 GameResult::Undecided => {
+                    let raw = args.max_depth.get();
+                    let decr = DepthT::new(raw - 1).expect(
+                        "At this point, raw depth must be greater than 1. Got: {raw}"
+                    );
+                    let pass_down_args = GetEvaluationsArgs {
+                        other_id: args.self_id,
+                        self_id: args.other_id,
+                        max_depth: decr,
+                    };
                     let pp_evaluations =
                         self.get_evaluations(&mut temporary_board, &pass_down_args);
                     -get_maximum(&pp_evaluations)
