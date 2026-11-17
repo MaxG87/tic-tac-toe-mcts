@@ -27,7 +27,7 @@ impl OneLookaheadPlayer {
         let mut placements = Placement::new(
             board.get_number_of_rows(),
             board.get_number_of_columns(),
-            1.0_f32,
+            0.0_f32,
         );
         let mut mut_board = board.clone();
         for (pp, old_val) in board.iter_2d() {
@@ -86,5 +86,71 @@ impl Player for OneLookaheadPlayer {
 
     fn get_id(&self) -> PlayerID {
         self.self_id
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::referee::NaiveReferee;
+
+    fn player() -> OneLookaheadPlayer {
+        OneLookaheadPlayer::new(1, Box::new(NaiveReferee::new(3)), 0)
+    }
+
+    #[test]
+    fn prefers_an_immediate_winning_move() {
+        let board = GameState::new_with_values([
+            [Some(0), Some(0), None],
+            [Some(1), None, None],
+            [None, None, None],
+        ])
+        .unwrap();
+        let mut player = player();
+
+        let placements = player.do_move(&board);
+
+        for (pp, weight) in placements.iter_2d() {
+            let expected =
+                if pp == (crate::interfaces::PointPlacement { row: 0, column: 2 }) {
+                    1.0
+                } else {
+                    0.0
+                };
+            assert_eq!(*weight, expected, "unexpected weight at {pp}");
+        }
+    }
+
+    #[test]
+    fn blocks_an_opponents_immediate_win_when_no_win_is_available() {
+        let board = GameState::new_with_values([
+            [Some(1), Some(1), None],
+            [Some(0), None, None],
+            [None, None, None],
+        ])
+        .unwrap();
+        let mut player = player();
+
+        let placements = player.do_move(&board);
+
+        for (pp, weight) in placements.iter_2d() {
+            let expected =
+                if pp == (crate::interfaces::PointPlacement { row: 0, column: 2 }) {
+                    1.0
+                } else {
+                    0.0
+                };
+            assert_eq!(*weight, expected, "unexpected weight at {pp}");
+        }
+    }
+
+    #[test]
+    fn returns_uniform_weights_when_no_immediate_tactic_exists() {
+        let board = GameState::new(3, 3, None);
+        let mut player = player();
+
+        let placements = player.do_move(&board);
+
+        assert!(placements.iter_2d().all(|(_, weight)| *weight == 1.0));
     }
 }
