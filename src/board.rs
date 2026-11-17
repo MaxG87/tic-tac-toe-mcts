@@ -55,11 +55,13 @@ impl<T: std::marker::Copy> Board<T> {
     /// # Examples
     ///
     /// ```rust
+    /// use tic_tac_toe_mcts::board::Board;
     /// let values = vec![
     ///     vec![1, 2],
     ///     vec![3, 4],
     /// ];
-    /// let board = Board::<i32>::new_with_values(values)?;
+    /// let board = Board::<i32>::new_with_values(values).unwrap();
+    /// ()
     /// ```
     #[allow(dead_code)]
     pub fn new_with_values<Matrix, Row, U>(values: Matrix) -> anyhow::Result<Self>
@@ -115,8 +117,10 @@ impl<T: std::marker::Copy> Board<T> {
     /// # Examples
     ///
     /// ```rust
+    /// use tic_tac_toe_mcts::board::Board;
     /// let board = vec![1, 2, 3, 4];
-    /// let board = Board::<i32>::new_with_board(2, 2, board)?;
+    /// let board = Board::<i32>::new_with_board(2, 2, board).unwrap();
+    /// ()
     /// ```
     #[allow(dead_code)]
     pub fn new_with_board(
