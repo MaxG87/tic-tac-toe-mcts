@@ -123,6 +123,65 @@ mod tests {
     use crate::referee::NaiveReferee;
     use crate::test_utils::{board, placement};
     use rstest::rstest;
+    use std::collections::VecDeque;
+
+    struct ScriptedPlayer {
+        id: PlayerID,
+        moves: VecDeque<Placement>,
+    }
+
+    impl Player for ScriptedPlayer {
+        fn do_move(&mut self, _board: &GameState) -> Placement {
+            self.moves.pop_front().expect("unexpected rollout move")
+        }
+
+        fn get_id(&self) -> PlayerID {
+            self.id
+        }
+    }
+
+    #[rstest]
+    #[case(0, 1)]
+    #[case(1, 0)]
+    fn prefers_a_sampled_draw_when_only_the_opponent_has_a_win(
+        #[case] self_id: PlayerID,
+        #[case] other_id: PlayerID,
+    ) {
+        let board = board(vec![
+            vec![Some(self_id), Some(self_id), Some(other_id)],
+            vec![Some(other_id), Some(other_id), Some(self_id)],
+            vec![None, None, None],
+        ]);
+        let mut rollout_player = ScriptedPlayer {
+            id: self_id,
+            moves: VecDeque::from([
+                placement(vec![vec![0.0; 3], vec![0.0; 3], vec![1.0, 0.0, 0.0]]),
+                placement(vec![vec![0.0; 3], vec![0.0; 3], vec![0.0, 0.0, 1.0]]),
+                placement(vec![vec![0.0; 3], vec![0.0; 3], vec![0.0, 1.0, 0.0]]),
+            ]),
+        };
+        let mut opponent = FixedPlayer::new(
+            other_id,
+            placement(vec![vec![0.0; 3], vec![0.0; 3], vec![1.0, 1.0, 0.0]]),
+        );
+        let mut referee = NaiveReferee::new(3);
+        let mut mcts = CountBoundMCTSPlayer::new(
+            self_id,
+            2,
+            &mut rollout_player,
+            &mut opponent,
+            &mut referee,
+        );
+
+        // The first rollout blocks the opponent and draws; the second allows a win.
+        // With no wins for this player, draw probabilities should be used.
+        let placements = mcts.do_move(&board);
+
+        assert_eq!(
+            placements,
+            placement(vec![vec![0.0; 3], vec![0.0; 3], vec![1.0, 0.0, 0.0]])
+        );
+    }
 
     // The MCTS player is deterministic whenever both rollout players have a single
     // eligible cell per move, or when every sampled first move leads to the same
