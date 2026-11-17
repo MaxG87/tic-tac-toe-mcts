@@ -46,31 +46,31 @@ fn build_player<'a>(
     win_length: WinLengthT,
     referee: &'a NaiveReferee,
     resources: &'a mut MctsResources,
-) -> Box<dyn Player + 'a> {
+) -> anyhow::Result<Box<dyn Player + 'a>> {
     match config {
-        PlayerConfig::Cli => Box::new(CLIPlayer { id }),
-        PlayerConfig::Guessing => Box::new(GuessingPlayer { id }),
-        PlayerConfig::OneLookahead => Box::new(OneLookaheadPlayer::new(
+        PlayerConfig::Cli => Ok(Box::new(CLIPlayer { id })),
+        PlayerConfig::Guessing => Ok(Box::new(GuessingPlayer { id })),
+        PlayerConfig::OneLookahead => Ok(Box::new(OneLookaheadPlayer::new(
             1 - id,
             Box::new(NaiveReferee::new(win_length)),
             id,
-        )),
-        PlayerConfig::MinMax { depth } => Box::new(MinMaxPlayer::new(
+        ))),
+        PlayerConfig::MinMax { depth } => Ok(Box::new(MinMaxPlayer::new(
             depth,
             1 - id,
             NaiveGameStateStorage::new(),
             referee,
             id,
-        )),
+        )?)),
         PlayerConfig::Mcts { samples, .. } => {
             let [player0, player1] = &mut resources.players;
-            Box::new(CountBoundMCTSPlayer::new(
+            Ok(Box::new(CountBoundMCTSPlayer::new(
                 id,
                 samples,
                 &mut **player0,
                 &mut **player1,
                 &mut resources.referee,
-            ))
+            )))
         }
     }
 }
@@ -94,14 +94,14 @@ fn main() {
         config.win_length,
         &search_referee,
         &mut resources0,
-    );
+    ).unwrap();
     let mut player1 = build_player(
         config.players[1],
         1,
         config.win_length,
         &search_referee,
         &mut resources1,
-    );
+    ).unwrap();
     let board = GameState::new(config.size, config.size, None);
     let mut arena =
         ExploitingArena::new(0, board, [&mut *player0, &mut *player1], &mut referee);
