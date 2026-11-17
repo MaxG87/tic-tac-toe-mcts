@@ -115,3 +115,73 @@ impl CountBoundMCTSPlayer<'_> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::player::fixed::FixedPlayer;
+    use crate::referee::NaiveReferee;
+    use crate::test_utils::{board, placement};
+    use rstest::rstest;
+
+    // The MCTS player is deterministic whenever both rollout players have a single
+    // eligible cell per move, or when every sampled first move leads to the same
+    // outcome.
+    #[rstest]
+    // winning first move is rated 1, everything else 0
+    #[case(
+        vec![vec![None, Some(0)], vec![None, None]],
+        0, 2, 1,
+        vec![vec![1.0, 0.0], vec![0.0, 0.0]],
+        vec![vec![1.0, 1.0], vec![1.0, 1.0]],
+        vec![vec![1.0, 0.0], vec![0.0, 0.0]],
+    )]
+    // the same holds when the MCTS player is the second player
+    #[case(
+        vec![vec![None, Some(1)], vec![None, None]],
+        1, 2, 1,
+        vec![vec![1.0, 1.0], vec![1.0, 1.0]],
+        vec![vec![1.0, 0.0], vec![0.0, 0.0]],
+        vec![vec![1.0, 0.0], vec![0.0, 0.0]],
+    )]
+    // without any victory draws are used: every first move leads to a draw
+    #[case(
+        vec![vec![None, None]],
+        0, 3, 100,
+        vec![vec![1.0, 1.0]],
+        vec![vec![1.0, 1.0]],
+        vec![vec![1.0, 1.0]],
+    )]
+    // cells that were never tried get probability 0
+    #[case(
+        vec![vec![None, None]],
+        0, 3, 10,
+        vec![vec![1.0, 0.0]],
+        vec![vec![0.0, 1.0]],
+        vec![vec![1.0, 0.0]],
+    )]
+    fn rates_first_moves(
+        #[case] initial_board: Vec<Vec<Option<PlayerID>>>,
+        #[case] mcts_id: PlayerID,
+        #[case] win_length: u16,
+        #[case] nsamples: NSamplesT,
+        #[case] weights0: Vec<Vec<f32>>,
+        #[case] weights1: Vec<Vec<f32>>,
+        #[case] expected: Vec<Vec<f32>>,
+    ) {
+        let mut player0 = FixedPlayer::new(0, placement(weights0));
+        let mut player1 = FixedPlayer::new(1, placement(weights1));
+        let mut referee = NaiveReferee::new(win_length);
+        let mut mcts = CountBoundMCTSPlayer::new(
+            mcts_id,
+            nsamples,
+            &mut player0,
+            &mut player1,
+            &mut referee,
+        );
+
+        let placements = mcts.do_move(&board(initial_board));
+
+        assert_eq!(placements, placement(expected));
+    }
+}
