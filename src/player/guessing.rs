@@ -20,27 +20,24 @@ impl Player for GuessingPlayer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashSet;
 
     #[test]
-    fn test_guessing_player_uses_constant_probabilities() {
+    fn guessing_player_assigns_one_to_every_cell() {
         const N: u16 = 10;
         const ID: PlayerID = 1;
         let mut player = GuessingPlayer { id: ID };
         let board = GameState::new(N, N, None);
         let placement = player.do_move(&board);
-        let values = placement
-            .into_iter_2d()
-            .map(|(_, val)| val)
-            .map(f32::to_bits)
-            .collect::<HashSet<_>>();
-        assert_eq!(values.len(), 1);
+
+        assert_eq!(placement.get_number_of_rows(), N);
+        assert_eq!(placement.get_number_of_columns(), N);
+        assert!(placement.iter_2d().all(|(_, val)| *val == 1.0));
     }
 
     #[test]
     fn test_get_id() {
         const ID: PlayerID = 1;
         let player = GuessingPlayer { id: ID };
-        assert_eq!(player.id, ID);
+        assert_eq!(player.get_id(), ID);
     }
 }
