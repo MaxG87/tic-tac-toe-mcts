@@ -93,64 +93,62 @@ impl Player for OneLookaheadPlayer {
 mod tests {
     use super::*;
     use crate::referee::NaiveReferee;
+    use crate::test_utils::{board, placement};
+    use rstest::rstest;
 
-    fn player() -> OneLookaheadPlayer {
-        OneLookaheadPlayer::new(1, Box::new(NaiveReferee::new(3)), 0)
-    }
+    #[rstest]
+    // takes an immediate win
+    #[case(
+        vec![vec![Some(0), Some(0), None], vec![Some(1), None, None], vec![None, None, None]],
+        3,
+        vec![vec![0.0, 0.0, 1.0], vec![0.0, 0.0, 0.0], vec![0.0, 0.0, 0.0]],
+    )]
+    // all winning moves are returned
+    #[case(
+        vec![vec![Some(0), Some(0), None], vec![Some(0), Some(1), None], vec![None, Some(1), None]],
+        3,
+        vec![vec![0.0, 0.0, 1.0], vec![0.0, 0.0, 0.0], vec![1.0, 0.0, 0.0]],
+    )]
+    // blocks a horizontal threat
+    #[case(
+        vec![vec![Some(1), Some(1), None], vec![Some(0), None, None], vec![None, None, None]],
+        3,
+        vec![vec![0.0, 0.0, 1.0], vec![0.0, 0.0, 0.0], vec![0.0, 0.0, 0.0]],
+    )]
+    // blocks a vertical threat
+    #[case(
+        vec![vec![Some(1), Some(0), None], vec![Some(1), None, None], vec![None, None, None]],
+        3,
+        vec![vec![0.0, 0.0, 0.0], vec![0.0, 0.0, 0.0], vec![1.0, 0.0, 0.0]],
+    )]
+    // blocks a diagonal threat
+    #[case(
+        vec![vec![Some(1), None, None], vec![Some(0), Some(1), None], vec![None, None, None]],
+        3,
+        vec![vec![0.0, 0.0, 0.0], vec![0.0, 0.0, 0.0], vec![0.0, 0.0, 1.0]],
+    )]
+    // winning takes precedence over blocking
+    #[case(
+        vec![vec![Some(0), Some(0), None], vec![Some(1), Some(1), None], vec![None, None, None]],
+        3,
+        vec![vec![0.0, 0.0, 1.0], vec![0.0, 0.0, 0.0], vec![0.0, 0.0, 0.0]],
+    )]
+    // no tactic: all cells are equally weighted
+    #[case(
+        vec![vec![None, None, None], vec![None, None, None], vec![None, None, None]],
+        3,
+        vec![vec![1.0, 1.0, 1.0], vec![1.0, 1.0, 1.0], vec![1.0, 1.0, 1.0]],
+    )]
+    fn finds_immediate_tactics(
+        #[case] initial_board: Vec<Vec<Option<PlayerID>>>,
+        #[case] win_length: u16,
+        #[case] expected: Vec<Vec<f32>>,
+    ) {
+        let mut player =
+            OneLookaheadPlayer::new(1, Box::new(NaiveReferee::new(win_length)), 0);
 
-    #[test]
-    fn prefers_an_immediate_winning_move() {
-        let board = GameState::new_with_values([
-            [Some(0), Some(0), None],
-            [Some(1), None, None],
-            [None, None, None],
-        ])
-        .unwrap();
-        let mut player = player();
+        let placements = player.do_move(&board(initial_board));
 
-        let placements = player.do_move(&board);
-
-        for (pp, weight) in placements.iter_2d() {
-            let expected =
-                if pp == (crate::interfaces::PointPlacement { row: 0, column: 2 }) {
-                    1.0
-                } else {
-                    0.0
-                };
-            assert_eq!(*weight, expected, "unexpected weight at {pp}");
-        }
-    }
-
-    #[test]
-    fn blocks_an_opponents_immediate_win_when_no_win_is_available() {
-        let board = GameState::new_with_values([
-            [Some(1), Some(1), None],
-            [Some(0), None, None],
-            [None, None, None],
-        ])
-        .unwrap();
-        let mut player = player();
-
-        let placements = player.do_move(&board);
-
-        for (pp, weight) in placements.iter_2d() {
-            let expected =
-                if pp == (crate::interfaces::PointPlacement { row: 0, column: 2 }) {
-                    1.0
-                } else {
-                    0.0
-                };
-            assert_eq!(*weight, expected, "unexpected weight at {pp}");
-        }
-    }
-
-    #[test]
-    fn returns_uniform_weights_when_no_immediate_tactic_exists() {
-        let board = GameState::new(3, 3, None);
-        let mut player = player();
-
-        let placements = player.do_move(&board);
-
-        assert!(placements.iter_2d().all(|(_, weight)| *weight == 1.0));
+        assert_eq!(placements, placement(expected));
     }
 }

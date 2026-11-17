@@ -14,6 +14,8 @@ mod game_state_storage;
 mod interfaces;
 mod player;
 mod referee;
+#[cfg(test)]
+mod test_utils;
 
 fn main() {
     const N: BoardSizeT = 7;
