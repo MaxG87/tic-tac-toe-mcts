@@ -48,7 +48,8 @@ impl Direction {
 
 impl NaiveReferee {
     #[must_use]
-    pub fn new(winning_length: u16) -> Self {
+    pub fn new<T: Into<WinLengthT>>(winning_length: T) -> Self {
+        let winning_length: WinLengthT = winning_length.into();
         Self { winning_length }
     }
 

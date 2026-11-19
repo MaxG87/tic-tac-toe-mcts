@@ -230,7 +230,7 @@ mod tests {
         #[case] expected: Placement,
         #[case] lookahead: u32,
     ) {
-        let winning_length = 3;
+        let winning_length = 3_u8;
         let other_id = 1;
         let self_id = 0;
         let game_state_storage = NaiveGameStateStorage::<_, _>::new();

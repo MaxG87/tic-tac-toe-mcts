@@ -83,11 +83,11 @@ impl Player for CountBoundMCTSPlayer<'_> {
         let placements_iter =
             working_arr
                 .joint_into_iter_2d(tries)
-                .map(|(pp, count, total)| {
-                    let chance = if total == 0 {
+                .map(|(pp, count, nof_tries)| {
+                    let chance = if nof_tries == 0 {
                         0.0
                     } else {
-                        f32::from(count) / f32::from(total)
+                        f32::from(count) / f32::from(nof_tries)
                     };
                     (pp, chance)
                 });
@@ -129,14 +129,26 @@ mod tests {
     use super::*;
     use crate::player::guessing::GuessingPlayer;
     use crate::referee::NaiveReferee;
+    use rstest::*;
 
-    #[test]
-    fn chooses_a_legal_move_when_all_simulations_are_losses() {
-        let board =
-            GameState::new_with_values([[Some(0), None], [None, None]]).unwrap();
+    #[rstest]
+    #[case(
+    GameState::new_with_values([[Some(0), None], [None, None]]).unwrap(), 2
+    )]
+    #[case(
+        GameState::new_with_values([
+            [Some(0), Some(0), None],
+            [Some(0), Some(1), None],
+            [None, None, Some(1)],
+        ]).unwrap(), 3
+    )]
+    fn chooses_a_legal_move_when_all_simulations_are_losses(
+        #[case] board: GameState,
+        #[case] winning_length: u8,
+    ) {
         let mut player0 = GuessingPlayer { id: 0 };
         let mut player1 = GuessingPlayer { id: 1 };
-        let mut referee = NaiveReferee::new(2);
+        let mut referee = NaiveReferee::new(winning_length);
         let mut player =
             CountBoundMCTSPlayer::new(1, 10, &mut player0, &mut player1, &mut referee);
         let placements = player.do_move(&board);
