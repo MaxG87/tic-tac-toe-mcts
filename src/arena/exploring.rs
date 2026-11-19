@@ -70,7 +70,9 @@ impl<'arena> ExploringTicTacToeArena<'arena> {
 
         // Sample candidate from eligble options
         let mut rng = rng();
-        let dist = WeightedIndex::new(weights).unwrap();
+        let dist = WeightedIndex::new(weights).expect(
+            "Unreachable by construction! All weights are non-negative and at least one weight is non-zero, so the distribution is valid.",
+        );
         let sampled_idx = dist.sample(&mut rng);
         Some(pps[sampled_idx])
     }
