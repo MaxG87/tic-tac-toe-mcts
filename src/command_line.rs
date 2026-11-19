@@ -2,6 +2,9 @@ use clap::{Arg, ArgMatches, Command, error::ErrorKind, value_parser};
 
 use crate::interfaces::{BoardSizeT, WinLengthT};
 
+type MinMaxDepthT = u8;
+type MctsNumSamplesT = u16;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Rollout {
     Guessing,
@@ -13,8 +16,8 @@ pub enum PlayerConfig {
     Cli,
     Guessing,
     OneLookahead,
-    MinMax { depth: u32 },
-    Mcts { samples: u16, rollout: Rollout },
+    MinMax { depth: MinMaxDepthT },
+    Mcts { samples: MctsNumSamplesT, rollout: Rollout },
 }
 
 pub struct Config {
@@ -34,7 +37,7 @@ fn player_commands(first: bool) -> Vec<Command> {
                 Arg::new("depth")
                     .long("depth")
                     .help("Search depth (at least 1)")
-                    .value_parser(value_parser!(u32).range(1..))
+                    .value_parser(value_parser!(MinMaxDepthT).range(1..))
                     .default_value("4"),
             ),
         Command::new("mcts")
@@ -43,7 +46,7 @@ fn player_commands(first: bool) -> Vec<Command> {
                 Arg::new("samples")
                     .long("samples")
                     .help("Number of simulated games per move")
-                    .value_parser(value_parser!(u16).range(1..))
+                    .value_parser(value_parser!(MctsNumSamplesT).range(1..))
                     .default_value("1000"),
             )
             .arg(
@@ -105,11 +108,11 @@ fn player_config(name: &str, args: &ArgMatches) -> PlayerConfig {
         "guessing" => PlayerConfig::Guessing,
         "one-lookahead" => PlayerConfig::OneLookahead,
         "minmax" => PlayerConfig::MinMax {
-            depth: *args.get_one::<u32>("depth").expect("depth has a default"),
+            depth: *args.get_one("depth").expect("depth has a default"),
         },
         "mcts" => PlayerConfig::Mcts {
             samples: *args
-                .get_one::<u16>("samples")
+                .get_one("samples")
                 .expect("samples has a default"),
             rollout: match args.get_one::<String>("rollout").map(String::as_str) {
                 Some("guessing") => Rollout::Guessing,
@@ -122,9 +125,9 @@ fn player_config(name: &str, args: &ArgMatches) -> PlayerConfig {
 }
 
 fn config(matches: &ArgMatches) -> Result<Config, clap::Error> {
-    let size = *matches.get_one::<u16>("size").expect("size has a default");
+    let size = *matches.get_one("size").expect("size has a default");
     let win_length = *matches
-        .get_one::<u16>("win-length")
+        .get_one("win-length")
         .expect("win-length has a default");
     if win_length > size {
         return Err(command().error(

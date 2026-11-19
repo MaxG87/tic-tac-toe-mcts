@@ -4,6 +4,8 @@ use crate::interfaces::{
 };
 use std::iter::Iterator;
 
+type DepthT = u8;
+
 const DEFEAT: f32 = -1.0;
 const VICTORY: f32 = 1.0;
 const DRAW: f32 = 0.0;
@@ -12,14 +14,14 @@ const DRAW: f32 = 0.0;
 struct GetEvaluationsArgs {
     self_id: PlayerID,
     other_id: PlayerID,
-    max_depth: u32,
+    max_depth: DepthT,
 }
 
 #[allow(dead_code)]
 pub struct MinMaxPlayer<'player> {
-    max_depth: u32,
+    max_depth: DepthT,
     other_id: PlayerID,
-    game_state_storage: NaiveGameStateStorage<GameState, Evaluation>,
+    game_state_storage: NaiveGameStateStorage<GameState, Evaluation, DepthT>,
     referee: &'player dyn TicTacToeReferee,
     self_id: PlayerID,
 }
@@ -34,13 +36,14 @@ fn get_maximum(evaluations: &Evaluation) -> f32 {
 }
 
 impl<'player> MinMaxPlayer<'player> {
-    pub fn new(
-        max_depth: u32,
+    pub fn new<T: Into<DepthT>>(
+        max_depth: T,
         other_id: PlayerID,
-        game_state_storage: NaiveGameStateStorage<GameState, Evaluation>,
+        game_state_storage: NaiveGameStateStorage<GameState, Evaluation, DepthT>,
         referee: &'player dyn TicTacToeReferee,
         self_id: PlayerID,
     ) -> Self {
+        let max_depth = max_depth.into();
         Self {
             max_depth,
             other_id,
@@ -228,12 +231,12 @@ mod tests {
     fn correct_moves_are_found(
         #[case] board: GameState,
         #[case] expected: Placement,
-        #[case] lookahead: u32,
+        #[case] lookahead: u8,
     ) {
         let winning_length = 3_u8;
         let other_id = 1;
         let self_id = 0;
-        let game_state_storage = NaiveGameStateStorage::<_, _>::new();
+        let game_state_storage = NaiveGameStateStorage::<_, _, _>::new();
 
         let mut referee = NaiveReferee::new(winning_length);
         let mut player = MinMaxPlayer {
