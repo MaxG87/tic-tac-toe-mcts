@@ -34,7 +34,7 @@ impl<'player> CountBoundMCTSPlayer<'player> {
 }
 impl Player for CountBoundMCTSPlayer<'_> {
     fn do_move(&mut self, board: &GameState) -> Placement {
-        let mut tries = Board::<NSamplesT>::new_from_existing(board, 0 as NSamplesT);
+        let mut tries = Board::new_from_existing(board, NSamplesT::from(0_u8));
         let mut wins = tries.clone();
         let mut draws = tries.clone();
         let mut has_win_prob = false;

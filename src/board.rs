@@ -26,14 +26,14 @@ impl<T: std::marker::Copy> Board<T> {
         }
     }
 
-    pub fn new_from_existing<U: std::marker::Copy, ValT: Into<T>>(
+    pub fn new_from_existing<U: std::marker::Copy>(
         board: &Board<U>,
-        initial_value: ValT,
+        initial_value: T,
     ) -> Self {
         let nrows = board.get_number_of_rows();
         let ncolumns = board.get_number_of_columns();
         let nelems = usize::from(nrows) * usize::from(ncolumns);
-        let board = vec![initial_value.into(); nelems];
+        let board = vec![initial_value; nelems];
         Board {
             nrows,
             ncolumns,
