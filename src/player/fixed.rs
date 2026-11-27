@@ -42,13 +42,11 @@ mod tests {
     ) {
         let placements = Placement::new(nrows, ncolumns, 0.5_f32);
         let mut player = FixedPlayer::new(id, placements.clone());
-        let board = GameState::new(nrows, ncolumns, Some(7));
+        let empty_board = GameState::new(nrows, ncolumns, None);
+        let filled_board = GameState::new(nrows, ncolumns, Some(7));
 
         assert_eq!(player.get_id(), id);
-        assert_eq!(player.do_move(&board), placements);
-        assert_eq!(
-            player.do_move(&GameState::new(nrows, ncolumns, None)),
-            placements
-        );
+        assert_eq!(player.do_move(&filled_board), placements);
+        assert_eq!(player.do_move(&empty_board), placements);
     }
 }
